@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threads</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Left Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="logo">threads</h1>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item active" data-view="home">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </li>
+                <li class="nav-item" data-view="search">
+                    <i class="fas fa-search"></i>
+                    <span>Search</span>
+                </li>
+                <li class="nav-item" data-view="activity">
+                    <i class="fas fa-heart"></i>
+                    <span>Activity</span>
+                    <span class="notification-badge" id="activity-badge">2</span>
+                </li>
+                <li class="nav-item" data-view="bookmarks">
+                    <i class="fas fa-bookmark"></i>
+                    <span>Bookmarks</span>
+                </li>
+                <li class="nav-item" data-view="profile">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </li>
+                <li class="nav-item" id="settings-btn">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </li>
+            </ul>
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <img src="https://via.placeholder.com/32x32/007bff/ffffff?text=U" alt="User">
+                </div>
+                <div class="user-info">
+                    <span class="username">current_user</span>
+                    <span class="user-handle">@current_user</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Home View -->
+            <div id="home-view" class="view active">
+                <div class="content-header">
+                    <h2>Home</h2>
+                </div>
+                
+                <!-- Compose Thread -->
+                <div class="compose-thread">
+                    <div class="compose-avatar">
+                        <img src="https://via.placeholder.com/40x40/007bff/ffffff?text=U" alt="User">
+                    </div>
+                    <div class="compose-content">
+                        <textarea placeholder="Start a thread..." id="thread-text" maxlength="500"></textarea>
+                        <div class="image-preview" id="image-preview" style="display: none;">
+                            <img id="preview-image" src="" alt="Preview">
+                            <button class="remove-image" id="remove-image">&times;</button>
+                        </div>
+                        <div class="compose-actions">
+                            <div class="compose-tools">
+                                <input type="file" id="image-input" accept="image/*" style="display: none;">
+                                <button class="tool-btn" id="add-image" title="Add image">
+                                    <i class="fas fa-image"></i>
+                                </button>
+                                <button class="tool-btn" id="add-hashtag" title="Add hashtag">
+                                    <i class="fas fa-hashtag"></i>
+                                </button>
+                                <button class="tool-btn" id="add-mention" title="Mention someone">
+                                    <i class="fas fa-at"></i>
+                                </button>
+                                <button class="tool-btn" id="add-emoji" title="Add emoji">
+                                    <i class="fas fa-smile"></i>
+                                </button>
+                            </div>
+                            <div class="compose-controls">
+                                <span class="char-count" id="char-count">0/500</span>
+                                <button class="post-btn" id="post-thread">Post</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Threads Feed -->
+                <div class="threads-feed" id="threads-feed">
+                    <!-- Threads will be dynamically loaded here -->
+                </div>
+            </div>
+
+            <!-- Search View -->
+            <div id="search-view" class="view">
+                <div class="content-header">
+                    <div class="search-container">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search" id="search-input">
+                    </div>
+                </div>
+                <div class="search-results" id="search-results">
+                    <div class="search-tabs">
+                        <button class="tab-btn active" data-tab="all">All</button>
+                        <button class="tab-btn" data-tab="people">People</button>
+                        <button class="tab-btn" data-tab="threads">Threads</button>
+                        <button class="tab-btn" data-tab="hashtags">Hashtags</button>
+                    </div>
+                    <div class="search-filters">
+                        <select id="search-filter">
+                            <option value="recent">Most Recent</option>
+                            <option value="popular">Most Popular</option>
+                            <option value="people">People</option>
+                        </select>
+                    </div>
+                    <div class="search-content" id="search-content">
+                        <!-- Search results will be displayed here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity View -->
+            <div id="activity-view" class="view">
+                <div class="content-header">
+                    <h2>Activity</h2>
+                    <div class="activity-tabs">
+                        <button class="tab-btn active" data-tab="all">All</button>
+                        <button class="tab-btn" data-tab="likes">Likes</button>
+                        <button class="tab-btn" data-tab="follows">Follows</button>
+                        <button class="tab-btn" data-tab="replies">Replies</button>
+                    </div>
+                </div>
+                <div class="activity-feed" id="activity-feed">
+                    <!-- Activity items will be displayed here -->
+                </div>
+            </div>
+
+            <!-- Bookmarks View -->
+            <div id="bookmarks-view" class="view">
+                <div class="content-header">
+                    <h2>Bookmarks</h2>
+                </div>
+                <div class="bookmarks-feed" id="bookmarks-feed">
+                    <!-- Bookmarked threads will be displayed here -->
+                </div>
+            </div>
+
+            <!-- Profile View -->
+            <div id="profile-view" class="view">
+                <div class="content-header">
+                    <h2>Profile</h2>
+                </div>
+                <div class="profile-content" id="profile-content">
+                    <!-- Profile content will be displayed here -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Sidebar -->
+        <aside class="right-sidebar">
+            <div class="search-widget">
+                <div class="search-input-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search" id="sidebar-search">
+                </div>
+            </div>
+            
+            <div class="trending-topics">
+                <h3>Trending</h3>
+                <div class="trending-list" id="trending-topics">
+                    <!-- Trending topics will be loaded here -->
+                </div>
+            </div>
+            
+            <div class="suggested-accounts">
+                <h3>Suggested for you</h3>
+                <div class="account-list" id="suggested-accounts">
+                    <!-- Suggested accounts will be loaded here -->
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <h3>Quick Actions</h3>
+                <div class="action-buttons">
+                    <button class="action-btn" id="create-thread">
+                        <i class="fas fa-plus"></i>
+                        <span>New Thread</span>
+                    </button>
+                    <button class="action-btn" id="share-profile">
+                        <i class="fas fa-share"></i>
+                        <span>Share Profile</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Reply Modal -->
+    <div id="reply-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Reply to thread</h3>
+                <button class="close-btn" id="close-reply-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="reply-thread" id="reply-thread-preview">
+                    <!-- Original thread preview -->
+                </div>
+                <div class="reply-compose">
+                    <div class="compose-avatar">
+                        <img src="https://via.placeholder.com/40x40/007bff/ffffff?text=U" alt="User">
+                    </div>
+                    <div class="compose-content">
+                        <textarea placeholder="Post your reply..." id="reply-text" maxlength="500"></textarea>
+                        <div class="image-preview" id="reply-image-preview" style="display: none;">
+                            <img id="reply-preview-image" src="" alt="Preview">
+                            <button class="remove-image" id="remove-reply-image">&times;</button>
+                        </div>
+                        <div class="compose-actions">
+                            <div class="compose-tools">
+                                <input type="file" id="reply-image-input" accept="image/*" style="display: none;">
+                                <button class="tool-btn" id="add-reply-image" title="Add image">
+                                    <i class="fas fa-image"></i>
+                                </button>
+                                <button class="tool-btn" id="add-reply-hashtag" title="Add hashtag">
+                                    <i class="fas fa-hashtag"></i>
+                                </button>
+                                <button class="tool-btn" id="add-reply-emoji" title="Add emoji">
+                                    <i class="fas fa-smile"></i>
+                                </button>
+                            </div>
+                            <div class="compose-controls">
+                                <span class="char-count" id="reply-char-count">0/500</span>
+                                <button class="post-btn" id="post-reply">Reply</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thread Detail Modal -->
+    <div id="thread-modal" class="modal">
+        <div class="modal-content thread-modal-content">
+            <div class="modal-header">
+                <button class="back-btn" id="close-thread-modal">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h3>Thread</h3>
+            </div>
+            <div class="modal-body" id="thread-detail-content">
+                <!-- Thread detail content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Settings</h3>
+                <button class="close-btn" id="close-settings-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-tabs">
+                    <button class="tab-btn active" data-tab="account">Account</button>
+                    <button class="tab-btn" data-tab="privacy">Privacy</button>
+                    <button class="tab-btn" data-tab="notifications">Notifications</button>
+                    <button class="tab-btn" data-tab="appearance">Appearance</button>
+                </div>
+                
+                <div class="settings-content">
+                    <!-- Account Settings -->
+                    <div id="account-settings" class="settings-section active">
+                        <h4>Account Information</h4>
+                        <div class="setting-item">
+                            <label>Username</label>
+                            <input type="text" id="settings-username" value="current_user">
+                        </div>
+                        <div class="setting-item">
+                            <label>Display Name</label>
+                            <input type="text" id="settings-display-name" value="Current User">
+                        </div>
+                        <div class="setting-item">
+                            <label>Bio</label>
+                            <textarea id="settings-bio" placeholder="Tell us about yourself...">Welcome to my Threads!</textarea>
+                        </div>
+                        <div class="setting-item">
+                            <label>Location</label>
+                            <input type="text" id="settings-location" placeholder="Where are you?">
+                        </div>
+                        <div class="setting-item">
+                            <label>Website</label>
+                            <input type="url" id="settings-website" placeholder="https://yourwebsite.com">
+                        </div>
+                    </div>
+
+                    <!-- Privacy Settings -->
+                    <div id="privacy-settings" class="settings-section">
+                        <h4>Privacy & Safety</h4>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="private-account" checked>
+                                Private Account
+                            </label>
+                            <p class="setting-description">Only approved followers can see your threads</p>
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="show-activity" checked>
+                                Show Activity Status
+                            </label>
+                            <p class="setting-description">Let others see when you're active</p>
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="allow-mentions" checked>
+                                Allow Mentions
+                            </label>
+                            <p class="setting-description">Let others mention you in their threads</p>
+                        </div>
+                    </div>
+
+                    <!-- Notification Settings -->
+                    <div id="notifications-settings" class="settings-section">
+                        <h4>Notifications</h4>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="notify-likes" checked>
+                                Email notifications for likes
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="notify-follows" checked>
+                                Email notifications for new followers
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="notify-replies" checked>
+                                Email notifications for replies
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="notify-reposts" checked>
+                                Email notifications for reposts
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="notify-mentions" checked>
+                                Email notifications for mentions
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Appearance Settings -->
+                    <div id="appearance-settings" class="settings-section">
+                        <h4>Appearance</h4>
+                        <div class="setting-item">
+                            <label>Theme</label>
+                            <select id="theme-select">
+                                <option value="dark">Dark</option>
+                                <option value="light">Light</option>
+                                <option value="auto">Auto</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>Font Size</label>
+                            <select id="font-size-select">
+                                <option value="small">Small</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="large">Large</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="reduce-motion" checked>
+                                Reduce Motion
+                            </label>
+                            <p class="setting-description">Minimize animations and transitions</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-actions">
+                    <button class="save-btn" id="save-settings">Save Changes</button>
+                    <button class="cancel-btn" id="cancel-settings">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Profile Modal -->
+    <div id="user-profile-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="back-btn" id="close-user-profile-modal">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h3 id="modal-user-name">User Profile</h3>
+            </div>
+            <div class="modal-body" id="user-profile-content">
+                <!-- User profile content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Viewer Modal -->
+    <div id="image-viewer-modal" class="modal">
+        <div class="modal-content image-viewer-content">
+            <div class="modal-header">
+                <button class="close-btn" id="close-image-viewer">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img id="viewer-image" src="" alt="Image">
+            </div>
+        </div>
+    </div>
+
+    <!-- Emoji Picker Modal -->
+    <div id="emoji-picker-modal" class="modal">
+        <div class="modal-content emoji-picker-content">
+            <div class="modal-header">
+                <h3>Choose an emoji</h3>
+                <button class="close-btn" id="close-emoji-picker">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="emoji-grid" id="emoji-grid">
+                    <!-- Emojis will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container">
+        <!-- Toast notifications will appear here -->
+    </div>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

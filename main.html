@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web-Agent: Social Media Platform Demos</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 28px;
+            font-weight: 700;
+            color: #4c51bf;
+        }
+
+        .logo i {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 300;
+            margin-bottom: 16px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+
+        .platforms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .platform-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .platform-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--brand-color);
+        }
+
+        .platform-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .platform-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .platform-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            background: var(--brand-color);
+        }
+
+        .platform-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .platform-description {
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .platform-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .platform-features li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #555;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .platform-features i {
+            color: var(--brand-color);
+            width: 16px;
+        }
+
+        .platform-links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .platform-btn {
+            flex: 1;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--brand-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+            border: 1px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #eee;
+        }
+
+        .footer {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px 20px;
+            margin-top: 60px;
+            text-align: center;
+            color: #666;
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .footer h3 {
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .footer p {
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .footer-links a {
+            color: #666;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer-links a:hover {
+            color: #4c51bf;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .social-links a:hover {
+            background: #4c51bf;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Brand Colors */
+        .facebook { --brand-color: #1877f2; }
+        .instagram { --brand-color: #E4405F; }
+        .linkedin { --brand-color: #0077b5; }
+        .pinterest { --brand-color: #BD081C; }
+        .reddit { --brand-color: #FF4500; }
+        .discord { --brand-color: #5865F2; }
+        .threads { --brand-color: #000; }
+        .tiktok { --brand-color: #FE2C55; }
+        .twitch { --brand-color: #9146FF; }
+        .youtube { --brand-color: #FF0000; }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .platforms-grid {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            
+            .footer-links {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-globe"></i>
+                    Web-Agent
+                </div>
+                <div class="header-stats">
+                    <div class="stat">
+                        <i class="fas fa-desktop"></i>
+                        <span>10 Platforms</span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-code"></i>
+                        <span>100% HTML/CSS/JS</span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-mobile-alt"></i>
+                        <span>Fully Responsive</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Social Media Platform Demos</h1>
+            <p>Experience authentic recreations of popular social media platforms. Each demo provides a complete, interactive experience that closely mimics the real applications.</p>
+        </div>
+    </section>
+
+    <div class="platforms-grid">
+        <div class="platform-card facebook">
+            <div class="platform-header">
+                <div class="platform-icon">
+                    <i class="fab fa-facebook-f"></i>
+                </div>
+                <div class="platform-title">Facebook</div>
+            </div>
+            <div class="platform-description">
+                Complete Facebook experience with news feed, stories, messaging, and profile management.
+            </div>
+            <ul class="platform-features">
+                <li><i class="fas fa-check"></i> News Feed & Posts</li>
+                <li><i class="fas fa-check"></i> Stories & Reactions</li>
+                <li><i class="fas fa-check"></i> Real-time Messaging</li>
+                <li><i class="fas fa-check"></i> Profile Management</li>
+            </ul>
+            <div class="platform-links">
+                <a href="facebook/index.html" class="platform-btn btn-primary">Login Page</a>
+                <a href="facebook/home.html" class="platform-btn btn-secondary">Main App</a>
+            </div>
+        </div>
+
+        <div class="platform-card instagram">
+            <div class="platform-header">
+                <div class="platform-icon">
+                    <i class="fab fa-instagram"></i>
+                </div>
+                <div class="platform-title">Instagram</div>
+            </div>
+            <div class="platform-description">
+                Pixel-perfect Instagram clone with photo sharing, stories, and direct messaging.
+            </div>
+            <ul class="platform-features">
+                <li><i class="fas fa-check"></i> Photo/Video Feed</li>
+                <li><i class="fas fa-check"></i> Stories & Highlights</li>
+                <li><i class="fas fa-check"></i> Direct Messages</li>
+                <li><i class="fas fa-check"></i> Explore Page</li>
+            </ul>
+            <div class="platform-links">
+                <a href="instagram/login.html" class="platform-btn btn-primary">Login Page</a>
+                <a href="instagram/index.html" class="platform-btn btn-secondary">Main App</a>
+            </div>
+        </div>
+
+        <div class="platform-card linkedin">
+            <div class="platform-header">
+                <div class="platform-icon">
+                    <i class="fab fa-linkedin-in"></i>
+                </div>
+                <div class="platform-title">LinkedIn</div>
+            </div>
+            <div class="platform-description">
+                Professional networking platform with career opportunities and industry insights.
+            </div>
+            <ul class="platform-features">
+                <li><i class="fas fa-check"></i> Professional Feed</li>
+                <li><i class="fas fa-check"></i> Job Search</li>
+                <li><i class="fas fa-check"></i> Network Building</li>
+                <li><i class="fas fa-check"></i> Career Development</li>
+            </ul>
+            <div class="platform-links">
+                <a href="linkedin/login.html" class="platform-btn btn-primary">Login Page</a>
+                <a href="linkedin/index.html" class="platform-btn btn-secondary">Main App</a>
+            </div>
+        </div>
+
+        <div class="platform-card pinterest">
+            <div class="platform-header">
+                <div class="platform-icon">
+                    <i class="fab fa-pinterest-p"></i>
+                </div>
+                <div class="platform-title">Pinterest</div>
+            </div>
+            <div class="platform-description">
+                Visual discovery platform with masonry grid layout and creative inspiration.
+            </div>
+            <ul class="platform-features">
+                <li><i class="fas fa-check"></i> Masonry Grid Layout</li>
+                <li><i class="fas fa-check"></i> Board Management</li>
+                <li><i class="fas fa-check"></i> Pin Creation</li>
+                <li><i class="fas fa-check"></i> Visual Search</li>
+            </ul>
+            <div class="platform-links">
+                <a href="Pinterest/index.html" class="platform-btn btn-primary">Explore</a>
+            </div>
+        </div>
+
+        <div class="platform-card reddit">
+            <div class="platform-header">
+                <div class="platform-icon">
+                    <i class="fab fa-reddit-alien"></i>
+                </div>
+                <div class="platform-title">Reddit</div>
+            </div>
+            <div class="platform-description">
+                Community-driven platform with subreddits, voting system, and threaded discussions.
+            </div>
+            <ul class="platform-features">
+                <li><i class="fas fa-check"></i> Subreddit Browsing</li>
+                <li><i class="fas fa-check"></i> Voting System</li>
+                <li><i class="fas fa-check"></i> Comment Threading</li>
+                <li><i class="fas fa-check"></i> User Profiles</li>
+            </ul>
+            <div class="platform-links">
+                <a href="reddit/index.html" class="platform-btn btn-primary">Homepage</a>
+                <a href="reddit/community.html" class="platform-btn btn-secondary">Community</a>
+            </div>
+        </div>
+
+        <div class="platform-card discord">
+            <div class="platform-header">
+                <div class="platform-icon">
+                    <i class="fab fa-discord"></i>
+                </div>
+                <div class="platform-title">Discord</div>
+            </div>
+            <div class="platform-description">
+                Gaming-focused communication platform with servers, channels, and voice chat.
+            </div>
+            <ul class="platform-features">
+                <li><i class="fas fa-check"></i> Server Management</li>
+                <li><i class="fas fa-check"></i> Text & Voice Channels</li>
+                <li><i class="fas fa-check"></i> Real-time Chat</li>
+                <li><i class="fas fa-check"></i> User Roles</li>
+            </ul>
+            <div class="platform-links">
+                <a href="discord/index.html" class="platform-btn btn-primary">Launch App</a>
+            </div>
+        </div>
+
+        <div class="platform-card threads">
+            <div class="platform-header">
+                <div class="platform-icon">
+                    <i class="fas fa-at"></i>
+                </div>
+                <div class="platform-title">Threads</div>
+            </div>
+            <div class="platform-description">
+                Twitter-like microblogging platform for sharing thoughts and engaging in conversations.
+            </div>
+            <ul class="platform-features">
+                <li><i class="fas fa-check"></i> Thread Creation</li>
+                <li><i class="fas fa-check"></i> Real-time Feed</li>
+                <li><i class="fas fa-check"></i> User Following</li>
+                <li><i class="fas fa-check"></i> Hashtag Support</li>
+            </ul>
+            <div class="platform-links">
+                <a href="Threads/index.html" class="platform-btn btn-primary">Launch App</a>
+            </div>
+        </div>
+
+        <div class="platform-card tiktok">
+            <div class="platform-header">
+                <div class="platform-icon">
+                    <i class="fab fa-tiktok"></i>
+                </div>
+                <div class="platform-title">TikTok</div>
+            </div>
+            <div class="platform-description">
+                Short-form video platform with vertical feed and creative content discovery.
+            </div>
+            <ul class="platform-features">
+                <li><i class="fas fa-check"></i> Vertical Video Feed</li>
+                <li><i class="fas fa-check"></i> Video Player Controls</li>
+                <li><i class="fas fa-check"></i> Social Interactions</li>
+                <li><i class="fas fa-check"></i> Trending Content</li>
+            </ul>
+            <div class="platform-links">
+                <a href="TikTok/index.html" class="platform-btn btn-primary">Watch Videos</a>
+            </div>
+        </div>
+
+        <div class="platform-card twitch">
+            <div class="platform-header">
+                <div class="platform-icon">
+                    <i class="fab fa-twitch"></i>
+                </div>
+                <div class="platform-title">Twitch</div>
+            </div>
+            <div class="platform-description">
+                Live streaming platform for gaming content with interactive chat and community features.
+            </div>
+            <ul class="platform-features">
+                <li><i class="fas fa-check"></i> Live Streaming</li>
+                <li><i class="fas fa-check"></i> Interactive Chat</li>
+                <li><i class="fas fa-check"></i> Channel Discovery</li>
+                <li><i class="fas fa-check"></i> Gaming Categories</li>
+            </ul>
+            <div class="platform-links">
+                <a href="twitch/index.html" class="platform-btn btn-primary">Browse Streams</a>
+            </div>
+        </div>
+
+        <div class="platform-card youtube">
+            <div class="platform-header">
+                <div class="platform-icon">
+                    <i class="fab fa-youtube"></i>
+                </div>
+                <div class="platform-title">YouTube</div>
+            </div>
+            <div class="platform-description">
+                Video sharing platform with comprehensive player controls and content management.
+            </div>
+            <ul class="platform-features">
+                <li><i class="fas fa-check"></i> Video Player</li>
+                <li><i class="fas fa-check"></i> Channel Subscriptions</li>
+                <li><i class="fas fa-check"></i> Comment System</li>
+                <li><i class="fas fa-check"></i> Content Discovery</li>
+            </ul>
+            <div class="platform-links">
+                <a href="youtube/index.html" class="platform-btn btn-primary">Watch Videos</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <h3>Educational Project</h3>
+            <p>
+                This collection of social media platform demos is created for educational and demonstration purposes. 
+                Each platform represents a faithful recreation of the original user experience using modern web technologies.
+            </p>
+            <div class="footer-links">
+                <a href="MAIN_README.md">Documentation</a>
+                <a href="#" onclick="alert('GitHub repository link would go here')">GitHub</a>
+                <a href="#" onclick="alert('License information would go here')">License</a>
+                <a href="#" onclick="alert('Contributing guidelines would go here')">Contribute</a>
+            </div>
+            <div class="social-links">
+                <a href="#" title="GitHub"><i class="fab fa-github"></i></a>
+                <a href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" title="Portfolio"><i class="fas fa-globe"></i></a>
+            </div>
+            <p style="margin-top: 20px; font-size: 0.9rem; opacity: 0.7;">
+                © 2024 Web-Agent Project. Built with ❤️ for the web development community.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Add some interactive effects
+        document.querySelectorAll('.platform-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Add click analytics (demo)
+        document.querySelectorAll('.platform-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const platform = this.closest('.platform-card').querySelector('.platform-title').textContent;
+                console.log(`Navigation to ${platform} - ${this.textContent}`);
+            });
+        });
+
+        // Add loading animation for cards
+        window.addEventListener('load', function() {
+            const cards = document.querySelectorAll('.platform-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(30px)';
+                    card.style.transition = 'all 0.6s ease';
+                    
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 50);
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>
