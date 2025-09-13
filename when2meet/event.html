@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event - When2Meet</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Additional styles specific to event page */
+        .event-header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+        }
+        
+        .event-info {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: -1rem auto 2rem auto;
+            max-width: 1200px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 10;
+        }
+        
+        .event-actions-bar {
+            background: #f8fafc;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e5e7eb;
+            position: sticky;
+            top: 80px;
+            z-index: 100;
+        }
+        
+        .time-grid-section {
+            padding: 2rem 0;
+            background: white;
+        }
+        
+        .participants-section {
+            background: #f8fafc;
+            padding: 2rem 0;
+        }
+        
+        .best-times-section {
+            background: white;
+            padding: 2rem 0;
+        }
+        
+        .selection-toolbar {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .mode-selector {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .mode-btn {
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: white;
+            font-size: 0.875rem;
+        }
+        
+        .mode-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .mode-btn[data-mode="available"] {
+            background: #10b981;
+        }
+        
+        .mode-btn[data-mode="maybe"] {
+            background: #f59e0b;
+        }
+        
+        .mode-btn[data-mode="unavailable"] {
+            background: #ef4444;
+        }
+        
+        .grid-tools {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .participant-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .participant-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .participant-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .participant-avatar-large {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+        
+        .participant-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+        }
+        
+        .stat-item.available {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .stat-item.maybe {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .stat-item.unavailable {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .best-times-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .best-time-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+            position: relative;
+        }
+        
+        .best-time-rank {
+            position: absolute;
+            top: -0.5rem;
+            left: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+        
+        .time-grid-responsive {
+            overflow-x: auto;
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .selection-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .mode-selector {
+                justify-content: center;
+            }
+            
+            .grid-tools {
+                justify-content: center;
+            }
+            
+            .participant-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .best-times-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .share-modal .share-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .share-option {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .share-option:hover {
+            border-color: #667eea;
+            background: #f8fafc;
+        }
+        
+        .share-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .floating-save-indicator {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #10b981;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 2rem;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .floating-save-indicator.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="nav-brand">
+                <h1 class="logo">When2Meet</h1>
+                <span class="tagline">Find the perfect time for everyone</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="dashboard.html" class="nav-link">My Events</a>
+                <a href="create.html" class="nav-link create-btn">+ New Event</a>
+                <div class="user-menu">
+                    <div class="user-avatar">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM2MzY2RjEiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Im0xMiAxMmMxLjY1NDQgMCAzLTEuMzQ1NiAzLTNzLTEuMzQ1Ni0zLTMtMy0zIDEuMzQ1Ni0zIDMgMS4zNDU2IDMgMyAzem0wIDFjLTIuMDA0NCAwLTYgMS4wMDc4LTYgM3YxaDE2di0xYzAtMS45OTIyLTMuOTk1Ni0zLTYtM3oiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K" alt="User Avatar">
+                    </div>
+                    <div class="user-info">
+                        <span class="username">jun</span>
+                        <div class="user-dropdown">
+                            <a href="#" class="dropdown-item">Profile</a>
+                            <a href="#" class="dropdown-item">Settings</a>
+                            <hr class="dropdown-divider">
+                            <a href="#" class="dropdown-item">Sign Out</a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <button class="mobile-menu-toggle" aria-label="Toggle mobile menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <section class="event-header-section">
+        <div class="container">
+            <div class="event-basic-info">
+                <h2 id="eventTitle">Loading Event...</h2>
+                <p id="eventDescription">Loading event details...</p>
+                <div class="event-meta-info">
+                    <div class="meta-item">
+                        <strong>Code:</strong> <span id="eventCode">---</span>
+                    </div>
+                    <div class="meta-item">
+                        <strong>Creator:</strong> <span id="eventCreator">---</span>
+                    </div>
+                    <div class="meta-item">
+                        <strong>Status:</strong> <span id="eventStatus" class="status-badge">---</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <div class="event-info" id="eventInfo">
+            <div class="event-details-grid">
+                <div class="detail-item">
+                    <div class="detail-icon">📅</div>
+                    <div class="detail-content">
+                        <div class="detail-label">Date Range</div>
+                        <div class="detail-value" id="eventDates">---</div>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-icon">⏰</div>
+                    <div class="detail-content">
+                        <div class="detail-label">Time Range</div>
+                        <div class="detail-value" id="eventTimes">---</div>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-icon">🌍</div>
+                    <div class="detail-content">
+                        <div class="detail-label">Timezone</div>
+                        <div class="detail-value" id="eventTimezone">---</div>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-icon">👥</div>
+                    <div class="detail-content">
+                        <div class="detail-label">Participants</div>
+                        <div class="detail-value" id="eventParticipants">---</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="event-actions-bar">
+        <div class="container">
+            <div class="actions-grid">
+                <div class="action-group">
+                    <button class="btn btn-primary" id="shareEventBtn">Share Event</button>
+                    <button class="btn btn-secondary" id="exportEventBtn">Export</button>
+                </div>
+                <div class="action-group" id="creatorActions" style="display: none;">
+                    <button class="btn btn-outline" id="editEventBtn">Edit Event</button>
+                    <button class="btn btn-outline" id="manageEventBtn">Manage</button>
+                </div>
+                <div class="action-group">
+                    <button class="btn btn-outline" id="refreshBtn">Refresh</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <main class="main-content" id="main-content">
+        <section class="time-grid-section">
+            <div class="container">
+                <div class="selection-toolbar">
+                    <div class="toolbar-group">
+                        <h3>Select Your Availability</h3>
+                        <div class="mode-selector">
+                            <button class="mode-btn active" data-mode="available">Available</button>
+                            <button class="mode-btn" data-mode="maybe">Maybe</button>
+                            <button class="mode-btn" data-mode="unavailable">Unavailable</button>
+                        </div>
+                    </div>
+                    <div class="grid-tools">
+                        <button class="btn btn-sm btn-outline" id="clearAllBtn">Clear All</button>
+                        <button class="btn btn-sm btn-outline" id="selectAllBtn">Fill Available Times</button>
+                        <button class="btn btn-sm btn-secondary" id="viewModeBtn">View Mode</button>
+                    </div>
+                </div>
+
+                <div class="grid-legend">
+                    <div class="legend-item">
+                        <div class="legend-color legend-available"></div>
+                        <span>Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-maybe"></div>
+                        <span>Maybe</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-unavailable"></div>
+                        <span>Unavailable</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-unselected"></div>
+                        <span>Not selected</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #3b82f6; position: relative;">
+                            <div style="position: absolute; bottom: 2px; right: 2px; width: 6px; height: 6px; background: white; border-radius: 50%;"></div>
+                        </div>
+                        <span>Others selected</span>
+                    </div>
+                </div>
+
+                <div class="time-grid-responsive">
+                    <div class="time-grid-container" id="timeGridContainer">
+                        <!-- Time grid will be populated by JavaScript -->
+                        <div class="loading-message">
+                            <div class="loading-spinner"></div>
+                            <p>Loading time grid...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-instructions">
+                    <h4>How to use:</h4>
+                    <ul>
+                        <li>Click and drag to select multiple time slots</li>
+                        <li>Use the toolbar to switch between Available, Maybe, and Unavailable</li>
+                        <li>Your selections are saved automatically</li>
+                        <li>Green areas show where others are available</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="best-times-section">
+            <div class="container">
+                <h3>Best Times</h3>
+                <p>Times when most participants are available</p>
+                <div class="best-times-grid" id="bestTimesGrid">
+                    <!-- Best times will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <section class="participants-section">
+            <div class="container">
+                <div class="section-header">
+                    <h3>Participants</h3>
+                    <button class="btn btn-secondary" id="inviteParticipantsBtn">Invite More</button>
+                </div>
+                <div class="participant-list" id="participantList">
+                    <!-- Participants will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Share Modal -->
+    <div class="modal share-modal" id="shareModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Share Event</h3>
+                <button class="modal-close" onclick="hideShareModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="share-method">
+                    <label for="shareLink">Share Link</label>
+                    <div class="input-group">
+                        <input type="text" id="shareLink" class="form-input" readonly>
+                        <button class="input-group-btn" onclick="copyShareLink()">Copy</button>
+                    </div>
+                </div>
+                
+                <div class="share-method">
+                    <label for="shareCode">Event Code</label>
+                    <div class="input-group">
+                        <input type="text" id="shareCode" class="form-input" readonly>
+                        <button class="input-group-btn" onclick="copyEventCode()">Copy</button>
+                    </div>
+                </div>
+
+                <div class="share-options">
+                    <div class="share-option" onclick="shareViaEmail()">
+                        <div class="share-icon" style="background: #3b82f6;">@</div>
+                        <div>
+                            <div class="share-title">Email</div>
+                            <div class="share-desc">Send via email</div>
+                        </div>
+                    </div>
+                    
+                    <div class="share-option" onclick="shareViaWhatsApp()">
+                        <div class="share-icon" style="background: #10b981;">W</div>
+                        <div>
+                            <div class="share-title">WhatsApp</div>
+                            <div class="share-desc">Share on WhatsApp</div>
+                        </div>
+                    </div>
+                    
+                    <div class="share-option" onclick="shareViaSlack()">
+                        <div class="share-icon" style="background: #4a154b;">S</div>
+                        <div>
+                            <div class="share-title">Slack</div>
+                            <div class="share-desc">Share on Slack</div>
+                        </div>
+                    </div>
+                    
+                    <div class="share-option" onclick="generateQRCode()">
+                        <div class="share-icon" style="background: #1f2937;">QR</div>
+                        <div>
+                            <div class="share-title">QR Code</div>
+                            <div class="share-desc">Generate QR code</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invite Modal -->
+    <div class="modal" id="inviteModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Invite Participants</h3>
+                <button class="modal-close" onclick="hideInviteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="inviteEmails">Email Addresses</label>
+                    <textarea id="inviteEmails" class="form-textarea" 
+                              placeholder="Enter email addresses separated by commas..."
+                              rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="inviteMessage">Custom Message (Optional)</label>
+                    <textarea id="inviteMessage" class="form-textarea" 
+                              placeholder="Add a personal message to the invitation..."
+                              rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="hideInviteModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="sendInvitations()">Send Invitations</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating save indicator -->
+    <div class="floating-save-indicator" id="saveIndicator">
+        ✓ Availability saved
+    </div>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="utils.js"></script>
+    <script src="script.js"></script>
+    <script src="event-script.js"></script>
+</body>
+</html>

@@ -339,7 +339,10 @@ function submitPost() {
     posts.unshift(newPost);
     loadEnhancedPosts();
     closePostModal();
-    
+
+    // Save data immediately
+    saveDataToStorage();
+
     // Show success message
     showNotification('Post created successfully!', 'success');
 }
@@ -389,7 +392,10 @@ function submitStory() {
     stories.unshift(newStory);
     loadStories();
     closeStoryModal();
-    
+
+    // Save data immediately
+    saveDataToStorage();
+
     showNotification('Story shared successfully!', 'success');
 }
 
@@ -525,7 +531,10 @@ function toggleReaction(postId, reaction) {
         post.userReaction = reaction;
         post.reactions[reaction] = (post.reactions[reaction] || 0) + 1;
     }
-    
+
+    // Save data immediately
+    saveDataToStorage();
+
     loadEnhancedPosts();
 }
 
@@ -600,7 +609,10 @@ function submitComment() {
     const container = document.getElementById('commentsContainer');
     container.innerHTML = post.comments.map(comment => createCommentHTML(comment)).join('');
     container.scrollTop = container.scrollHeight;
-    
+
+    // Save data immediately
+    saveDataToStorage();
+
     // Update post display
     loadEnhancedPosts();
 }
@@ -940,10 +952,81 @@ function setupPostTextListener() {
     }
 }
 
+// Data persistence functions
+function saveDataToStorage() {
+    try {
+        localStorage.setItem('fbPosts', JSON.stringify(posts));
+        localStorage.setItem('fbStories', JSON.stringify(stories));
+        localStorage.setItem('fbLastSaved', new Date().toISOString());
+    } catch (error) {
+        console.warn('Failed to save data to localStorage:', error);
+    }
+}
+
+function loadDataFromStorage() {
+    try {
+        const savedPosts = localStorage.getItem('fbPosts');
+        const savedStories = localStorage.getItem('fbStories');
+
+        if (savedPosts) {
+            posts = JSON.parse(savedPosts);
+        }
+
+        if (savedStories) {
+            stories = JSON.parse(savedStories);
+        }
+
+        console.log('Data loaded from localStorage');
+    } catch (error) {
+        console.warn('Failed to load data from localStorage:', error);
+    }
+}
+
+// Auto-save data every 30 seconds
+setInterval(saveDataToStorage, 30000);
+
+// Save data before page unload
+window.addEventListener('beforeunload', saveDataToStorage);
+
+// Update user interface with current user data
+function updateUIWithUserData() {
+    const userData = JSON.parse(localStorage.getItem('fbDemoUser') || '{}');
+
+    if (userData.name) {
+        // Update navigation
+        const navUserName = document.getElementById('navUserName');
+        if (navUserName) navUserName.textContent = userData.name;
+
+        const sidebarUserName = document.getElementById('sidebarUserName');
+        if (sidebarUserName) sidebarUserName.textContent = userData.name;
+
+        // Update post input placeholder
+        const postInput = document.getElementById('postInput');
+        if (postInput) {
+            postInput.placeholder = `What's on your mind, ${userData.name.split(' ')[0]}?`;
+        }
+    }
+
+    if (userData.avatar) {
+        // Update profile pictures
+        const navProfilePic = document.getElementById('navProfilePic');
+        if (navProfilePic) navProfilePic.src = userData.avatar;
+
+        const sidebarProfilePic = document.getElementById('sidebarProfilePic');
+        if (sidebarProfilePic) sidebarProfilePic.src = userData.avatar;
+    }
+}
+
 // Initialize everything when page loads
 window.addEventListener('load', function() {
     console.log('Enhanced Facebook functionality loaded!');
-    
+
+    // Load saved data first
+    loadDataFromStorage();
+
+    // Update UI with user data
+    updateUIWithUserData();
+
     // Setup additional listeners that might need DOM to be fully loaded
     setTimeout(() => {
         setupPostTextListener();
@@ -986,7 +1069,86 @@ window.hideReactionsPicker = hideReactionsPicker;
 window.selectReaction = selectReaction;
 window.toggleReaction = toggleReaction;
 
+// Missing functions implementation
+function closeCommentsModal() {
+    document.getElementById('commentsModal').style.display = 'none';
+    currentPostId = null;
+}
+
+function handleCommentKeyPress(event) {
+    if (event.key === 'Enter') {
+        submitComment();
+    }
+}
+
+function createCommentHTML(comment) {
+    const user = users[comment.author];
+    return `
+        <div class="comment">
+            <img src="${user.avatar}" alt="${user.name}">
+            <div class="comment-content">
+                <div class="comment-header">
+                    <h4>${user.name}</h4>
+                    <span class="comment-time">${comment.time}</span>
+                </div>
+                <p>${comment.content}</p>
+                <div class="comment-actions">
+                    <button onclick="likeComment(${comment.id})">
+                        <i class="fas fa-thumbs-up"></i> ${comment.likes || 0}
+                    </button>
+                    <button onclick="replyToComment(${comment.id})">
+                        Reply
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function replyToComment(commentId) {
+    showNotification('Reply feature coming soon!', 'info');
+}
+
+function addFeeling() {
+    const feelings = ['😊 Happy', '😢 Sad', '😍 Loved', '😄 Excited', '😤 Angry', '🤔 Thoughtful'];
+    const selectedFeeling = feelings[Math.floor(Math.random() * feelings.length)];
+    const postText = document.getElementById('postText');
+    if (postText) {
+        postText.value += ` — feeling ${selectedFeeling}`;
+        updatePostButton();
+    }
+    showNotification('Feeling added!', 'success');
+}
+
+function addLocation() {
+    const locations = ['📍 New York, NY', '📍 San Francisco, CA', '📍 Los Angeles, CA', '📍 Chicago, IL'];
+    const selectedLocation = locations[Math.floor(Math.random() * locations.length)];
+    const postText = document.getElementById('postText');
+    if (postText) {
+        postText.value += ` — at ${selectedLocation}`;
+        updatePostButton();
+    }
+    showNotification('Location added!', 'success');
+}
+
+function tagFriends() {
+    const userNames = Object.values(users).map(u => u.name).filter(name => name !== 'John Doe');
+    const randomFriend = userNames[Math.floor(Math.random() * userNames.length)];
+    const postText = document.getElementById('postText');
+    if (postText) {
+        postText.value += ` — with ${randomFriend}`;
+        updatePostButton();
+    }
+    showNotification('Friend tagged!', 'success');
+}
+
 // Additional function exports for compatibility
 window.openPostCreator = openPostModal;
 window.showComments = openComments;
 window.sharePost = openShareModal;
+window.closeCommentsModal = closeCommentsModal;
+window.handleCommentKeyPress = handleCommentKeyPress;
+window.replyToComment = replyToComment;
+window.addFeeling = addFeeling;
+window.addLocation = addLocation;
+window.tagFriends = tagFriends;

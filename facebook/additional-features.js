@@ -753,8 +753,17 @@ window.openEvent = function(id) { showNotification(`Opening event ${id}`, 'info'
 window.loadMarketplacePage = loadMarketplacePage;
 window.createListing = createListing;
 window.submitListing = submitListing;
-window.openMarketplaceItem = function(id) { showNotification(`Opening item ${id}`, 'info'); };
-window.messageSellerMarketplace = function(id) { showNotification('Opening chat with seller...', 'info'); };
+window.openMarketplaceItem = openMarketplaceItem;
+window.messageSellerMarketplace = function(sellerId) {
+    showNotification(`Opening chat with ${users[sellerId].name}...`, 'info');
+    setTimeout(() => {
+        if (typeof openEnhancedChat === 'function') {
+            openEnhancedChat(sellerId);
+        } else if (typeof openChat === 'function') {
+            openChat(sellerId);
+        }
+    }, 500);
+};
 window.saveItem = function(id) { showNotification('Item saved!', 'success'); };
 
 window.openEnhancedChat = openEnhancedChat;
@@ -765,5 +774,102 @@ window.handleEnhancedChatInput = handleEnhancedChatInput;
 window.startVideoCall = function(userId) { showNotification(`Starting video call with ${users[userId].name}...`, 'info'); };
 window.startVoiceCall = function(userId) { showNotification(`Starting voice call with ${users[userId].name}...`, 'info'); };
 window.sendAttachment = function(userId) { showNotification('File picker opened!', 'info'); };
+
+function openMarketplaceItem(itemId) {
+    const item = marketplaceItems.find(i => i.id === itemId);
+    if (!item) {
+        showNotification('Item not found', 'error');
+        return;
+    }
+
+    const seller = users[item.seller];
+
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.className = 'marketplace-item-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        z-index: 10000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    `;
+
+    modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto;">
+            <div style="position: relative; padding: 0;">
+                <button onclick="this.closest('.marketplace-item-modal').remove()"
+                        style="position: absolute; top: 16px; right: 16px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; z-index: 1; font-size: 18px;">×</button>
+
+                <img src="${item.images[0]}" alt="${item.title}"
+                     style="width: 100%; height: 400px; object-fit: cover; border-radius: 12px 12px 0 0;">
+
+                <div style="padding: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px;">
+                        <div>
+                            <h2 style="margin: 0 0 8px 0; font-size: 24px; color: #1c1e21;">${item.title}</h2>
+                            <p style="margin: 0; font-size: 28px; font-weight: bold; color: #1877f2;">$${item.price.toLocaleString()}</p>
+                        </div>
+                        <button onclick="saveItem(${item.id})"
+                                style="background: #e4e6ea; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-weight: 500;">
+                            <i class="fas fa-heart"></i> Save
+                        </button>
+                    </div>
+
+                    <div style="background: #f0f2f5; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                        <h3 style="margin: 0 0 8px 0; font-size: 16px;">Item Details</h3>
+                        <p style="margin: 4px 0;"><strong>Condition:</strong> ${item.condition}</p>
+                        <p style="margin: 4px 0;"><strong>Category:</strong> ${item.category}</p>
+                        <p style="margin: 4px 0;"><strong>Location:</strong> ${item.location}</p>
+                        <p style="margin: 4px 0;"><strong>Posted:</strong> ${item.posted}</p>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="margin: 0 0 12px 0; font-size: 16px;">Description</h3>
+                        <p style="margin: 0; line-height: 1.5; color: #65676b;">${item.description}</p>
+                    </div>
+
+                    <div style="border-top: 1px solid #dadde1; padding-top: 20px;">
+                        <h3 style="margin: 0 0 12px 0; font-size: 16px;">Seller Information</h3>
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                            <img src="${seller.avatar}" alt="${seller.name}"
+                                 style="width: 60px; height: 60px; border-radius: 50%;">
+                            <div>
+                                <h4 style="margin: 0; font-size: 16px;">${seller.name}</h4>
+                                <p style="margin: 4px 0 0 0; color: #65676b; font-size: 14px;">Usually responds within a few hours</p>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 12px;">
+                            <button onclick="messageSellerMarketplace('${item.seller}')"
+                                    style="flex: 1; background: #1877f2; color: white; border: none; border-radius: 6px; padding: 12px; cursor: pointer; font-weight: 500; font-size: 15px;">
+                                <i class="fab fa-facebook-messenger"></i> Message Seller
+                            </button>
+                            <button onclick="showNotification('Make offer feature coming soon!', 'info')"
+                                    style="flex: 1; background: #42b883; color: white; border: none; border-radius: 6px; padding: 12px; cursor: pointer; font-weight: 500; font-size: 15px;">
+                                Make Offer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+
+    document.body.appendChild(modal);
+}
 
 console.log('Additional Facebook features loaded!');

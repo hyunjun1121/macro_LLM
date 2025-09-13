@@ -440,8 +440,13 @@ class ContentManager {
             mockData.categories[category].unshift(videoId);
         }
 
-        // Show success and close modal
-        alert(`Video "${title}" has been ${visibility === 'public' ? 'published' : 'saved as ' + visibility}!`);
+        // Show success notification and close modal
+        const statusMessage = visibility === 'public' ? 'published successfully!' : `saved as ${visibility}!`;
+        if (typeof showNotification === 'function') {
+            showNotification(`Video "${title}" has been ${statusMessage}`, 'success', 5000);
+        } else {
+            alert(`Video "${title}" has been ${statusMessage}`);
+        }
         this.closeUploadModal();
 
         // Refresh current page if on home

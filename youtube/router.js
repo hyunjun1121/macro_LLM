@@ -268,9 +268,9 @@ class PageRenderer {
     renderVideoPlayer(params) {
         const videoId = params.id;
         const video = mockData.videos[videoId];
-        
+
         if (!video) {
-            this.render404();
+            this.render404('Video not found', 'The video you\'re looking for doesn\'t exist or has been removed.');
             return;
         }
 
@@ -501,14 +501,49 @@ class PageRenderer {
         }).join('');
     }
 
-    render404() {
+    render404(title = '404 - Page Not Found', message = 'The page you\'re looking for doesn\'t exist.') {
         this.mainContent.innerHTML = `
             <div class="error-page">
-                <h1>404 - Page Not Found</h1>
-                <p>The page you're looking for doesn't exist.</p>
-                <button onclick="window.router.navigate('home')" class="btn-primary">Go Home</button>
+                <div class="error-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h1>${title}</h1>
+                <p>${message}</p>
+                <div class="error-actions">
+                    <button onclick="window.router.navigate('home')" class="btn-primary">
+                        <i class="fas fa-home"></i>
+                        Go Home
+                    </button>
+                    <button onclick="history.back()" class="btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Go Back
+                    </button>
+                </div>
+                <div class="error-suggestions">
+                    <h3>You might be interested in:</h3>
+                    <div class="suggested-videos-grid">
+                        ${this.renderRandomVideos(4)}
+                    </div>
+                </div>
             </div>
         `;
+
+        this.attachVideoClickListeners();
+    }
+
+    renderRandomVideos(count = 4) {
+        const allVideos = Object.keys(mockData.videos);
+        const randomVideos = [];
+
+        while (randomVideos.length < count && randomVideos.length < allVideos.length) {
+            const randomIndex = Math.floor(Math.random() * allVideos.length);
+            const videoId = allVideos[randomIndex];
+            if (!randomVideos.includes(videoId)) {
+                randomVideos.push(videoId);
+            }
+        }
+
+        return randomVideos.map(videoId => this.renderVideoItem(videoId)).join('');
     }
     
     renderSettings() {
@@ -642,6 +677,94 @@ class PageRenderer {
                         }
                     </div>
                 </div>
+            </div>
+        `;
+    }
+
+    renderHelp() {
+        this.mainContent.innerHTML = `
+            <div class="page-header">
+                <h1>Help & Support</h1>
+                <p>Get help using YouTube and learn about our features</p>
+            </div>
+
+            <div class="help-sections">
+                <div class="help-section">
+                    <h3>Getting Started</h3>
+                    <div class="help-items">
+                        <div class="help-item">
+                            <h4>How to search for videos</h4>
+                            <p>Use the search bar at the top or press <kbd>/</kbd> to focus it. You can also use voice search by clicking the microphone icon.</p>
+                        </div>
+                        <div class="help-item">
+                            <h4>Navigating with keyboard shortcuts</h4>
+                            <p>Press <kbd>?</kbd> to see all available keyboard shortcuts. Use <kbd>H</kbd>, <kbd>T</kbd>, <kbd>S</kbd>, <kbd>L</kbd> to navigate between sections.</p>
+                        </div>
+                        <div class="help-item">
+                            <h4>Managing playlists</h4>
+                            <p>Create custom playlists to organize your favorite videos. Click the "Save" button on any video to add it to a playlist.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h3>Video Management</h3>
+                    <div class="help-items">
+                        <div class="help-item">
+                            <h4>Uploading videos</h4>
+                            <p>Click the "+" button in the top right or press <kbd>U</kbd> to upload a new video. You can drag and drop files directly.</p>
+                        </div>
+                        <div class="help-item">
+                            <h4>Video privacy settings</h4>
+                            <p>Choose between Public, Unlisted, or Private when uploading. You can change these settings later in YouTube Studio.</p>
+                        </div>
+                        <div class="help-item">
+                            <h4>Managing your content</h4>
+                            <p>Visit YouTube Studio to edit video details, view analytics, and manage your channel.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h3>Community Features</h3>
+                    <div class="help-items">
+                        <div class="help-item">
+                            <h4>Comments and interactions</h4>
+                            <p>Like, reply to, and report comments. Use formatting like *bold* and _italic_ in your comments.</p>
+                        </div>
+                        <div class="help-item">
+                            <h4>Subscriptions</h4>
+                            <p>Subscribe to channels you enjoy. View all content from subscribed channels in the Subscriptions section.</p>
+                        </div>
+                        <div class="help-item">
+                            <h4>Notifications</h4>
+                            <p>Get notified when channels you subscribe to upload new content or go live.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h3>Troubleshooting</h3>
+                    <div class="help-items">
+                        <div class="help-item">
+                            <h4>Video won't play</h4>
+                            <p>This is a demo site with placeholder videos. In a real implementation, check your internet connection and browser compatibility.</p>
+                        </div>
+                        <div class="help-item">
+                            <h4>Voice search not working</h4>
+                            <p>Voice search requires microphone permissions and works best in Chrome or Edge browsers.</p>
+                        </div>
+                        <div class="help-item">
+                            <h4>Upload failing</h4>
+                            <p>Check file format, size limits, and ensure you have a stable internet connection.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="help-footer">
+                <h3>Still need help?</h3>
+                <p>This is a demo version of YouTube with simulated functionality. In a real implementation, you would find additional support resources here.</p>
             </div>
         `;
     }
@@ -791,4 +914,5 @@ window.router.addRoute('watch', (params) => window.renderer.renderVideoPlayer(pa
 window.router.addRoute('playlist', (params) => window.playlistManager && window.playlistManager.showPlaylistPage(params.id));
 window.router.addRoute('settings', () => window.renderer.renderSettings());
 window.router.addRoute('studio', () => window.renderer.renderStudio());
+window.router.addRoute('help', () => window.renderer.renderHelp());
 window.router.addRoute('404', () => window.renderer.render404());

@@ -68,6 +68,18 @@ const mockData = {
             joinDate: '2021-03-15',
             totalViews: '45.2M',
             location: 'Seoul, South Korea'
+        },
+        channel_movies: {
+            id: 'channel_movies',
+            name: 'Movie Central',
+            subscribers: '2.4M',
+            avatar: 'https://via.placeholder.com/36x36?text=MC&background=8e44ad&color=ffffff',
+            banner: 'https://via.placeholder.com/1280x300?text=Movie+Central&background=8e44ad&color=ffffff',
+            description: 'Your ultimate destination for movie reviews, rankings, and film analysis. We cover everything from blockbusters to indie gems.',
+            verified: true,
+            joinDate: '2019-08-12',
+            totalViews: '87.5M',
+            location: 'Los Angeles, CA'
         }
     },
 
@@ -279,6 +291,70 @@ const mockData = {
             comments: [],
             category: 'lifestyle',
             tags: ['social media detox', 'digital wellbeing', 'mental health', 'lifestyle', 'self care']
+        },
+        video9: {
+            id: 'video9',
+            title: 'Ultimate Productivity Setup for 2024',
+            channelId: 'channel2',
+            channelName: 'Code Academy',
+            views: '1.8M',
+            uploadDate: '1 day ago',
+            duration: '18:32',
+            thumbnail: 'https://via.placeholder.com/320x180?text=Productivity+Setup',
+            description: 'My complete productivity setup for 2024 including hardware, software, and workflow optimization. Everything you need to maximize your productivity.',
+            likes: 87000,
+            dislikes: 2100,
+            comments: [],
+            category: 'education',
+            tags: ['productivity', 'setup', 'workflow', 'tech']
+        },
+        video10: {
+            id: 'video10',
+            title: 'Cinematic Food Photography Tutorial',
+            channelId: 'channel4',
+            channelName: "Chef's Kitchen",
+            views: '445K',
+            uploadDate: '2 hours ago',
+            duration: '14:55',
+            thumbnail: 'https://via.placeholder.com/320x180?text=Food+Photography',
+            description: 'Learn professional food photography techniques to make your dishes look amazing. From lighting to composition, I cover everything.',
+            likes: 21000,
+            dislikes: 456,
+            comments: [],
+            category: 'cooking',
+            tags: ['photography', 'food', 'tutorial', 'cooking']
+        },
+        video11: {
+            id: 'video11',
+            title: 'Breaking: Space Mission Update',
+            channelId: 'channel5',
+            channelName: 'Science Today',
+            views: '2.9M',
+            uploadDate: '4 hours ago',
+            duration: '12:18',
+            thumbnail: 'https://via.placeholder.com/320x180?text=Space+Mission',
+            description: 'Latest updates from the Mars mission including new discoveries and future exploration plans.',
+            likes: 145000,
+            dislikes: 3400,
+            comments: [],
+            category: 'news',
+            tags: ['space', 'mars', 'mission', 'science', 'exploration']
+        },
+        video12: {
+            id: 'video12',
+            title: 'Best Horror Movies of 2024 Ranked',
+            channelId: 'channel_movies',
+            channelName: 'Movie Central',
+            views: '789K',
+            uploadDate: '1 day ago',
+            duration: '22:45',
+            thumbnail: 'https://via.placeholder.com/320x180?text=Horror+Movies+2024',
+            description: 'My ranking of the best horror movies released in 2024. From psychological thrillers to supernatural scares, here are the films that kept us up at night.',
+            likes: 42000,
+            dislikes: 1200,
+            comments: [],
+            category: 'movies',
+            tags: ['horror', 'movies', '2024', 'ranking', 'review']
         }
     },
 
@@ -428,21 +504,21 @@ const mockData = {
     },
 
     trending: [
-        'video_jun2', 'video5', 'video_jun3', 'video3', 'video8', 'video_jun1', 'video1', 'video6', 'video7', 'video2', 'video4'
+        'video11', 'video_jun2', 'video9', 'video5', 'video_jun3', 'video12', 'video3', 'video8', 'video_jun1', 'video10', 'video1', 'video6', 'video7', 'video2', 'video4'
     ],
 
     searchResults: {},
 
     categories: {
-        all: ['video_jun1', 'video_jun2', 'video_jun3', 'video_jun4', 'video_jun5', 'video1', 'video2', 'video3', 'video4', 'video5', 'video6', 'video7', 'video8'],
+        all: ['video11', 'video10', 'video9', 'video_jun1', 'video_jun2', 'video_jun3', 'video_jun4', 'video_jun5', 'video1', 'video2', 'video3', 'video4', 'video5', 'video6', 'video7', 'video8', 'video12'],
         music: ['video8'],
         gaming: ['video3'],
-        news: ['video5'],
+        news: ['video5', 'video11'],
         sports: ['video7'],
-        movies: [],
-        cooking: ['video4', 'video_jun2'],
-        education: ['video1', 'video2', 'video_jun4'],
-        technology: ['video2'],
+        movies: ['video12'],
+        cooking: ['video4', 'video_jun2', 'video10'],
+        education: ['video1', 'video2', 'video_jun4', 'video9'],
+        technology: ['video2', 'video9'],
         travel: ['video6'],
         lifestyle: ['video_jun1', 'video_jun3', 'video_jun5']
     }

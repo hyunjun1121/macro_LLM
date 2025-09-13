@@ -442,33 +442,79 @@
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            
+
             // Simple demo validation
             if (email && password) {
-                // Store demo login
-                localStorage.setItem('fbDemoUser', JSON.stringify({
+                // Store demo login with proper user data
+                const userData = {
+                    id: 'john',
                     email: email,
-                    name: email.split('@')[0] || 'User',
-                    loggedIn: true
-                }));
-                window.location.href = 'home.html';
-            } else {
-                document.getElementById('errorMessage').classList.add('show');
+                    name: email.includes('@') ? email.split('@')[0] : email,
+                    loggedIn: true,
+                    avatar: 'https://via.placeholder.com/40/1877f2/ffffff?text=' + (email.includes('@') ? email.split('@')[0][0].toUpperCase() : email[0].toUpperCase()),
+                    loginTime: new Date().toISOString()
+                };
+                localStorage.setItem('fbDemoUser', JSON.stringify(userData));
+
+                // Show success message briefly before redirect
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.textContent = 'Login successful! Redirecting...';
+                errorMessage.style.color = '#42b883';
+                errorMessage.classList.add('show');
+
                 setTimeout(() => {
-                    document.getElementById('errorMessage').classList.remove('show');
+                    window.location.href = 'home.html';
+                }, 1000);
+            } else {
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.textContent = 'Please fill in both email and password.';
+                errorMessage.style.color = '#f02849';
+                errorMessage.classList.add('show');
+                setTimeout(() => {
+                    errorMessage.classList.remove('show');
                 }, 3000);
             }
         });
         
         document.getElementById('signupForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            // Demo signup - redirect to home
-            localStorage.setItem('fbDemoUser', JSON.stringify({
-                email: 'demo@facebook.com',
-                name: 'New User',
-                loggedIn: true
-            }));
-            window.location.href = 'home.html';
+
+            const formData = new FormData(e.target);
+            const firstName = e.target.querySelector('input[placeholder="First name"]').value;
+            const lastName = e.target.querySelector('input[placeholder="Last name"]').value;
+            const email = e.target.querySelector('input[placeholder="Mobile number or email"]').value;
+            const password = e.target.querySelector('input[placeholder="New password"]').value;
+            const month = e.target.querySelector('select:nth-of-type(1)').value;
+            const day = e.target.querySelector('select:nth-of-type(2)').value;
+            const year = e.target.querySelector('select:nth-of-type(3)').value;
+            const gender = e.target.querySelector('input[name="gender"]:checked')?.value;
+
+            if (firstName && lastName && email && password && month && day && year && gender) {
+                // Store demo signup
+                const userData = {
+                    id: 'newuser',
+                    email: email,
+                    name: `${firstName} ${lastName}`,
+                    firstName: firstName,
+                    lastName: lastName,
+                    birthday: `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`,
+                    gender: gender,
+                    loggedIn: true,
+                    avatar: `https://via.placeholder.com/40/42b883/ffffff?text=${firstName[0]}${lastName[0]}`,
+                    signupTime: new Date().toISOString()
+                };
+                localStorage.setItem('fbDemoUser', JSON.stringify(userData));
+
+                // Show success and close modal
+                alert(`Welcome to Facebook, ${firstName}! Account created successfully.`);
+                closeSignupModal();
+
+                setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 1000);
+            } else {
+                alert('Please fill in all required fields.');
+            }
         });
         
         function showSignupModal() {

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trips - Airbnb</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <!-- Logo -->
+                <div class="logo">
+                    <a href="index.html">
+                        <i class="fab fa-airbnb" style="font-size: 2rem; color: #ff5a5f;"></i>
+                        <span>airbnb</span>
+                    </a>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="nav-links">
+                    <a href="index.html">Stays</a>
+                    <a href="experiences.html">Experiences</a>
+                </nav>
+
+                <!-- User Menu -->
+                <div class="user-menu">
+                    <a href="host-dashboard.html" class="host-link">Airbnb your home</a>
+                    <button class="language-btn">
+                        <i class="fas fa-globe"></i>
+                    </button>
+                    <div class="profile-menu">
+                        <button class="profile-btn" onclick="toggleProfileMenu()">
+                            <i class="fas fa-bars"></i>
+                            <div class="profile-avatar">
+                                <span>J</span>
+                            </div>
+                        </button>
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <a href="profile.html">Profile</a>
+                            <a href="host-dashboard.html">Host Dashboard</a>
+                            <a href="trips.html" class="active">Trips</a>
+                            <a href="#">Messages</a>
+                            <a href="#">Notifications</a>
+                            <hr>
+                            <a href="#">Help Center</a>
+                            <a href="#">Log out</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="trips-container">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Trips</h1>
+                <p>Manage your travel bookings and discover new places</p>
+            </div>
+
+            <!-- Trip Filters -->
+            <div class="trip-filters">
+                <button class="filter-btn active" data-filter="all" onclick="filterTrips('all')">
+                    All trips
+                </button>
+                <button class="filter-btn" data-filter="upcoming" onclick="filterTrips('upcoming')">
+                    Upcoming
+                </button>
+                <button class="filter-btn" data-filter="current" onclick="filterTrips('current')">
+                    Current
+                </button>
+                <button class="filter-btn" data-filter="past" onclick="filterTrips('past')">
+                    Past
+                </button>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading" id="loading">
+                <div class="loader"></div>
+                <p>Loading your trips...</p>
+            </div>
+
+            <!-- Trips Content -->
+            <div class="trips-content" id="tripsContent">
+                <!-- Trip content will be populated by JavaScript -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Trip Details Modal -->
+    <div class="modal-overlay" id="tripDetailsModal" style="display: none;">
+        <div class="modal-content trip-details-modal">
+            <button class="modal-close" onclick="closeTripDetailsModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="trip-details-content" id="tripDetailsContent">
+                <!-- Trip details will be populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Trip Modal -->
+    <div class="modal-overlay" id="cancelTripModal" style="display: none;">
+        <div class="modal-content cancel-trip-modal">
+            <h2>Cancel Reservation</h2>
+            <button class="modal-close" onclick="closeCancelTripModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="cancel-content">
+                <p>Are you sure you want to cancel this reservation?</p>
+                <div class="cancellation-policy">
+                    <h3>Cancellation Policy</h3>
+                    <p><strong>Free cancellation</strong> until 48 hours before check-in</p>
+                    <p><strong>Partial refund</strong> for cancellations within 48 hours</p>
+                </div>
+                <div class="refund-info" id="refundInfo">
+                    <!-- Refund information will be populated -->
+                </div>
+                <div class="form-actions">
+                    <button class="cancel-btn" onclick="closeCancelTripModal()">Keep Reservation</button>
+                    <button class="confirm-btn danger" onclick="confirmCancelTrip()">Cancel Reservation</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Write Review Modal -->
+    <div class="modal-overlay" id="writeReviewModal" style="display: none;">
+        <div class="modal-content write-review-modal">
+            <h2>Write a Review</h2>
+            <button class="modal-close" onclick="closeWriteReviewModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <form class="review-form" onsubmit="submitTripReview(); return false;">
+                <div class="property-info" id="reviewPropertyInfo">
+                    <!-- Property info will be populated -->
+                </div>
+                
+                <div class="rating-categories">
+                    <div class="rating-category">
+                        <label>Overall rating</label>
+                        <div class="star-rating" data-category="overall">
+                            ${Array(5).fill(0).map((_, i) => `
+                                <button type="button" class="star-btn" onclick="setReviewRating('overall', ${i + 1})">
+                                    <i class="far fa-star"></i>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="rating-category">
+                        <label>Cleanliness</label>
+                        <div class="star-rating" data-category="cleanliness">
+                            ${Array(5).fill(0).map((_, i) => `
+                                <button type="button" class="star-btn" onclick="setReviewRating('cleanliness', ${i + 1})">
+                                    <i class="far fa-star"></i>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="rating-category">
+                        <label>Communication</label>
+                        <div class="star-rating" data-category="communication">
+                            ${Array(5).fill(0).map((_, i) => `
+                                <button type="button" class="star-btn" onclick="setReviewRating('communication', ${i + 1})">
+                                    <i class="far fa-star"></i>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="rating-category">
+                        <label>Location</label>
+                        <div class="star-rating" data-category="location">
+                            ${Array(5).fill(0).map((_, i) => `
+                                <button type="button" class="star-btn" onclick="setReviewRating('location', ${i + 1})">
+                                    <i class="far fa-star"></i>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reviewText">Tell others about your experience</label>
+                    <textarea id="reviewText" rows="5" placeholder="What made your stay special?"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" onclick="closeWriteReviewModal()">Cancel</button>
+                    <button type="submit">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Safety information</a></li>
+                        <li><a href="#">Cancellation options</a></li>
+                        <li><a href="#">Our COVID-19 Response</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="#">Airbnb.org: disaster relief housing</a></li>
+                        <li><a href="#">Support Afghan refugees</a></li>
+                        <li><a href="#">Combating discrimination</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Hosting</h4>
+                    <ul>
+                        <li><a href="host-dashboard.html">Try hosting</a></li>
+                        <li><a href="#">AirCover for Hosts</a></li>
+                        <li><a href="#">Explore hosting resources</a></li>
+                        <li><a href="#">Visit our community forum</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>About</h4>
+                    <ul>
+                        <li><a href="#">Newsroom</a></li>
+                        <li><a href="#">Learn about new features</a></li>
+                        <li><a href="#">Letter from our founders</a></li>
+                        <li><a href="#">Careers</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Airbnb Clone. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+    <script src="trips.js"></script>
+</body>
+</html>

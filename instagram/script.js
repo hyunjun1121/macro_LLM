@@ -1,7 +1,210 @@
+// Error Handler Class
+class ErrorHandler {
+    constructor() {
+        this.errors = [];
+        this.setupGlobalErrorHandling();
+    }
+
+    setupGlobalErrorHandling() {
+        window.addEventListener('error', (event) => {
+            this.logError('JavaScript Error', event.error);
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+            this.logError('Unhandled Promise Rejection', event.reason);
+        });
+    }
+
+    logError(type, error) {
+        const errorInfo = {
+            type,
+            message: error?.message || error,
+            stack: error?.stack,
+            timestamp: new Date().toISOString()
+        };
+
+        this.errors.push(errorInfo);
+        console.error(`${type}:`, errorInfo);
+
+        if (this.errors.length > 50) {
+            this.errors = this.errors.slice(-25);
+        }
+    }
+
+    handleApiError(operation, error) {
+        const message = `Failed to ${operation}. Please try again.`;
+        this.showErrorMessage(message);
+        this.logError(`API Error - ${operation}`, error);
+    }
+
+    showErrorMessage(message) {
+        const existingError = document.querySelector('.error-toast');
+        if (existingError) {
+            existingError.remove();
+        }
+
+        const errorToast = document.createElement('div');
+        errorToast.className = 'error-toast';
+        errorToast.innerHTML = `
+            <div class="error-content">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>${this.escapeHtml(message)}</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="error-close">&times;</button>
+            </div>
+        `;
+
+        document.body.appendChild(errorToast);
+
+        setTimeout(() => {
+            if (document.body.contains(errorToast)) {
+                errorToast.remove();
+            }
+        }, 5000);
+    }
+
+    showSuccessMessage(message) {
+        const successToast = document.createElement('div');
+        successToast.className = 'success-toast';
+        successToast.innerHTML = `
+            <div class="success-content">
+                <i class="fas fa-check-circle"></i>
+                <span>${this.escapeHtml(message)}</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="success-close">&times;</button>
+            </div>
+        `;
+
+        document.body.appendChild(successToast);
+
+        setTimeout(() => {
+            if (document.body.contains(successToast)) {
+                successToast.remove();
+            }
+        }, 3000);
+    }
+
+    escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+}
+
+// Input Validator Class
+class InputValidator {
+    constructor() {
+        this.patterns = {
+            username: /^[a-zA-Z0-9._]{1,30}$/,
+            email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+            hashtag: /^#[a-zA-Z0-9_]+$/
+        };
+    }
+
+    validateUsername(username) {
+        if (!username || typeof username !== 'string') {
+            return { isValid: false, message: 'Username is required' };
+        }
+
+        if (username.length < 1 || username.length > 30) {
+            return { isValid: false, message: 'Username must be 1-30 characters long' };
+        }
+
+        if (!this.patterns.username.test(username)) {
+            return { isValid: false, message: 'Username can only contain letters, numbers, periods, and underscores' };
+        }
+
+        return { isValid: true };
+    }
+
+    validateEmail(email) {
+        if (!email || typeof email !== 'string') {
+            return { isValid: false, message: 'Email is required' };
+        }
+
+        if (!this.patterns.email.test(email)) {
+            return { isValid: false, message: 'Please enter a valid email address' };
+        }
+
+        return { isValid: true };
+    }
+
+    validatePostCaption(caption) {
+        if (!caption || typeof caption !== 'string') {
+            return { isValid: true }; // Caption is optional
+        }
+
+        if (caption.length > 2200) {
+            return { isValid: false, message: 'Caption is too long (max 2200 characters)' };
+        }
+
+        return { isValid: true };
+    }
+
+    validateMessage(message) {
+        if (!message || typeof message !== 'string') {
+            return { isValid: false, message: 'Message cannot be empty' };
+        }
+
+        if (message.trim().length === 0) {
+            return { isValid: false, message: 'Message cannot be empty' };
+        }
+
+        if (message.length > 1000) {
+            return { isValid: false, message: 'Message is too long (max 1000 characters)' };
+        }
+
+        return { isValid: true };
+    }
+
+    validateFileUpload(file) {
+        if (!file) {
+            return { isValid: false, message: 'Please select a file' };
+        }
+
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm'];
+        if (!allowedTypes.includes(file.type)) {
+            return { isValid: false, message: 'File type not supported. Please upload an image or video.' };
+        }
+
+        const maxSize = 50 * 1024 * 1024; // 50MB
+        if (file.size > maxSize) {
+            return { isValid: false, message: 'File is too large. Maximum size is 50MB.' };
+        }
+
+        return { isValid: true };
+    }
+
+    sanitizeInput(input) {
+        if (typeof input !== 'string') return input;
+
+        return input
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;")
+            .trim();
+    }
+}
+
 // Complete Instagram Clone - Full Functionality
 class InstagramApp {
     constructor() {
-        this.currentUser = {
+        this.storageKeys = {
+            USER_DATA: 'ig_user_data',
+            POSTS: 'ig_posts',
+            CONVERSATIONS: 'ig_conversations',
+            SEARCH_HISTORY: 'ig_search_history',
+            NOTIFICATIONS: 'ig_notifications',
+            SETTINGS: 'ig_settings'
+        };
+
+        this.errorHandler = new ErrorHandler();
+        this.inputValidator = new InputValidator();
+
+        this.currentUser = this.loadUserData() || {
             username: 'my_username',
             fullName: 'My Full Name',
             avatar: 'https://via.placeholder.com/150',
@@ -13,7 +216,7 @@ class InstagramApp {
             isPrivate: false,
             notifications: true
         };
-        
+
         this.currentPostId = null;
         this.currentChatUser = null;
         
@@ -204,11 +407,105 @@ class InstagramApp {
                 { image: 'https://via.placeholder.com/300x250', likes: 123, comments: 9, username: 'explore_user5' },
                 { image: 'https://via.placeholder.com/300x320', likes: 45, comments: 2, username: 'explore_user6' }
             ],
+            highlights: [
+                { id: 1, title: 'Travel', cover: 'https://via.placeholder.com/77', stories: ['story1', 'story2', 'story3'] },
+                { id: 2, title: 'Food', cover: 'https://via.placeholder.com/77', stories: ['story4', 'story5'] },
+                { id: 3, title: 'Work', cover: 'https://via.placeholder.com/77', stories: ['story6', 'story7', 'story8'] }
+            ],
+            savedPosts: [],
+            archivedPosts: [],
+            closeFriends: ['jun', 'emma_davis', 'john_doe'],
             hashtags: ['#coding', '#developer', '#tech', '#javascript', '#webdevelopment', '#programming', '#nightowl', '#webdev', '#nature', '#sunset', '#photography', '#fitness', '#gym', '#motivation', '#health', '#coffee', '#morning', '#cafe', '#lifestyle']
         };
         
-        this.searchHistory = ['jun', 'john_doe', 'emma_davis', '#coding', '#javascript', '#nature', '#coffee'];
+        this.searchHistory = this.loadSearchHistory() || ['jun', 'john_doe', 'emma_davis', '#coding', '#javascript', '#nature', '#coffee'];
+        this.loadStoredData();
         this.init();
+    }
+
+    // Data Persistence Methods
+    saveUserData() {
+        try {
+            localStorage.setItem(this.storageKeys.USER_DATA, JSON.stringify(this.currentUser));
+        } catch (error) {
+            console.error('Failed to save user data:', error);
+        }
+    }
+
+    loadUserData() {
+        try {
+            const data = localStorage.getItem(this.storageKeys.USER_DATA);
+            return data ? JSON.parse(data) : null;
+        } catch (error) {
+            console.error('Failed to load user data:', error);
+            return null;
+        }
+    }
+
+    saveSearchHistory() {
+        try {
+            localStorage.setItem(this.storageKeys.SEARCH_HISTORY, JSON.stringify(this.searchHistory));
+        } catch (error) {
+            console.error('Failed to save search history:', error);
+        }
+    }
+
+    loadSearchHistory() {
+        try {
+            const data = localStorage.getItem(this.storageKeys.SEARCH_HISTORY);
+            return data ? JSON.parse(data) : null;
+        } catch (error) {
+            console.error('Failed to load search history:', error);
+            return null;
+        }
+    }
+
+    saveConversations() {
+        try {
+            localStorage.setItem(this.storageKeys.CONVERSATIONS, JSON.stringify(this.mockData.conversations));
+        } catch (error) {
+            console.error('Failed to save conversations:', error);
+        }
+    }
+
+    loadConversations() {
+        try {
+            const data = localStorage.getItem(this.storageKeys.CONVERSATIONS);
+            return data ? JSON.parse(data) : null;
+        } catch (error) {
+            console.error('Failed to load conversations:', error);
+            return null;
+        }
+    }
+
+    savePosts() {
+        try {
+            localStorage.setItem(this.storageKeys.POSTS, JSON.stringify(this.mockData.posts));
+        } catch (error) {
+            console.error('Failed to save posts:', error);
+        }
+    }
+
+    loadPosts() {
+        try {
+            const data = localStorage.getItem(this.storageKeys.POSTS);
+            return data ? JSON.parse(data) : null;
+        } catch (error) {
+            console.error('Failed to load posts:', error);
+            return null;
+        }
+    }
+
+    loadStoredData() {
+        const storedConversations = this.loadConversations();
+        if (storedConversations) {
+            this.mockData.conversations = storedConversations;
+        }
+
+        const storedPosts = this.loadPosts();
+        if (storedPosts) {
+            this.mockData.posts = storedPosts;
+        }
     }
 
     init() {
@@ -216,6 +513,8 @@ class InstagramApp {
         this.loadMorePosts();
         this.setupInfiniteScroll();
         this.setupKeyboardShortcuts();
+        this.setupImageLazyLoading();
+        this.setupPerformanceOptimizations();
         console.log('Instagram clone fully initialized!');
     }
 
@@ -410,12 +709,14 @@ class InstagramApp {
             if (this.searchHistory.length > 10) {
                 this.searchHistory = this.searchHistory.slice(0, 10);
             }
+            this.saveSearchHistory();
         }
     }
 
     removeFromHistory(term, event) {
         event.stopPropagation();
         this.searchHistory = this.searchHistory.filter(item => item !== term);
+        this.saveSearchHistory();
         this.showRecentSearches();
     }
 
@@ -704,8 +1005,14 @@ class InstagramApp {
     addComment() {
         const commentInput = document.getElementById('commentInput');
         const commentText = commentInput.value.trim();
-        
-        if (!commentText) return;
+
+        const validation = this.inputValidator.validateMessage(commentText);
+        if (!validation.isValid) {
+            this.errorHandler.showErrorMessage(validation.message);
+            return;
+        }
+
+        const sanitizedComment = this.inputValidator.sanitizeInput(commentText);
         
         const commentsList = document.getElementById('commentsList');
         const newComment = document.createElement('div');
@@ -717,7 +1024,7 @@ class InstagramApp {
                     <span class="comment-username">${this.currentUser.username}</span>
                     <span class="comment-time">now</span>
                 </div>
-                <div class="comment-text">${commentText}</div>
+                <div class="comment-text">${sanitizedComment}</div>
                 <div class="comment-actions">
                     <span class="comment-action" onclick="instagramApp.likeComment(this)">Like</span>
                     <span class="comment-action" onclick="instagramApp.replyToComment('${this.currentUser.username}')">Reply</span>
@@ -815,8 +1122,16 @@ class InstagramApp {
     sendMessage() {
         const chatInput = document.getElementById('chatInput');
         const messageText = chatInput.value.trim();
-        
-        if (!messageText || !this.currentChatUser) return;
+
+        if (!this.currentChatUser) return;
+
+        const validation = this.inputValidator.validateMessage(messageText);
+        if (!validation.isValid) {
+            this.errorHandler.showErrorMessage(validation.message);
+            return;
+        }
+
+        const sanitizedMessage = this.inputValidator.sanitizeInput(messageText);
         
         if (!this.mockData.conversations[this.currentChatUser]) {
             this.mockData.conversations[this.currentChatUser] = { 
@@ -826,15 +1141,17 @@ class InstagramApp {
         }
         
         this.mockData.conversations[this.currentChatUser].messages.push({
-            text: messageText,
+            text: sanitizedMessage,
             time: 'now',
             own: true
         });
+
+        this.saveConversations();
         
         const messagesContainer = document.getElementById('chatMessages');
         const newMessage = document.createElement('div');
         newMessage.className = 'message-bubble own';
-        newMessage.innerHTML = `<div class="message-content">${messageText}</div>`;
+        newMessage.innerHTML = `<div class="message-content">${sanitizedMessage}</div>`;
         
         messagesContainer.appendChild(newMessage);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -869,6 +1186,8 @@ class InstagramApp {
             time: 'now',
             own: false
         });
+
+        this.saveConversations();
         
         const messagesContainer = document.getElementById('chatMessages');
         const newMessage = document.createElement('div');
@@ -1029,14 +1348,88 @@ class InstagramApp {
             // ESC to close modals
             if (e.key === 'Escape') {
                 this.hideAllModals();
+                return;
             }
-            
+
             // Ctrl/Cmd + / for search
             if ((e.ctrlKey || e.metaKey) && e.key === '/') {
                 e.preventDefault();
-                document.getElementById('mainSearchInput').click();
+                document.getElementById('mainSearchInput').focus();
+                return;
+            }
+
+            // Tab navigation management
+            if (e.key === 'Tab') {
+                this.manageFocusTrap(e);
+            }
+
+            // Arrow key navigation for posts
+            if (!e.target.matches('input, textarea')) {
+                this.handleArrowKeyNavigation(e);
+            }
+
+            // Enter/Space key for buttons
+            if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('button, [role="button"]')) {
+                e.preventDefault();
+                e.target.click();
             }
         });
+    }
+
+    manageFocusTrap(e) {
+        const openModal = document.querySelector('.modal[style*="display: block"]');
+        if (openModal) {
+            const focusableElements = openModal.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            const firstFocusableElement = focusableElements[0];
+            const lastFocusableElement = focusableElements[focusableElements.length - 1];
+
+            if (e.shiftKey) {
+                if (document.activeElement === firstFocusableElement) {
+                    lastFocusableElement.focus();
+                    e.preventDefault();
+                }
+            } else {
+                if (document.activeElement === lastFocusableElement) {
+                    firstFocusableElement.focus();
+                    e.preventDefault();
+                }
+            }
+        }
+    }
+
+    handleArrowKeyNavigation(e) {
+        const currentElement = document.activeElement;
+
+        // Navigate through stories with left/right arrows
+        if (currentElement.matches('.story')) {
+            const stories = Array.from(document.querySelectorAll('.story'));
+            const currentIndex = stories.indexOf(currentElement);
+
+            if (e.key === 'ArrowRight' && currentIndex < stories.length - 1) {
+                stories[currentIndex + 1].focus();
+                e.preventDefault();
+            } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                stories[currentIndex - 1].focus();
+                e.preventDefault();
+            }
+        }
+
+        // Navigate through posts with up/down arrows
+        if (currentElement.matches('.post, .post *')) {
+            const posts = Array.from(document.querySelectorAll('.post'));
+            const currentPost = currentElement.closest('.post');
+            const currentIndex = posts.indexOf(currentPost);
+
+            if (e.key === 'ArrowDown' && currentIndex < posts.length - 1) {
+                posts[currentIndex + 1].focus();
+                e.preventDefault();
+            } else if (e.key === 'ArrowUp' && currentIndex > 0) {
+                posts[currentIndex - 1].focus();
+                e.preventDefault();
+            }
+        }
     }
 
     setupModals() {
@@ -1120,6 +1513,12 @@ class InstagramApp {
     }
 
     handleFileUpload(file) {
+        const validation = this.inputValidator.validateFileUpload(file);
+        if (!validation.isValid) {
+            this.errorHandler.showErrorMessage(validation.message);
+            return;
+        }
+
         if (file.type.startsWith('image/')) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -1150,8 +1549,17 @@ class InstagramApp {
     }
 
     publishPost() {
-        const caption = document.getElementById('postCaption').value;
-        alert('Post shared successfully! 📸');
+        const caption = document.getElementById('postCaption')?.value || '';
+
+        const validation = this.inputValidator.validatePostCaption(caption);
+        if (!validation.isValid) {
+            this.errorHandler.showErrorMessage(validation.message);
+            return;
+        }
+
+        const sanitizedCaption = this.inputValidator.sanitizeInput(caption);
+
+        this.errorHandler.showSuccessMessage('Post shared successfully! 📸');
         this.hideModal('createPostModal');
         
         // Add new post to feed
@@ -1161,7 +1569,7 @@ class InstagramApp {
             avatar: this.currentUser.avatar,
             image: 'https://via.placeholder.com/600x600',
             likes: 0,
-            caption: caption || 'New post!',
+            caption: sanitizedCaption || 'New post!',
             comments: [],
             timeAgo: 'now',
             liked: false,
@@ -1169,6 +1577,7 @@ class InstagramApp {
         };
         
         this.mockData.posts.unshift(newPost);
+        this.savePosts();
         this.refreshFeed();
         
         // Reset create post modal
@@ -1388,6 +1797,171 @@ class InstagramApp {
         alert(`Opening explore post by ${item.username} 🔍`);
     }
 
+    // Archive functionality
+    archivePost(postId) {
+        const postIndex = this.mockData.posts.findIndex(p => p.id === postId);
+        if (postIndex !== -1) {
+            const post = this.mockData.posts[postIndex];
+            this.mockData.archivedPosts.push({
+                ...post,
+                archivedAt: new Date().toISOString()
+            });
+            this.mockData.posts.splice(postIndex, 1);
+            this.savePosts();
+            this.refreshFeed();
+            this.errorHandler.showSuccessMessage('Post archived successfully');
+        }
+    }
+
+    unarchivePost(postId) {
+        const archivedIndex = this.mockData.archivedPosts.findIndex(p => p.id === postId);
+        if (archivedIndex !== -1) {
+            const post = this.mockData.archivedPosts[archivedIndex];
+            delete post.archivedAt;
+            this.mockData.posts.unshift(post);
+            this.mockData.archivedPosts.splice(archivedIndex, 1);
+            this.savePosts();
+            this.refreshFeed();
+            this.errorHandler.showSuccessMessage('Post restored successfully');
+        }
+    }
+
+    viewArchive() {
+        this.showArchiveModal();
+    }
+
+    showArchiveModal() {
+        const existingModal = document.getElementById('archiveModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        const archiveModal = document.createElement('div');
+        archiveModal.id = 'archiveModal';
+        archiveModal.className = 'modal';
+        archiveModal.style.display = 'block';
+        archiveModal.innerHTML = `
+            <div class="modal-content archive-modal">
+                <div class="archive-header">
+                    <h2>Archive</h2>
+                    <button class="close-modal" onclick="instagramApp.hideModal('archiveModal')">&times;</button>
+                </div>
+                <div class="archive-content">
+                    ${this.generateArchiveContent()}
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(archiveModal);
+        document.body.style.overflow = 'hidden';
+    }
+
+    generateArchiveContent() {
+        if (this.mockData.archivedPosts.length === 0) {
+            return '<p style="text-align: center; padding: 40px; color: #8e8e8e;">No archived posts</p>';
+        }
+
+        let html = '<div class="archive-grid">';
+        this.mockData.archivedPosts.forEach(post => {
+            html += `
+                <div class="archive-item" onclick="instagramApp.unarchivePost(${post.id})">
+                    <img src="${post.image}" alt="Archived post">
+                    <div class="archive-overlay">
+                        <span>Tap to restore</span>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        return html;
+    }
+
+    // Save post functionality
+    savePost(postId) {
+        if (!this.mockData.savedPosts.includes(postId)) {
+            this.mockData.savedPosts.push(postId);
+            this.errorHandler.showSuccessMessage('Post saved');
+        }
+    }
+
+    unsavePost(postId) {
+        const index = this.mockData.savedPosts.indexOf(postId);
+        if (index !== -1) {
+            this.mockData.savedPosts.splice(index, 1);
+            this.errorHandler.showSuccessMessage('Post removed from saved');
+        }
+    }
+
+    viewSavedPosts() {
+        this.showSavedPostsModal();
+    }
+
+    showSavedPostsModal() {
+        const existingModal = document.getElementById('savedPostsModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        const savedModal = document.createElement('div');
+        savedModal.id = 'savedPostsModal';
+        savedModal.className = 'modal';
+        savedModal.style.display = 'block';
+        savedModal.innerHTML = `
+            <div class="modal-content saved-posts-modal">
+                <div class="saved-posts-header">
+                    <h2>Saved Posts</h2>
+                    <button class="close-modal" onclick="instagramApp.hideModal('savedPostsModal')">&times;</button>
+                </div>
+                <div class="saved-posts-content">
+                    ${this.generateSavedPostsContent()}
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(savedModal);
+        document.body.style.overflow = 'hidden';
+    }
+
+    generateSavedPostsContent() {
+        if (this.mockData.savedPosts.length === 0) {
+            return '<p style="text-align: center; padding: 40px; color: #8e8e8e;">No saved posts</p>';
+        }
+
+        let html = '<div class="saved-posts-grid">';
+        this.mockData.savedPosts.forEach(postId => {
+            const post = this.mockData.posts.find(p => p.id === postId);
+            if (post) {
+                html += `
+                    <div class="saved-post-item" onclick="instagramApp.showComments(document.querySelector('[data-post-id=\\"${post.id}\\"]'))">
+                        <img src="${post.image}" alt="Saved post">
+                        <div class="saved-post-overlay">
+                            <span><i class="fas fa-heart"></i> ${post.likes}</span>
+                            <span><i class="fas fa-comment"></i> ${post.comments.length}</span>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+        html += '</div>';
+        return html;
+    }
+
+    // Close Friends functionality
+    addToCloseFriends(username) {
+        if (!this.mockData.closeFriends.includes(username)) {
+            this.mockData.closeFriends.push(username);
+            this.errorHandler.showSuccessMessage(`Added ${username} to close friends`);
+        }
+    }
+
+    removeFromCloseFriends(username) {
+        const index = this.mockData.closeFriends.indexOf(username);
+        if (index !== -1) {
+            this.mockData.closeFriends.splice(index, 1);
+            this.errorHandler.showSuccessMessage(`Removed ${username} from close friends`);
+        }
+    }
+
     viewProfile(username) {
         this.hideModal('searchModal');
         this.addToSearchHistory(username);
@@ -1496,6 +2070,164 @@ class InstagramApp {
             
             console.log('New posts loaded!');
         }, 1000);
+    }
+
+    // Performance Optimization Methods
+    setupImageLazyLoading() {
+        if ('IntersectionObserver' in window) {
+            this.imageObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        this.loadImage(img);
+                        this.imageObserver.unobserve(img);
+                    }
+                });
+            }, {
+                rootMargin: '50px 0px'
+            });
+        }
+    }
+
+    loadImage(img) {
+        const src = img.dataset.src;
+        if (src) {
+            img.src = src;
+            img.classList.add('loaded');
+            img.removeAttribute('data-src');
+        }
+    }
+
+    setupPerformanceOptimizations() {
+        // Debounce scroll events
+        let scrollTimeout;
+        const originalScrollHandler = window.addEventListener;
+
+        // Throttle resize events
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                this.handleResize();
+            }, 250);
+        });
+
+        // Memory cleanup
+        this.setupMemoryCleanup();
+    }
+
+    handleResize() {
+        // Handle responsive layout changes
+        const screenWidth = window.innerWidth;
+
+        if (screenWidth <= 768) {
+            document.body.classList.add('mobile');
+        } else {
+            document.body.classList.remove('mobile');
+        }
+    }
+
+    setupMemoryCleanup() {
+        // Clean up event listeners and observers when page unloads
+        window.addEventListener('beforeunload', () => {
+            if (this.imageObserver) {
+                this.imageObserver.disconnect();
+            }
+            this.cleanup();
+        });
+
+        // Periodic cleanup
+        setInterval(() => {
+            this.performCleanup();
+        }, 300000); // Every 5 minutes
+    }
+
+    performCleanup() {
+        // Remove old error messages
+        const oldErrors = document.querySelectorAll('.error-toast, .success-toast');
+        oldErrors.forEach(toast => {
+            if (Date.now() - parseInt(toast.dataset.timestamp || '0') > 30000) {
+                toast.remove();
+            }
+        });
+
+        // Limit stored errors
+        if (this.errorHandler.errors.length > 25) {
+            this.errorHandler.errors = this.errorHandler.errors.slice(-10);
+        }
+    }
+
+    cleanup() {
+        // Remove all event listeners and observers
+        if (this.imageObserver) {
+            this.imageObserver.disconnect();
+        }
+    }
+
+    // Optimized post creation with virtual scrolling concept
+    createPostElementOptimized(postData) {
+        const article = document.createElement('article');
+        article.className = 'post';
+        article.dataset.postId = postData.id;
+
+        // Use template literals for better performance
+        const postHTML = this.generatePostHTML(postData);
+        article.innerHTML = postHTML;
+
+        // Add lazy loading to images
+        const img = article.querySelector('.post-image img');
+        if (img && this.imageObserver) {
+            img.dataset.src = img.src;
+            img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNmNWY1ZjUiLz48L3N2Zz4=';
+            img.classList.add('lazy-image');
+            this.imageObserver.observe(img);
+        }
+
+        return article;
+    }
+
+    generatePostHTML(postData) {
+        return `
+            <header class="post-header">
+                <div class="post-user-info">
+                    <img src="${postData.avatar}" alt="Profile" class="post-profile-img">
+                    <span class="post-username">${postData.username}</span>
+                </div>
+                <button class="post-options">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
+            </header>
+            <div class="post-image">
+                <img src="${postData.image}" alt="Post">
+            </div>
+            <div class="post-actions">
+                <div class="post-actions-left">
+                    <button class="action-btn like-btn">
+                        <i class="far fa-heart"></i>
+                    </button>
+                    <button class="action-btn">
+                        <i class="far fa-comment"></i>
+                    </button>
+                    <button class="action-btn">
+                        <i class="far fa-paper-plane"></i>
+                    </button>
+                </div>
+                <button class="action-btn bookmark-btn">
+                    <i class="far fa-bookmark"></i>
+                </button>
+            </div>
+            <div class="post-info">
+                <div class="post-likes">${postData.likes.toLocaleString()} likes</div>
+                <div class="post-caption">
+                    <span class="post-username">${postData.username}</span>
+                    <span class="caption-text">${postData.caption}</span>
+                </div>
+                <div class="post-comments">
+                    <span class="view-comments">View all ${postData.comments.length} comments</span>
+                </div>
+                <div class="post-time">${postData.timeAgo}</div>
+            </div>
+        `;
     }
 }
 

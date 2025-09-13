@@ -83,23 +83,66 @@ function initializeUI() {
             if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                 const recognition = new SpeechRecognition();
-                
+
                 recognition.lang = 'en-US';
+                recognition.continuous = false;
+                recognition.interimResults = false;
+
+                // Visual feedback
+                voiceSearchBtn.classList.add('listening');
+                voiceSearchBtn.innerHTML = '<i class="fas fa-stop"></i>';
+
+                recognition.onstart = function() {
+                    console.log('Voice recognition started');
+                };
+
                 recognition.onresult = function(event) {
                     const transcript = event.results[0][0].transcript;
-                    if (searchInput) searchInput.value = transcript;
-                    performSearch();
+                    if (searchInput) {
+                        searchInput.value = transcript;
+                        performSearch();
+                    }
+                    resetVoiceButton();
                 };
-                
+
                 recognition.onerror = function(event) {
                     console.error('Speech recognition error:', event.error);
-                    alert('Voice recognition failed.');
+                    let errorMessage = 'Voice recognition failed. ';
+                    switch(event.error) {
+                        case 'network':
+                            errorMessage += 'Please check your internet connection.';
+                            break;
+                        case 'not-allowed':
+                            errorMessage += 'Please allow microphone access.';
+                            break;
+                        case 'no-speech':
+                            errorMessage += 'No speech detected. Please try again.';
+                            break;
+                        default:
+                            errorMessage += 'Please try again.';
+                    }
+                    showNotification(errorMessage, 'error');
+                    resetVoiceButton();
                 };
-                
-                recognition.start();
-                alert('Voice search started. Please speak now.');
+
+                recognition.onend = function() {
+                    resetVoiceButton();
+                };
+
+                function resetVoiceButton() {
+                    voiceSearchBtn.classList.remove('listening');
+                    voiceSearchBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                }
+
+                try {
+                    recognition.start();
+                    showNotification('Listening... Speak now!', 'info');
+                } catch (error) {
+                    showNotification('Failed to start voice recognition.', 'error');
+                    resetVoiceButton();
+                }
             } else {
-                alert('This browser does not support voice search.');
+                showNotification('This browser does not support voice search. Please try Chrome or Edge.', 'warning');
             }
         });
     }
@@ -201,19 +244,208 @@ function initializeUI() {
         }
     });
 
-    // Keyboard shortcuts
+    // Enhanced keyboard shortcuts
     document.addEventListener('keydown', function(e) {
-        // '/' key focuses search input
-        if (e.key === '/' && searchInput && !searchInput.matches(':focus')) {
-            e.preventDefault();
-            searchInput.focus();
+        // Skip if typing in input/textarea
+        const activeElement = document.activeElement;
+        const isTyping = activeElement && (
+            activeElement.tagName === 'INPUT' ||
+            activeElement.tagName === 'TEXTAREA' ||
+            activeElement.isContentEditable
+        );
+
+        if (!isTyping) {
+            // '/' key focuses search input
+            if (e.key === '/' && searchInput) {
+                e.preventDefault();
+                searchInput.focus();
+                return;
+            }
+
+            // 'h' key goes to home
+            if (e.key === 'h' || e.key === 'H') {
+                e.preventDefault();
+                router.navigate('home');
+                return;
+            }
+
+            // 't' key goes to trending
+            if (e.key === 't' || e.key === 'T') {
+                e.preventDefault();
+                router.navigate('trending');
+                return;
+            }
+
+            // 's' key goes to subscriptions
+            if (e.key === 's' || e.key === 'S') {
+                e.preventDefault();
+                router.navigate('subscriptions');
+                return;
+            }
+
+            // 'l' key goes to library
+            if (e.key === 'l' || e.key === 'L') {
+                e.preventDefault();
+                router.navigate('library');
+                return;
+            }
+
+            // 'u' key opens upload modal
+            if (e.key === 'u' || e.key === 'U') {
+                e.preventDefault();
+                if (window.contentManager) {
+                    window.contentManager.showUploadModal();
+                }
+                return;
+            }
+
+            // '?' key shows shortcuts help
+            if (e.key === '?') {
+                e.preventDefault();
+                showKeyboardShortcutsHelp();
+                return;
+            }
         }
-        
-        // ESC key closes sidebar on mobile
-        if (e.key === 'Escape' && sidebar && sidebar.classList.contains('active')) {
-            sidebar.classList.remove('active');
+
+        // ESC key - works everywhere
+        if (e.key === 'Escape') {
+            // Close sidebar on mobile
+            if (sidebar && sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                return;
+            }
+
+            // Close any open modals
+            const modals = document.querySelectorAll('.upload-modal, .playlist-modal, .save-playlist-modal');
+            modals.forEach(modal => {
+                if (modal.style.display === 'block') {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            });
+
+            // Close notifications
+            const notification = document.querySelector('.notification-toast');
+            if (notification) {
+                notification.remove();
+            }
+
+            // Clear search focus
+            if (searchInput && searchInput.matches(':focus')) {
+                searchInput.blur();
+            }
         }
     });
+}
+
+// Keyboard shortcuts help
+function showKeyboardShortcutsHelp() {
+    const existingHelp = document.querySelector('.shortcuts-help');
+    if (existingHelp) {
+        existingHelp.remove();
+        return;
+    }
+
+    const helpModal = document.createElement('div');
+    helpModal.className = 'shortcuts-help';
+    helpModal.innerHTML = `
+        <div class="modal-overlay">
+            <div class="modal-content shortcuts-content">
+                <div class="modal-header">
+                    <h2>Keyboard Shortcuts</h2>
+                    <button class="modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="shortcuts-grid">
+                        <div class="shortcut-section">
+                            <h3>Navigation</h3>
+                            <div class="shortcut-item">
+                                <kbd>/</kbd>
+                                <span>Focus search</span>
+                            </div>
+                            <div class="shortcut-item">
+                                <kbd>H</kbd>
+                                <span>Go to Home</span>
+                            </div>
+                            <div class="shortcut-item">
+                                <kbd>T</kbd>
+                                <span>Go to Trending</span>
+                            </div>
+                            <div class="shortcut-item">
+                                <kbd>S</kbd>
+                                <span>Go to Subscriptions</span>
+                            </div>
+                            <div class="shortcut-item">
+                                <kbd>L</kbd>
+                                <span>Go to Library</span>
+                            </div>
+                        </div>
+                        <div class="shortcut-section">
+                            <h3>Actions</h3>
+                            <div class="shortcut-item">
+                                <kbd>U</kbd>
+                                <span>Upload video</span>
+                            </div>
+                            <div class="shortcut-item">
+                                <kbd>Esc</kbd>
+                                <span>Close modal/menu</span>
+                            </div>
+                            <div class="shortcut-item">
+                                <kbd>?</kbd>
+                                <span>Show this help</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(helpModal);
+
+    // Close on overlay click
+    helpModal.querySelector('.modal-overlay').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) {
+            helpModal.remove();
+        }
+    });
+}
+
+// Global notification system
+function showNotification(message, type = 'info', duration = 4000) {
+    // Remove existing notification
+    const existing = document.querySelector('.notification-toast');
+    if (existing) existing.remove();
+
+    const notification = document.createElement('div');
+    notification.className = `notification-toast ${type}`;
+
+    const icon = {
+        'info': 'fa-info-circle',
+        'success': 'fa-check-circle',
+        'warning': 'fa-exclamation-triangle',
+        'error': 'fa-times-circle'
+    }[type] || 'fa-info-circle';
+
+    notification.innerHTML = `
+        <i class="fas ${icon}"></i>
+        <span>${message}</span>
+        <button class="close-notification" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Auto remove
+    if (duration > 0) {
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.classList.add('fade-out');
+                setTimeout(() => notification.remove(), 300);
+            }
+        }, duration);
+    }
 }
 
 function showUserMenu() {

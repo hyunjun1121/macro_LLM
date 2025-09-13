@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Host Dashboard - Airbnb</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <!-- Logo -->
+                <div class="logo">
+                    <a href="index.html">
+                        <i class="fab fa-airbnb" style="font-size: 2rem; color: #ff5a5f;"></i>
+                        <span>airbnb</span>
+                    </a>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="nav-links">
+                    <a href="index.html">Stays</a>
+                    <a href="experiences.html">Experiences</a>
+                    <a href="host-dashboard.html" class="active">Host</a>
+                </nav>
+
+                <!-- User Menu -->
+                <div class="user-menu">
+                    <a href="host-dashboard.html" class="host-link active">Host Dashboard</a>
+                    <button class="language-btn">
+                        <i class="fas fa-globe"></i>
+                    </button>
+                    <div class="profile-menu">
+                        <button class="profile-btn" onclick="toggleProfileMenu()">
+                            <i class="fas fa-bars"></i>
+                            <div class="profile-avatar">
+                                <span>J</span>
+                            </div>
+                        </button>
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <a href="profile.html">Profile</a>
+                            <a href="host-dashboard.html" class="active">Host Dashboard</a>
+                            <a href="trips.html">Trips</a>
+                            <a href="#">Messages</a>
+                            <a href="#">Notifications</a>
+                            <hr>
+                            <a href="#">Help Center</a>
+                            <a href="#">Log out</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="host-dashboard" id="hostDashboard">
+        <!-- Loading State -->
+        <div class="loading" id="loading">
+            <div class="loader"></div>
+            <p>Loading dashboard...</p>
+        </div>
+
+        <!-- Dashboard content will be populated by JavaScript -->
+    </main>
+
+    <!-- Add Listing Modal -->
+    <div class="modal-overlay" id="addListingModal" style="display: none;">
+        <div class="modal-content add-listing-modal">
+            <h2>List your space</h2>
+            <button class="modal-close" onclick="closeAddListingModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <form class="add-listing-form" onsubmit="createListing(); return false;">
+                <div class="form-step" id="step1">
+                    <h3>Tell us about your place</h3>
+                    
+                    <div class="form-group">
+                        <label for="listingTitle">Title</label>
+                        <input type="text" id="listingTitle" required placeholder="Beautiful apartment in city center">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="listingDescription">Description</label>
+                        <textarea id="listingDescription" rows="4" required placeholder="Describe your space and what makes it special..."></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="listingType">Property type</label>
+                            <select id="listingType" required>
+                                <option value="">Select type</option>
+                                <option value="Entire house">Entire house</option>
+                                <option value="Entire apartment">Entire apartment</option>
+                                <option value="Private room">Private room</option>
+                                <option value="Shared room">Shared room</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="listingCategory">Category</label>
+                            <select id="listingCategory" required>
+                                <option value="">Select category</option>
+                                <option value="city">City</option>
+                                <option value="beachfront">Beachfront</option>
+                                <option value="mountains">Mountains</option>
+                                <option value="countryside">Countryside</option>
+                                <option value="luxury">Luxury</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="listingLocation">Location</label>
+                        <input type="text" id="listingLocation" required placeholder="City, Country">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="listingGuests">Max guests</label>
+                            <input type="number" id="listingGuests" min="1" max="20" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="listingBedrooms">Bedrooms</label>
+                            <input type="number" id="listingBedrooms" min="0" max="10" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="listingBathrooms">Bathrooms</label>
+                            <input type="number" id="listingBathrooms" min="0" max="10" step="0.5" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="listingPrice">Price per night ($)</label>
+                        <input type="number" id="listingPrice" min="1" required>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" onclick="closeAddListingModal()">Cancel</button>
+                        <button type="submit">Create Listing</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick Actions Menu -->
+    <div class="quick-actions-menu" id="quickActionsMenu">
+        <button class="quick-action-btn" onclick="openAddListingModal()">
+            <i class="fas fa-plus"></i>
+            <span>Add listing</span>
+        </button>
+        <button class="quick-action-btn" onclick="viewMessages()">
+            <i class="fas fa-envelope"></i>
+            <span>Messages</span>
+        </button>
+        <button class="quick-action-btn" onclick="viewReservations()">
+            <i class="fas fa-calendar"></i>
+            <span>Reservations</span>
+        </button>
+        <button class="quick-action-btn" onclick="viewEarnings()">
+            <i class="fas fa-dollar-sign"></i>
+            <span>Earnings</span>
+        </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Hosting</h4>
+                    <ul>
+                        <li><a href="#">Host your home</a></li>
+                        <li><a href="#">Host an experience</a></li>
+                        <li><a href="#">Responsible hosting</a></li>
+                        <li><a href="#">Resource Center</a></li>
+                        <li><a href="#">Community Center</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Safety information</a></li>
+                        <li><a href="#">Cancellation options</a></li>
+                        <li><a href="#">Our COVID-19 Response</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="#">Airbnb.org: disaster relief housing</a></li>
+                        <li><a href="#">Support Afghan refugees</a></li>
+                        <li><a href="#">Combating discrimination</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>About</h4>
+                    <ul>
+                        <li><a href="#">Newsroom</a></li>
+                        <li><a href="#">Learn about new features</a></li>
+                        <li><a href="#">Letter from our founders</a></li>
+                        <li><a href="#">Careers</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Airbnb Clone. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+    <script src="host-dashboard.js"></script>
+</body>
+</html>

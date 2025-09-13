@@ -404,6 +404,25 @@ function navigateToPage(page, data = null) {
                     loadFriendsPageFallback();
                 }
                 break;
+            case 'events':
+                if (typeof loadEventsPage === 'function') {
+                    loadEventsPage();
+                } else {
+                    loadEventsPageFallback();
+                }
+                break;
+            case 'memories':
+                loadMemoriesPage();
+                break;
+            case 'saved':
+                loadSavedPage();
+                break;
+            case 'pages':
+                loadPagesPage();
+                break;
+            case 'jobs':
+                loadJobsPage();
+                break;
             default:
                 console.log(`Page ${page} not implemented yet`);
                 loadHomePage(); // Default to home
@@ -701,6 +720,122 @@ function loadFriendsPageFallback() {
     `;
 }
 
+function loadEventsPageFallback() {
+    const mainContent = document.getElementById('mainContent');
+    mainContent.innerHTML = `
+        <div class="page-loading">
+            <h1>Events</h1>
+            <p>Events features are loading...</p>
+            <div style="margin-top: 20px;">
+                <div style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                    <h3>🎉 Tech Meetup 2024</h3>
+                    <p style="color: #65676b; margin: 8px 0;">December 15, 2024 at 6:00 PM</p>
+                    <p style="color: #65676b; margin: 8px 0;">📍 Tech Hub, Downtown</p>
+                    <div style="margin-top: 12px;">
+                        <button style="background: #1877f2; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-right: 8px;" onclick="showNotification('RSVP: Going!', 'success')">Going</button>
+                        <button style="background: #42b883; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="showNotification('RSVP: Interested!', 'info')">Interested</button>
+                    </div>
+                </div>
+                <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                    <h3>📸 Photography Workshop</h3>
+                    <p style="color: #65676b; margin: 8px 0;">December 20, 2024 at 2:00 PM</p>
+                    <p style="color: #65676b; margin: 8px 0;">📍 Art Studio, City Center</p>
+                    <div style="margin-top: 12px;">
+                        <button style="background: #1877f2; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-right: 8px;" onclick="showNotification('RSVP: Going!', 'success')">Going</button>
+                        <button style="background: #42b883; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="showNotification('RSVP: Interested!', 'info')">Interested</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function loadMemoriesPage() {
+    const mainContent = document.getElementById('mainContent');
+    mainContent.innerHTML = `
+        <div class="page-loading">
+            <h1>Memories</h1>
+            <p>Look back on this day in previous years</p>
+            <div style="margin-top: 20px;">
+                <div style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                    <h3>📅 On This Day - 2 years ago</h3>
+                    <p style="margin: 12px 0;">You shared a photo from your graduation ceremony!</p>
+                    <img src="https://via.placeholder.com/400x200/1877f2/ffffff?text=Graduation+Memory" style="width: 100%; border-radius: 8px; margin: 12px 0;">
+                    <button style="background: #1877f2; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="showNotification('Memory shared!', 'success')">Share Memory</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function loadSavedPage() {
+    const mainContent = document.getElementById('mainContent');
+    mainContent.innerHTML = `
+        <div class="page-loading">
+            <h1>Saved</h1>
+            <p>Items you've saved to view later</p>
+            <div style="margin-top: 20px;">
+                <div style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                    <h3>💾 Programming Tutorial</h3>
+                    <p style="color: #65676b;">Saved from Code Academy</p>
+                    <button style="background: #1877f2; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="showNotification('Opening saved item...', 'info')">View</button>
+                </div>
+                <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                    <h3>🎬 Interesting Video</h3>
+                    <p style="color: #65676b;">Saved from Watch</p>
+                    <button style="background: #1877f2; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="showNotification('Opening saved item...', 'info')">View</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function loadPagesPage() {
+    const mainContent = document.getElementById('mainContent');
+    mainContent.innerHTML = `
+        <div class="page-loading">
+            <h1>Pages</h1>
+            <p>Pages you manage and follow</p>
+            <div style="margin-top: 20px;">
+                <div style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                    <h3>📱 Tech Company</h3>
+                    <p style="color: #65676b;">1,234 followers • Technology</p>
+                    <button style="background: #1877f2; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="showNotification('Managing page...', 'info')">Manage</button>
+                </div>
+                <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                    <h3>🍕 Local Restaurant</h3>
+                    <p style="color: #65676b;">567 followers • Restaurant</p>
+                    <button style="background: #42b883; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="showNotification('Following page!', 'success')">Follow</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function loadJobsPage() {
+    const mainContent = document.getElementById('mainContent');
+    mainContent.innerHTML = `
+        <div class="page-loading">
+            <h1>Jobs</h1>
+            <p>Find your next opportunity</p>
+            <div style="margin-top: 20px;">
+                <div style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                    <h3>💼 Frontend Developer</h3>
+                    <p style="color: #65676b;">TechCorp • San Francisco, CA</p>
+                    <p style="color: #65676b; font-size: 14px;">$80,000 - $120,000 per year</p>
+                    <button style="background: #1877f2; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="showNotification('Application sent!', 'success')">Apply</button>
+                </div>
+                <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                    <h3>🎨 UI/UX Designer</h3>
+                    <p style="color: #65676b;">Design Studio • New York, NY</p>
+                    <p style="color: #65676b; font-size: 14px;">$70,000 - $100,000 per year</p>
+                    <button style="background: #1877f2; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="showNotification('Application sent!', 'success')">Apply</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 function loadProfilePage(userName) {
     const mainContent = document.getElementById('mainContent');
     const user = Object.values(users).find(u => u.name === userName) || users.john;
@@ -849,12 +984,16 @@ function toggleProfileDropdown() {
     const dropdown = document.createElement('div');
     dropdown.className = 'profile-dropdown';
     dropdown.innerHTML = `
-        <div style="padding: 12px 16px; border-bottom: 1px solid #e4e6ea; display: flex; align-items: center; gap: 12px;">
+        <div style="padding: 12px 16px; border-bottom: 1px solid #e4e6ea; display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="navigateToPage('profile'); this.closest('.profile-dropdown').remove();">
             <img src="https://via.placeholder.com/40/1877f2/ffffff?text=JD" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%;">
             <div>
                 <h4 style="margin: 0; font-size: 16px;">John Doe</h4>
                 <p style="margin: 0; color: #65676b; font-size: 14px;">See your profile</p>
             </div>
+        </div>
+        <div style="padding: 8px 16px; cursor: pointer; display: flex; align-items: center; gap: 12px;" onclick="openEditProfileModal(); this.closest('.profile-dropdown').remove();">
+            <i class="fas fa-user-edit" style="width: 20px; color: #65676b;"></i>
+            <span>Edit Profile</span>
         </div>
         <div style="padding: 8px 16px; cursor: pointer; display: flex; align-items: center; gap: 12px;" onclick="showNotification('Settings opened!', 'info'); this.closest('.profile-dropdown').remove();">
             <i class="fas fa-cog" style="width: 20px; color: #65676b;"></i>
@@ -864,7 +1003,7 @@ function toggleProfileDropdown() {
             <i class="fas fa-question-circle" style="width: 20px; color: #65676b;"></i>
             <span>Help & Support</span>
         </div>
-        <div style="padding: 8px 16px; cursor: pointer; display: flex; align-items: center; gap: 12px;" onclick="showNotification('Logged out!', 'info'); this.closest('.profile-dropdown').remove();">
+        <div style="padding: 8px 16px; cursor: pointer; display: flex; align-items: center; gap: 12px;" onclick="logoutUser(); this.closest('.profile-dropdown').remove();">
             <i class="fas fa-sign-out-alt" style="width: 20px; color: #65676b;"></i>
             <span>Log Out</span>
         </div>
@@ -1048,3 +1187,273 @@ const searchStyles = `
 const styleElement = document.createElement('style');
 styleElement.textContent = searchStyles;
 document.head.appendChild(styleElement);
+
+// Logout functionality
+function logoutUser() {
+    // Clear user data
+    localStorage.removeItem('fbDemoUser');
+
+    // Show logout message
+    showNotification('Logged out successfully!', 'success');
+
+    // Redirect to login page after a short delay
+    setTimeout(() => {
+        window.location.href = 'index.html';
+    }, 1500);
+}
+
+// Notification system
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.fb-notification');
+    existingNotifications.forEach(notif => notif.remove());
+
+    // Create notification
+    const notification = document.createElement('div');
+    notification.className = `fb-notification fb-notification-${type}`;
+    notification.textContent = message;
+
+    // Style the notification
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#42b883' : type === 'error' ? '#e74c3c' : '#1877f2'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 10000;
+        font-weight: 500;
+        max-width: 300px;
+        animation: slideInRight 0.3s ease-out;
+    `;
+
+    // Add animation keyframes if not already added
+    if (!document.querySelector('#fb-notification-styles')) {
+        const styles = document.createElement('style');
+        styles.id = 'fb-notification-styles';
+        styles.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(styles);
+    }
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease-in';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Edit Profile functionality
+function openEditProfileModal() {
+    // Get current user data
+    const userData = JSON.parse(localStorage.getItem('fbDemoUser') || '{}');
+
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.className = 'edit-profile-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        z-index: 10000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    `;
+
+    modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto;">
+            <div style="padding: 24px; border-bottom: 1px solid #dadde1;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="margin: 0; font-size: 24px;">Edit Profile</h2>
+                    <button onclick="this.closest('.edit-profile-modal').remove()"
+                            style="background: #e4e6ea; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 18px;">×</button>
+                </div>
+            </div>
+
+            <div style="padding: 24px;">
+                <form id="editProfileForm">
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="margin: 0 0 12px 0; font-size: 16px;">Profile Picture</h3>
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <img id="profilePicturePreview" src="${userData.avatar || 'https://via.placeholder.com/80/1877f2/ffffff?text=U'}"
+                                 alt="Profile" style="width: 80px; height: 80px; border-radius: 50%;">
+                            <button type="button" onclick="triggerProfilePictureUpload()"
+                                    style="background: #1877f2; color: white; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer;">
+                                Change Photo
+                            </button>
+                        </div>
+                        <input type="file" id="profilePictureUpload" accept="image/*" style="display: none;" onchange="handleProfilePictureUpload(event)">
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Name</label>
+                        <input type="text" id="profileName" value="${userData.name || ''}"
+                               style="width: 100%; padding: 12px; border: 1px solid #ccd0d5; border-radius: 6px; font-size: 15px;">
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Email</label>
+                        <input type="email" id="profileEmail" value="${userData.email || ''}"
+                               style="width: 100%; padding: 12px; border: 1px solid #ccd0d5; border-radius: 6px; font-size: 15px;">
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Bio</label>
+                        <textarea id="profileBio" placeholder="Tell people a little about yourself..."
+                                  style="width: 100%; padding: 12px; border: 1px solid #ccd0d5; border-radius: 6px; font-size: 15px; min-height: 80px; resize: vertical;">${userData.bio || ''}</textarea>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Location</label>
+                        <input type="text" id="profileLocation" value="${userData.location || ''}" placeholder="City, State"
+                               style="width: 100%; padding: 12px; border: 1px solid #ccd0d5; border-radius: 6px; font-size: 15px;">
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Work</label>
+                        <input type="text" id="profileWork" value="${userData.work || ''}" placeholder="Company or Organization"
+                               style="width: 100%; padding: 12px; border: 1px solid #ccd0d5; border-radius: 6px; font-size: 15px;">
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Education</label>
+                        <input type="text" id="profileEducation" value="${userData.education || ''}" placeholder="School or University"
+                               style="width: 100%; padding: 12px; border: 1px solid #ccd0d5; border-radius: 6px; font-size: 15px;">
+                    </div>
+                </form>
+            </div>
+
+            <div style="padding: 0 24px 24px 24px; display: flex; gap: 12px; justify-content: flex-end;">
+                <button onclick="this.closest('.edit-profile-modal').remove()"
+                        style="background: #e4e6ea; color: #1c1e21; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-weight: 500;">
+                    Cancel
+                </button>
+                <button onclick="saveProfileChanges()"
+                        style="background: #1877f2; color: white; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-weight: 500;">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    `;
+
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+
+    document.body.appendChild(modal);
+}
+
+function triggerProfilePictureUpload() {
+    document.getElementById('profilePictureUpload').click();
+}
+
+function handleProfilePictureUpload(event) {
+    const file = event.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('profilePicturePreview').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function saveProfileChanges() {
+    const userData = JSON.parse(localStorage.getItem('fbDemoUser') || '{}');
+
+    // Get form values
+    const name = document.getElementById('profileName').value.trim();
+    const email = document.getElementById('profileEmail').value.trim();
+    const bio = document.getElementById('profileBio').value.trim();
+    const location = document.getElementById('profileLocation').value.trim();
+    const work = document.getElementById('profileWork').value.trim();
+    const education = document.getElementById('profileEducation').value.trim();
+    const avatar = document.getElementById('profilePicturePreview').src;
+
+    if (!name || !email) {
+        showNotification('Name and email are required', 'error');
+        return;
+    }
+
+    // Update user data
+    const updatedUserData = {
+        ...userData,
+        name: name,
+        email: email,
+        bio: bio,
+        location: location,
+        work: work,
+        education: education,
+        avatar: avatar,
+        lastUpdated: new Date().toISOString()
+    };
+
+    // Save to localStorage
+    localStorage.setItem('fbDemoUser', JSON.stringify(updatedUserData));
+
+    // Close modal
+    document.querySelector('.edit-profile-modal').remove();
+
+    // Show success message
+    showNotification('Profile updated successfully!', 'success');
+
+    // Update UI elements that show user info
+    updateUserInfoInUI(updatedUserData);
+}
+
+function updateUserInfoInUI(userData) {
+    // Update profile menu name
+    const profileMenus = document.querySelectorAll('#profileMenu span');
+    profileMenus.forEach(menu => {
+        if (menu.textContent.includes('John Doe')) {
+            menu.textContent = userData.name;
+        }
+    });
+
+    // Update post creator placeholder
+    const postInput = document.getElementById('postInput');
+    if (postInput) {
+        postInput.placeholder = `What's on your mind, ${userData.name.split(' ')[0]}?`;
+    }
+
+    // Update any displayed avatars
+    const avatars = document.querySelectorAll('img[alt="Profile"]');
+    avatars.forEach(avatar => {
+        if (avatar.src.includes('placeholder')) {
+            avatar.src = userData.avatar;
+        }
+    });
+}
+
+// Make functions globally available
+window.logoutUser = logoutUser;
+window.showNotification = showNotification;
+window.openEditProfileModal = openEditProfileModal;
+window.triggerProfilePictureUpload = triggerProfilePictureUpload;
+window.handleProfilePictureUpload = handleProfilePictureUpload;
+window.saveProfileChanges = saveProfileChanges;
