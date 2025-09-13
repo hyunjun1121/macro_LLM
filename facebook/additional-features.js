@@ -35,7 +35,7 @@ let events = [
     {
         id: 1,
         name: 'Tech Meetup 2024',
-        description: 'Join us for an evening of networking and tech talks',
+        description: 'Join us for an evening of networking and tech talks featuring industry leaders',
         date: '2024-12-15',
         time: '18:00',
         location: 'Tech Hub, Downtown',
@@ -43,12 +43,29 @@ let events = [
         interested: 23,
         userStatus: 'going',
         organizer: 'mike',
-        cover: 'https://via.placeholder.com/400x200/1877f2/ffffff?text=Tech+Meetup'
+        cover: 'https://via.placeholder.com/400x200/1877f2/ffffff?text=Tech+Meetup',
+        category: 'Technology',
+        isPublic: true,
+        maxAttendees: 100,
+        ticketPrice: 0,
+        attendeeList: [
+            { userId: 'john', name: 'John Doe', rsvpTime: '2024-02-01T10:00:00Z', status: 'going' },
+            { userId: 'sarah', name: 'Sarah Johnson', rsvpTime: '2024-02-01T11:30:00Z', status: 'going' },
+            { userId: 'alex', name: 'Alex Rodriguez', rsvpTime: '2024-02-02T09:15:00Z', status: 'interested' },
+            { userId: 'jun', name: 'Jun Kim', rsvpTime: '2024-02-02T14:20:00Z', status: 'going' }
+        ],
+        agenda: [
+            { time: '18:00', activity: 'Registration and Welcome' },
+            { time: '18:30', activity: 'Keynote: Future of AI' },
+            { time: '19:15', activity: 'Networking Break' },
+            { time: '19:45', activity: 'Panel Discussion' },
+            { time: '20:30', activity: 'Closing Remarks' }
+        ]
     },
     {
         id: 2,
         name: 'Photography Workshop',
-        description: 'Learn advanced photography techniques from professionals',
+        description: 'Learn advanced photography techniques from professionals including lighting and composition',
         date: '2024-12-20',
         time: '14:00',
         location: 'Art Studio, City Center',
@@ -56,7 +73,52 @@ let events = [
         interested: 8,
         userStatus: 'interested',
         organizer: 'emma',
-        cover: 'https://via.placeholder.com/400x200/e91e63/ffffff?text=Photo+Workshop'
+        cover: 'https://via.placeholder.com/400x200/e91e63/ffffff?text=Photo+Workshop',
+        category: 'Arts & Culture',
+        isPublic: true,
+        maxAttendees: 20,
+        ticketPrice: 50,
+        attendeeList: [
+            { userId: 'mike', name: 'Mike Chen', rsvpTime: '2024-02-01T12:00:00Z', status: 'going' },
+            { userId: 'lisa', name: 'Lisa Park', rsvpTime: '2024-02-01T15:45:00Z', status: 'interested' },
+            { userId: 'alex', name: 'Alex Rodriguez', rsvpTime: '2024-02-02T08:30:00Z', status: 'going' }
+        ],
+        agenda: [
+            { time: '14:00', activity: 'Introduction and Equipment Setup' },
+            { time: '14:30', activity: 'Lighting Techniques Workshop' },
+            { time: '15:30', activity: 'Composition and Framing' },
+            { time: '16:30', activity: 'Hands-on Practice Session' },
+            { time: '17:30', activity: 'Photo Review and Feedback' }
+        ]
+    },
+    {
+        id: 3,
+        name: 'Community Charity Run',
+        description: 'Annual 5K charity run to support local food banks and community organizations',
+        date: '2024-12-25',
+        time: '08:00',
+        location: 'Central Park, Main Entrance',
+        attendees: 89,
+        interested: 34,
+        userStatus: null,
+        organizer: 'sarah',
+        cover: 'https://via.placeholder.com/400x200/42b883/ffffff?text=Charity+Run',
+        category: 'Sports & Fitness',
+        isPublic: true,
+        maxAttendees: 200,
+        ticketPrice: 25,
+        attendeeList: [
+            { userId: 'jun', name: 'Jun Kim', rsvpTime: '2024-02-01T07:00:00Z', status: 'going' },
+            { userId: 'john', name: 'John Doe', rsvpTime: '2024-02-01T19:30:00Z', status: 'going' },
+            { userId: 'mike', name: 'Mike Chen', rsvpTime: '2024-02-02T11:15:00Z', status: 'interested' }
+        ],
+        agenda: [
+            { time: '08:00', activity: 'Registration and Check-in' },
+            { time: '08:30', activity: 'Warm-up Session' },
+            { time: '09:00', activity: '5K Run Start' },
+            { time: '10:00', activity: 'Post-Run Refreshments' },
+            { time: '10:30', activity: 'Awards Ceremony' }
+        ]
     }
 ];
 
@@ -65,25 +127,107 @@ let marketplaceItems = [
         id: 1,
         title: 'iPhone 14 Pro - Like New',
         price: 899,
+        originalPrice: 999,
+        priceHistory: [
+            { date: '2024-01-01', price: 999 },
+            { date: '2024-01-15', price: 950 },
+            { date: '2024-02-01', price: 899 }
+        ],
         description: 'Barely used iPhone 14 Pro in excellent condition. Includes original box and charger.',
         images: ['https://via.placeholder.com/300x300/1877f2/ffffff?text=iPhone'],
         location: 'New York, NY',
         seller: 'alex',
         posted: '2 days ago',
         category: 'Electronics',
-        condition: 'Like New'
+        condition: 'Like New',
+        views: 45,
+        interested: 12,
+        specifications: {
+            brand: 'Apple',
+            model: 'iPhone 14 Pro',
+            storage: '256GB',
+            color: 'Deep Purple'
+        }
     },
     {
         id: 2,
         title: 'MacBook Air M2',
         price: 1199,
+        originalPrice: 1299,
+        priceHistory: [
+            { date: '2024-01-01', price: 1299 },
+            { date: '2024-01-20', price: 1249 },
+            { date: '2024-02-01', price: 1199 }
+        ],
         description: '2023 MacBook Air with M2 chip. Perfect for students and professionals.',
         images: ['https://via.placeholder.com/300x300/42b883/ffffff?text=MacBook'],
         location: 'San Francisco, CA',
         seller: 'sarah',
         posted: '1 week ago',
         category: 'Electronics',
-        condition: 'Excellent'
+        condition: 'Excellent',
+        views: 78,
+        interested: 23,
+        specifications: {
+            brand: 'Apple',
+            model: 'MacBook Air M2',
+            ram: '16GB',
+            storage: '512GB SSD',
+            color: 'Midnight'
+        }
+    },
+    {
+        id: 3,
+        title: 'Samsung 55" 4K Smart TV',
+        price: 599,
+        originalPrice: 799,
+        priceHistory: [
+            { date: '2024-01-01', price: 799 },
+            { date: '2024-01-10', price: 699 },
+            { date: '2024-01-25', price: 649 },
+            { date: '2024-02-01', price: 599 }
+        ],
+        description: 'Excellent condition Samsung smart TV with 4K resolution and HDR support.',
+        images: ['https://via.placeholder.com/300x300/000000/ffffff?text=Samsung+TV'],
+        location: 'Los Angeles, CA',
+        seller: 'mike',
+        posted: '3 days ago',
+        category: 'Electronics',
+        condition: 'Excellent',
+        views: 92,
+        interested: 18,
+        specifications: {
+            brand: 'Samsung',
+            size: '55 inches',
+            resolution: '4K UHD',
+            smartOS: 'Tizen'
+        }
+    },
+    {
+        id: 4,
+        title: 'Gaming Setup - RTX 4080 PC',
+        price: 2299,
+        originalPrice: 2599,
+        priceHistory: [
+            { date: '2024-01-01', price: 2599 },
+            { date: '2024-01-15', price: 2399 },
+            { date: '2024-02-01', price: 2299 }
+        ],
+        description: 'High-end gaming PC with RTX 4080, perfect for streaming and gaming.',
+        images: ['https://via.placeholder.com/300x300/ff6b6b/ffffff?text=Gaming+PC'],
+        location: 'Austin, TX',
+        seller: 'jun',
+        posted: '1 day ago',
+        category: 'Electronics',
+        condition: 'Like New',
+        views: 156,
+        interested: 34,
+        specifications: {
+            cpu: 'Intel i7-13700K',
+            gpu: 'RTX 4080',
+            ram: '32GB DDR5',
+            storage: '2TB NVMe SSD'
+        }
     }
 ];
 
@@ -870,6 +1014,32 @@ function openMarketplaceItem(itemId) {
     });
 
     document.body.appendChild(modal);
+}
+
+// Fallback showNotification function if not available from other scripts
+if (typeof showNotification === 'undefined') {
+    function showNotification(message, type = 'info') {
+        console.log(`[${type.toUpperCase()}] ${message}`);
+        // Create a simple notification if no other implementation exists
+        if (typeof window.showNotification !== 'function') {
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#42b883' : type === 'error' ? '#e74c3c' : '#1877f2'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                z-index: 10000;
+                font-weight: 500;
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+    }
+    window.showNotification = showNotification;
 }
 
 console.log('Additional Facebook features loaded!');

@@ -6,9 +6,36 @@ const mockData = {
         email: 'john.doe@example.com',
         avatar: 'https://via.placeholder.com/32x32?text=JD',
         subscribedChannels: ['channel1', 'channel2', 'channel3', 'channel4', 'channel5', 'jun'],
-        watchHistory: [],
-        likedVideos: [],
-        watchLater: []
+        watchHistory: ['video1', 'video2', 'video3', 'video5', 'video7', 'video8'],
+        likedVideos: ['video1', 'video3', 'video5'],
+        watchLater: ['video2', 'video4', 'video6'],
+        playlists: [],
+        preferences: {
+            autoplay: true,
+            notifications: true,
+            quality: 'auto',
+            captions: false
+        },
+        activityLog: [
+            { timestamp: '2024-09-13T10:30:00Z', action: 'video_watch', videoId: 'video1', duration: 180 },
+            { timestamp: '2024-09-13T11:15:00Z', action: 'comment_post', videoId: 'video1', commentId: 'comment1' },
+            { timestamp: '2024-09-13T12:00:00Z', action: 'like_video', videoId: 'video3' },
+            { timestamp: '2024-09-13T12:30:00Z', action: 'subscribe_channel', channelId: 'jun' },
+            { timestamp: '2024-09-13T13:45:00Z', action: 'playlist_create', playlistId: 'user_playlist_1' },
+            { timestamp: '2024-09-13T14:20:00Z', action: 'video_search', query: 'cooking tutorial' },
+            { timestamp: '2024-09-13T15:10:00Z', action: 'video_share', videoId: 'video2', platform: 'twitter' }
+        ],
+        engagementStats: {
+            totalWatchTime: 3600,
+            averageSessionLength: 25,
+            videosWatchedToday: 5,
+            commentsPostedThisWeek: 8,
+            likesGivenThisMonth: 23,
+            searchesThisWeek: 12,
+            preferredCategories: ['cooking', 'technology', 'education'],
+            peakActivityHours: [19, 20, 21],
+            deviceUsage: { desktop: 60, mobile: 35, tablet: 5 }
+        }
     },
 
     channels: {
@@ -524,14 +551,89 @@ const mockData = {
     }
 };
 
-// Generate search results dynamically
-function generateSearchResults(query) {
+// Advanced search filters
+const advancedFilters = {
+    uploadDate: ['any', 'hour', 'day', 'week', 'month', 'year'],
+    duration: ['any', 'short', 'medium', 'long'], // <4min, 4-20min, >20min
+    features: ['live', 'hd', 'subtitles', '4k', 'vr'],
+    sortBy: ['relevance', 'date', 'viewCount', 'rating']
+};
+
+// Apply advanced search filters
+function applyAdvancedFilters(videos, filters) {
+    let filteredVideos = [...videos];
+
+    if (filters.uploadDate && filters.uploadDate !== 'any') {
+        const now = new Date();
+        const filterDate = new Date();
+
+        switch(filters.uploadDate) {
+            case 'hour': filterDate.setHours(now.getHours() - 1); break;
+            case 'day': filterDate.setDate(now.getDate() - 1); break;
+            case 'week': filterDate.setDate(now.getDate() - 7); break;
+            case 'month': filterDate.setMonth(now.getMonth() - 1); break;
+            case 'year': filterDate.setFullYear(now.getFullYear() - 1); break;
+        }
+
+        filteredVideos = filteredVideos.filter(videoId => {
+            const video = typeof videoId === 'string' ? mockData.videos[videoId] : videoId;
+            const uploadDate = new Date(video.uploadDate || '2024-01-01');
+            return uploadDate >= filterDate;
+        });
+    }
+
+    if (filters.duration && filters.duration !== 'any') {
+        filteredVideos = filteredVideos.filter(videoId => {
+            const video = typeof videoId === 'string' ? mockData.videos[videoId] : videoId;
+            const duration = video.duration;
+            const [mins, secs] = duration.split(':').map(Number);
+            const totalSeconds = mins * 60 + secs;
+
+            switch(filters.duration) {
+                case 'short': return totalSeconds < 240; // < 4 minutes
+                case 'medium': return totalSeconds >= 240 && totalSeconds <= 1200; // 4-20 minutes
+                case 'long': return totalSeconds > 1200; // > 20 minutes
+                default: return true;
+            }
+        });
+    }
+
+    return filteredVideos;
+}
+
+// Generate search results dynamically with advanced filters
+function generateSearchResults(query, filters = {}) {
     const allVideos = Object.values(mockData.videos);
-    return allVideos.filter(video => 
+    let matchedVideos = allVideos.filter(video =>
         video.title.toLowerCase().includes(query.toLowerCase()) ||
         video.channelName.toLowerCase().includes(query.toLowerCase()) ||
-        video.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
+        (video.tags && video.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase())))
     );
+
+    // Apply advanced filters
+    if (filters && Object.keys(filters).length > 0) {
+        matchedVideos = applyAdvancedFilters(matchedVideos, filters);
+    }
+
+    // Sort results based on sortBy filter
+    if (filters.sortBy) {
+        matchedVideos.sort((a, b) => {
+            switch(filters.sortBy) {
+                case 'date':
+                    return new Date(b.uploadDate || '2024-01-01') - new Date(a.uploadDate || '2024-01-01');
+                case 'viewCount':
+                    const aViews = parseInt(a.views.replace(/[^\d]/g, ''));
+                    const bViews = parseInt(b.views.replace(/[^\d]/g, ''));
+                    return bViews - aViews;
+                case 'rating':
+                    return (b.likes / (b.likes + b.dislikes)) - (a.likes / (a.likes + a.dislikes));
+                default: // relevance
+                    return 0;
+            }
+        });
+    }
+
+    return matchedVideos;
 }
 
 // Add more videos for infinite scroll
@@ -579,10 +681,120 @@ function formatViews(views) {
 }
 
 // Make functions globally available
+// User activity analysis functions
+const userAnalytics = {
+    // Get activity by date range
+    getActivityByDateRange(startDate, endDate) {
+        return mockData.user.activityLog.filter(activity => {
+            const activityDate = new Date(activity.timestamp);
+            return activityDate >= new Date(startDate) && activityDate <= new Date(endDate);
+        });
+    },
+
+    // Get activity patterns by hour
+    getActivityPatterns() {
+        const hourlyActivity = new Array(24).fill(0);
+        mockData.user.activityLog.forEach(activity => {
+            const hour = new Date(activity.timestamp).getHours();
+            hourlyActivity[hour]++;
+        });
+        return hourlyActivity;
+    },
+
+    // Analyze video engagement
+    getVideoEngagementData() {
+        const videoEngagement = {};
+        mockData.user.activityLog.forEach(activity => {
+            if (activity.videoId) {
+                if (!videoEngagement[activity.videoId]) {
+                    videoEngagement[activity.videoId] = {
+                        watches: 0,
+                        likes: 0,
+                        comments: 0,
+                        shares: 0,
+                        totalWatchTime: 0
+                    };
+                }
+
+                switch(activity.action) {
+                    case 'video_watch':
+                        videoEngagement[activity.videoId].watches++;
+                        videoEngagement[activity.videoId].totalWatchTime += activity.duration || 0;
+                        break;
+                    case 'like_video':
+                        videoEngagement[activity.videoId].likes++;
+                        break;
+                    case 'comment_post':
+                        videoEngagement[activity.videoId].comments++;
+                        break;
+                    case 'video_share':
+                        videoEngagement[activity.videoId].shares++;
+                        break;
+                }
+            }
+        });
+        return videoEngagement;
+    },
+
+    // Get category preferences based on watch history
+    getCategoryPreferences() {
+        const categoryStats = {};
+        mockData.user.watchHistory.forEach(videoId => {
+            const video = mockData.videos[videoId];
+            if (video && video.category) {
+                categoryStats[video.category] = (categoryStats[video.category] || 0) + 1;
+            }
+        });
+
+        // Sort by preference
+        return Object.entries(categoryStats)
+            .sort(([,a], [,b]) => b - a)
+            .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
+    },
+
+    // Generate personalized recommendations
+    getPersonalizedRecommendations(limit = 10) {
+        const preferences = this.getCategoryPreferences();
+        const topCategories = Object.keys(preferences).slice(0, 3);
+
+        const recommendations = [];
+        for (const category of topCategories) {
+            const categoryVideos = mockData.categories[category] || [];
+            const unwatchedVideos = categoryVideos.filter(videoId =>
+                !mockData.user.watchHistory.includes(videoId)
+            );
+            recommendations.push(...unwatchedVideos.slice(0, Math.ceil(limit / topCategories.length)));
+        }
+
+        return recommendations.slice(0, limit);
+    },
+
+    // Export user data for analysis
+    exportUserData() {
+        return {
+            user: mockData.user,
+            watchHistory: mockData.user.watchHistory.map(videoId => ({
+                videoId,
+                video: mockData.videos[videoId],
+                watchedAt: mockData.user.activityLog.find(log =>
+                    log.action === 'video_watch' && log.videoId === videoId
+                )?.timestamp
+            })),
+            engagementData: this.getVideoEngagementData(),
+            categoryPreferences: this.getCategoryPreferences(),
+            activityPatterns: this.getActivityPatterns(),
+            recommendations: this.getPersonalizedRecommendations()
+        };
+    }
+};
+
 window.mockData = mockData;
 window.generateSearchResults = generateSearchResults;
 window.generateMoreVideos = generateMoreVideos;
 window.formatViews = formatViews;
+window.advancedFilters = advancedFilters;
+window.applyAdvancedFilters = applyAdvancedFilters;
+window.userAnalytics = userAnalytics;
 
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {

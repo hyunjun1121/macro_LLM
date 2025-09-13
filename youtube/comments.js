@@ -47,22 +47,22 @@ class CommentSystem {
         actionsDiv.className = 'comment-actions';
         actionsDiv.innerHTML = `
             <div class="comment-formatting">
-                <button class="format-btn" title="Bold" onclick="commentSystem.formatText('bold')">
+                <button class="format-btn" title="Bold" onclick="window.commentSystem && window.commentSystem.formatText('bold')">
                     <i class="fas fa-bold"></i>
                 </button>
-                <button class="format-btn" title="Italic" onclick="commentSystem.formatText('italic')">
+                <button class="format-btn" title="Italic" onclick="window.commentSystem && window.commentSystem.formatText('italic')">
                     <i class="fas fa-italic"></i>
                 </button>
-                <button class="format-btn" title="Add link" onclick="commentSystem.showLinkDialog()">
+                <button class="format-btn" title="Add link" onclick="window.commentSystem && window.commentSystem.showLinkDialog()">
                     <i class="fas fa-link"></i>
                 </button>
-                <button class="format-btn" title="Add emoji" onclick="commentSystem.showEmojiPicker()">
+                <button class="format-btn" title="Add emoji" onclick="window.commentSystem && window.commentSystem.showEmojiPicker()">
                     <i class="fas fa-smile"></i>
                 </button>
             </div>
             <div class="comment-buttons">
-                <button class="btn-secondary" onclick="commentSystem.cancelComment()">Cancel</button>
-                <button class="btn-primary" onclick="commentSystem.addComment()">Comment</button>
+                <button class="btn-secondary" onclick="window.commentSystem && window.commentSystem.cancelComment()">Cancel</button>
+                <button class="btn-primary" onclick="window.commentSystem && window.commentSystem.addComment()">Comment</button>
             </div>
         `;
         
@@ -136,8 +136,8 @@ class CommentSystem {
             <div class="edit-comment">
                 <textarea class="edit-textarea">${originalText}</textarea>
                 <div class="edit-actions">
-                    <button class="btn-secondary" onclick="commentSystem.cancelEdit('${commentId}', '${originalText}')">Cancel</button>
-                    <button class="btn-primary" onclick="commentSystem.saveEdit('${commentId}')">Save</button>
+                    <button class="btn-secondary" onclick="window.commentSystem && window.commentSystem.cancelEdit('${commentId}', '${originalText}')">Cancel</button>
+                    <button class="btn-primary" onclick="window.commentSystem && window.commentSystem.saveEdit('${commentId}')">Save</button>
                 </div>
             </div>
         `;
@@ -359,15 +359,15 @@ class CommentSystem {
                     </div>
                     <p class="comment-text">${comment.text}</p>
                     <div class="comment-actions">
-                        <button class="comment-action ${comment.likedByUser ? 'active' : ''}" onclick="commentSystem.likeComment('${comment.id}')">
+                        <button class="comment-action ${comment.likedByUser ? 'active' : ''}" onclick="window.commentSystem && window.commentSystem.likeComment('${comment.id}')">
                             <i class="fas fa-thumbs-up"></i>
                             <span>${comment.likes || ''}</span>
                         </button>
-                        <button class="comment-action ${comment.dislikedByUser ? 'active' : ''}" onclick="commentSystem.dislikeComment('${comment.id}')">
+                        <button class="comment-action ${comment.dislikedByUser ? 'active' : ''}" onclick="window.commentSystem && window.commentSystem.dislikeComment('${comment.id}')">
                             <i class="fas fa-thumbs-down"></i>
                             ${comment.dislikes ? `<span>${comment.dislikes}</span>` : ''}
                         </button>
-                        <button class="comment-action" onclick="commentSystem.replyToComment('${comment.id}')">Reply</button>
+                        <button class="comment-action" onclick="window.commentSystem && window.commentSystem.replyToComment('${comment.id}')">Reply</button>
                         
                         <div class="comment-menu">
                             <button class="comment-action menu-toggle" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'">
@@ -375,22 +375,22 @@ class CommentSystem {
                             </button>
                             <div class="comment-dropdown" style="display: none;">
                                 ${isOwner ? `
-                                    <button onclick="commentSystem.editComment('${comment.id}')">
+                                    <button onclick="window.commentSystem && window.commentSystem.editComment('${comment.id}')">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
-                                    <button onclick="commentSystem.deleteComment('${comment.id}')">
+                                    <button onclick="window.commentSystem && window.commentSystem.deleteComment('${comment.id}')">
                                         <i class="fas fa-trash"></i> Delete
                                     </button>
                                 ` : ''}
                                 ${canModerate ? `
-                                    <button onclick="commentSystem.pinComment('${comment.id}')">
+                                    <button onclick="window.commentSystem && window.commentSystem.pinComment('${comment.id}')">
                                         <i class="fas fa-thumbtack"></i> ${comment.pinned ? 'Unpin' : 'Pin'}
                                     </button>
-                                    <button onclick="commentSystem.heartComment('${comment.id}')">
+                                    <button onclick="window.commentSystem && window.commentSystem.heartComment('${comment.id}')">
                                         <i class="fas fa-heart"></i> ${comment.hearted ? 'Remove heart' : 'Heart'}
                                     </button>
                                 ` : ''}
-                                <button onclick="commentSystem.reportComment('${comment.id}')">
+                                <button onclick="window.commentSystem && window.commentSystem.reportComment('${comment.id}')">
                                     <i class="fas fa-flag"></i> Report
                                 </button>
                             </div>
@@ -426,11 +426,11 @@ class CommentSystem {
                     </div>
                     <p class="comment-text">${reply.text}</p>
                     <div class="comment-actions">
-                        <button class="comment-action ${reply.likedByUser ? 'active' : ''}" onclick="commentSystem.likeComment('${reply.id}')">
+                        <button class="comment-action ${reply.likedByUser ? 'active' : ''}" onclick="window.commentSystem && window.commentSystem.likeComment('${reply.id}')">
                             <i class="fas fa-thumbs-up"></i>
                             <span>${reply.likes || ''}</span>
                         </button>
-                        <button class="comment-action ${reply.dislikedByUser ? 'active' : ''}" onclick="commentSystem.dislikeComment('${reply.id}')">
+                        <button class="comment-action ${reply.dislikedByUser ? 'active' : ''}" onclick="window.commentSystem && window.commentSystem.dislikeComment('${reply.id}')">
                             <i class="fas fa-thumbs-down"></i>
                             ${reply.dislikes ? `<span>${reply.dislikes}</span>` : ''}
                         </button>
@@ -441,17 +441,17 @@ class CommentSystem {
                             </button>
                             <div class="comment-dropdown" style="display: none;">
                                 ${isOwner ? `
-                                    <button onclick="commentSystem.editComment('${reply.id}')">
+                                    <button onclick="window.commentSystem && window.commentSystem.editComment('${reply.id}')">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
-                                    <button onclick="commentSystem.deleteComment('${reply.id}')">
+                                    <button onclick="window.commentSystem && window.commentSystem.deleteComment('${reply.id}')">
                                         <i class="fas fa-trash"></i> Delete
                                     </button>
                                 ` : ''}
-                                <button onclick="commentSystem.heartComment('${reply.id}')">
+                                <button onclick="window.commentSystem && window.commentSystem.heartComment('${reply.id}')">
                                     <i class="fas fa-heart"></i> ${reply.hearted ? 'Remove heart' : 'Heart'}
                                 </button>
-                                <button onclick="commentSystem.reportComment('${reply.id}')">
+                                <button onclick="window.commentSystem && window.commentSystem.reportComment('${reply.id}')">
                                     <i class="fas fa-flag"></i> Report
                                 </button>
                             </div>

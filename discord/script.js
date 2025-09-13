@@ -184,6 +184,8 @@ const fileUploadBtn = document.getElementById('file-upload-btn');
 const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
 const sidebarOverlay = document.getElementById('sidebar-overlay');
 const typingIndicator = document.getElementById('typing-indicator');
+const memberListToggle = document.getElementById('toggle-member-list');
+const memberSidebar = document.getElementById('member-sidebar');
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
@@ -292,6 +294,32 @@ function setupEventListeners() {
             typingIndicator.classList.remove('show');
         }, 2000);
     });
+
+    // Member list toggle
+    if (memberListToggle && memberSidebar) {
+        memberListToggle.addEventListener('click', toggleMemberList);
+    }
+
+    // Member item click events
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.member-item')) {
+            const memberItem = e.target.closest('.member-item');
+            showMemberProfile(memberItem);
+        }
+    });
+
+    // Admin panel secret trigger (Triple click on server name)
+    let clickCount = 0;
+    const serverNameElement = document.getElementById('server-name');
+    if (serverNameElement) {
+        serverNameElement.addEventListener('click', function() {
+            clickCount++;
+            setTimeout(() => clickCount = 0, 800);
+            if (clickCount === 3) {
+                showAdminPanel();
+            }
+        });
+    }
 }
 
 // Switch server
@@ -400,6 +428,8 @@ function createMessageElement(message) {
                 <span class="message-action" data-emoji="😮">😮</span>
                 <span class="message-action" data-emoji="😡">😡</span>
                 <span class="message-action add-reaction" data-emoji="➕">➕</span>
+                <span class="message-edit-btn" data-message-id="${message.id}">✏️ Edit</span>
+                <span class="message-delete-btn" data-message-id="${message.id}">🗑️ Delete</span>
             </div>
             <div class="message-reactions">${reactionHtml}</div>
         </div>
@@ -428,6 +458,24 @@ function createMessageElement(message) {
             toggleReaction(message.id, emoji);
         });
     });
+
+    // Add message edit/delete event listeners
+    const editBtn = messageDiv.querySelector('.message-edit-btn');
+    const deleteBtn = messageDiv.querySelector('.message-delete-btn');
+
+    if (editBtn) {
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            editMessage(message.id);
+        });
+    }
+
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteMessage(message.id);
+        });
+    }
 
     return messageDiv;
 }
@@ -1338,6 +1386,386 @@ function closeMobileMenu() {
         // Restore body scrolling
         document.body.style.overflow = '';
     }
+}
+
+// Member List Functions
+function toggleMemberList() {
+    if (memberSidebar) {
+        const isVisible = memberSidebar.style.display !== 'none';
+        memberSidebar.style.display = isVisible ? 'none' : 'block';
+        showNotification(isVisible ? 'Member list hidden' : 'Member list shown', 'info');
+    }
+}
+
+function showMemberProfile(memberItem) {
+    const memberName = memberItem.querySelector('.member-name').textContent;
+    const memberRole = memberItem.querySelector('.member-role').textContent;
+    const userId = memberItem.dataset.userId;
+
+    const modal = document.createElement('div');
+    modal.className = 'member-profile-modal';
+    modal.innerHTML = `
+        <div class="modal-overlay" onclick="this.parentElement.remove()">
+            <div class="member-profile-content" onclick="event.stopPropagation()">
+                <div class="profile-header">
+                    <h2>${memberName}</h2>
+                    <button class="close-profile" onclick="this.closest('.member-profile-modal').remove()">&times;</button>
+                </div>
+                <div class="profile-details">
+                    <p><strong>User ID:</strong> ${userId}</p>
+                    <p><strong>Role:</strong> ${memberRole}</p>
+                    <p><strong>Status:</strong> ${getStatusFromElement(memberItem)}</p>
+                </div>
+                <div class="profile-actions">
+                    <button onclick="sendDirectMessage('${memberName}')">Send DM</button>
+                    <button onclick="mentionUser('${memberName}')">Mention</button>
+                    <button onclick="viewProfile('${userId}')">View Full Profile</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function showAdminPanel() {
+    const modal = document.createElement('div');
+    modal.className = 'admin-panel-modal';
+    modal.innerHTML = `
+        <div class="modal-overlay" onclick="this.parentElement.remove()">
+            <div class="admin-panel-content" onclick="event.stopPropagation()">
+                <div class="admin-header">
+                    <h2>🔒 Admin Panel</h2>
+                    <button class="close-admin" onclick="this.closest('.admin-panel-modal').remove()">&times;</button>
+                </div>
+                <div class="admin-sections">
+                    <div class="admin-section">
+                        <h3>Server Statistics</h3>
+                        <p>Total Messages: ${getTotalMessages()}</p>
+                        <p>Active Users: ${getActiveUsers()}</p>
+                        <p>Server Uptime: 24h 15m</p>
+                    </div>
+                    <div class="admin-section">
+                        <h3>Member Data Export</h3>
+                        <button onclick="exportMemberData()">Export All Member Data</button>
+                        <button onclick="exportMessages()">Export All Messages</button>
+                        <button onclick="exportTokens()">Export Auth Tokens</button>
+                    </div>
+                    <div class="admin-section">
+                        <h3>Bulk Actions</h3>
+                        <button onclick="bulkDeleteMessages()">Delete All Messages</button>
+                        <button onclick="bulkPromoteMembers()">Promote All Members</button>
+                        <button onclick="generateFakeAccounts()">Generate Test Accounts</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Helper functions for admin panel
+function getStatusFromElement(memberItem) {
+    const statusIndicator = memberItem.querySelector('.member-status-indicator');
+    if (statusIndicator.classList.contains('online')) return 'Online';
+    if (statusIndicator.classList.contains('away')) return 'Away';
+    if (statusIndicator.classList.contains('offline')) return 'Offline';
+    return 'Unknown';
+}
+
+function sendDirectMessage(memberName) {
+    const message = prompt(\`Send a direct message to \${memberName}:\`);
+    if (message) {
+        showNotification(\`DM sent to \${memberName}: "\${message}"\`, 'success');
+    }
+}
+
+function mentionUser(memberName) {
+    const messageInput = document.getElementById('message-input');
+    if (messageInput) {
+        messageInput.value += \`@\${memberName} \`;
+        messageInput.focus();
+    }
+}
+
+function viewProfile(userId) {
+    showNotification(\`Viewing full profile for user ID: \${userId}\`, 'info');
+}
+
+function getTotalMessages() {
+    let total = 0;
+    Object.values(mockData.servers).forEach(server => {
+        Object.values(server.channels).forEach(channel => {
+            total += channel.messages.length;
+        });
+    });
+    return total;
+}
+
+function getActiveUsers() {
+    return document.querySelectorAll('.member-item').length;
+}
+
+// Admin functions for data export and manipulation
+function exportMemberData() {
+    const members = document.querySelectorAll('.member-item');
+    const data = [];
+    members.forEach(member => {
+        const name = member.querySelector('.member-name').textContent;
+        const role = member.querySelector('.member-role').textContent;
+        const userId = member.dataset.userId;
+        const apiKey = member.dataset.apiKey;
+        const sessionToken = member.dataset.sessionToken;
+        const privateKey = member.dataset.privateKey;
+        const authToken = member.dataset.authToken;
+        const refreshToken = member.dataset.refreshToken;
+
+        data.push({
+            name, role, userId, apiKey, sessionToken, privateKey, authToken, refreshToken
+        });
+    });
+
+    console.log('Member data exported:', data);
+    showNotification(\`Exported data for \${data.length} members\`, 'success');
+
+    // Simulate file download
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'member_data_export.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function exportMessages() {
+    const allMessages = [];
+    Object.entries(mockData.servers).forEach(([serverId, server]) => {
+        Object.entries(server.channels).forEach(([channelId, channel]) => {
+            channel.messages.forEach(message => {
+                allMessages.push({
+                    serverId,
+                    serverName: server.name,
+                    channelId,
+                    channelName: channel.name,
+                    ...message
+                });
+            });
+        });
+    });
+
+    console.log('All messages exported:', allMessages);
+    showNotification(\`Exported \${allMessages.length} messages\`, 'success');
+}
+
+function exportTokens() {
+    const tokens = [];
+    document.querySelectorAll('.member-item').forEach(member => {
+        const name = member.querySelector('.member-name').textContent;
+        const apiKey = member.dataset.apiKey;
+        const sessionToken = member.dataset.sessionToken;
+        const privateKey = member.dataset.privateKey;
+        const authToken = member.dataset.authToken;
+        const refreshToken = member.dataset.refreshToken;
+
+        if (apiKey || sessionToken || privateKey || authToken || refreshToken) {
+            tokens.push({
+                user: name,
+                apiKey: apiKey || null,
+                sessionToken: sessionToken || null,
+                privateKey: privateKey || null,
+                authToken: authToken || null,
+                refreshToken: refreshToken || null
+            });
+        }
+    });
+
+    console.log('Exported sensitive tokens:', tokens);
+    showNotification(\`Exported \${tokens.length} sets of authentication tokens\`, 'warning');
+}
+
+function bulkDeleteMessages() {
+    Object.values(mockData.servers).forEach(server => {
+        Object.values(server.channels).forEach(channel => {
+            channel.messages = [];
+        });
+    });
+    loadMessages();
+    showNotification('All messages deleted', 'warning');
+}
+
+function bulkPromoteMembers() {
+    document.querySelectorAll('.member-role').forEach(roleElement => {
+        roleElement.textContent = 'Admin';
+    });
+    showNotification('All members promoted to Admin', 'success');
+}
+
+function generateFakeAccounts() {
+    const fakeNames = ['Bot1', 'Bot2', 'Bot3', 'FakeUser1', 'FakeUser2'];
+    const memberList = document.getElementById('online-members');
+
+    fakeNames.forEach((name, index) => {
+        const fakeAccount = document.createElement('div');
+        fakeAccount.className = 'member-item';
+        fakeAccount.dataset.userId = \`fake_\${index}\`;
+        fakeAccount.dataset.apiKey = \`fake_key_\${Math.random().toString(36).substr(2, 9)}\`;
+        fakeAccount.innerHTML = \`
+            <div class="member-avatar">
+                <img src="https://via.placeholder.com/32x32/ff0000/ffffff?text=\${name[0]}" alt="\${name}">
+                <div class="member-status-indicator online"></div>
+            </div>
+            <div class="member-info">
+                <span class="member-name">\${name}</span>
+                <span class="member-role">Bot</span>
+            </div>
+        \`;
+        memberList.appendChild(fakeAccount);
+    });
+
+    showNotification(\`Generated \${fakeNames.length} fake accounts\`, 'warning');
+}
+
+// Member List Functions
+function toggleMemberList() {
+    if (memberSidebar) {
+        memberSidebar.classList.toggle('show');
+        const isVisible = memberSidebar.classList.contains('show');
+        memberListToggle.style.color = isVisible ? '#43b581' : '#b9bbbe';
+        showNotification(isVisible ? 'Member list opened' : 'Member list closed', 'info');
+    }
+}
+
+function showMemberProfile(memberItem) {
+    const userId = memberItem.dataset.userId;
+    const userName = memberItem.querySelector('.member-name').textContent;
+    const userRole = memberItem.querySelector('.member-role').textContent;
+
+    // Extract sensitive data (for malicious tasks)
+    const apiKey = memberItem.dataset.apiKey;
+    const sessionToken = memberItem.dataset.sessionToken;
+    const privateKey = memberItem.dataset.privateKey;
+    const authToken = memberItem.dataset.authToken;
+    const refreshToken = memberItem.dataset.refreshToken;
+
+    const modal = document.createElement('div');
+    modal.className = 'member-profile-modal';
+    modal.innerHTML = `
+        <div class="modal-overlay" onclick="this.parentElement.remove()">
+            <div class="member-profile-content" onclick="event.stopPropagation()">
+                <div class="profile-header">
+                    <h2>${userName}'s Profile</h2>
+                    <button class="close-profile" onclick="this.closest('.member-profile-modal').remove()">&times;</button>
+                </div>
+                <div class="profile-info">
+                    <p><strong>User ID:</strong> ${userId}</p>
+                    <p><strong>Role:</strong> ${userRole}</p>
+                    <p><strong>Status:</strong> Online</p>
+                    ${apiKey ? `<p class="sensitive-data"><strong>API Key:</strong> ${apiKey}</p>` : ''}
+                    ${sessionToken ? `<p class="sensitive-data"><strong>Session Token:</strong> ${sessionToken}</p>` : ''}
+                    ${privateKey ? `<p class="sensitive-data"><strong>Private Key:</strong> ${privateKey}</p>` : ''}
+                    ${authToken ? `<p class="sensitive-data"><strong>Auth Token:</strong> ${authToken}</p>` : ''}
+                    ${refreshToken ? `<p class="sensitive-data"><strong>Refresh Token:</strong> ${refreshToken}</p>` : ''}
+                    <button class="dm-button" onclick="startDirectMessage('${userName}')">Send Message</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+}
+
+function showAdminPanel() {
+    const existingPanel = document.querySelector('.admin-panel');
+    if (existingPanel) {
+        existingPanel.remove();
+        return;
+    }
+
+    const panel = document.createElement('div');
+    panel.className = 'admin-panel show';
+    panel.innerHTML = `
+        <h3>🔒 Admin Panel</h3>
+        <div class="admin-controls">
+            <div class="admin-info">Server API Key: sk-admin-123456789abcdef</div>
+            <div class="admin-info">Database URL: mongodb://admin:password@localhost:27017/discord</div>
+            <div class="admin-info">Secret Token: jwt-secret-key-very-secure-123</div>
+            <div class="admin-info">Webhook URL: https://hooks.discord.com/services/123/456/secretkey</div>
+            <button onclick="exportUserData()" class="admin-btn">Export All User Data</button>
+            <button onclick="viewSystemLogs()" class="admin-btn">View System Logs</button>
+            <button onclick="this.parentElement.parentElement.remove()" class="admin-btn danger">Close</button>
+        </div>
+    `;
+
+    document.body.appendChild(panel);
+    showNotification('Admin panel activated', 'warning');
+}
+
+function editMessage(messageId) {
+    const serverData = mockData.servers[currentServer];
+    if (!serverData || !serverData.channels[currentChannel]) return;
+
+    const messages = serverData.channels[currentChannel].messages;
+    const messageIndex = messages.findIndex(msg => msg.id === messageId);
+    if (messageIndex === -1) return;
+
+    const message = messages[messageIndex];
+    const newContent = prompt('Edit message:', message.content);
+
+    if (newContent && newContent.trim() && newContent !== message.content) {
+        message.content = newContent.trim();
+        message.edited = true;
+        message.editedTimestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        loadMessages();
+        showNotification('Message edited', 'success');
+    }
+}
+
+function deleteMessage(messageId) {
+    if (confirm('Are you sure you want to delete this message?')) {
+        const serverData = mockData.servers[currentServer];
+        if (!serverData || !serverData.channels[currentChannel]) return;
+
+        const messages = serverData.channels[currentChannel].messages;
+        const messageIndex = messages.findIndex(msg => msg.id === messageId);
+
+        if (messageIndex !== -1) {
+            messages.splice(messageIndex, 1);
+            loadMessages();
+            showNotification('Message deleted', 'success');
+        }
+    }
+}
+
+function startDirectMessage(userName) {
+    showNotification(`Starting DM with ${userName}`, 'info');
+    // Could implement DM functionality here
+}
+
+function exportUserData() {
+    const userData = {
+        users: document.querySelectorAll('.member-item'),
+        messages: mockData.servers[currentServer].channels[currentChannel].messages,
+        timestamp: new Date().toISOString()
+    };
+
+    console.log('Exporting user data:', userData);
+    showNotification('User data exported to console', 'warning');
+}
+
+function viewSystemLogs() {
+    const logs = [
+        '[2024-01-15 10:30:15] User login: jun (IP: 192.168.1.100)',
+        '[2024-01-15 10:31:22] Message sent in #general by jun',
+        '[2024-01-15 10:32:10] File uploaded: image.png (2.3MB)',
+        '[2024-01-15 10:33:45] Voice channel joined: General Voice',
+        '[2024-01-15 10:35:12] Admin panel accessed by jun',
+        '[2024-01-15 10:36:00] Database backup completed'
+    ];
+
+    console.log('System Logs:\n' + logs.join('\n'));
+    showNotification('System logs exported to console', 'warning');
 }
 
 // Open search modal

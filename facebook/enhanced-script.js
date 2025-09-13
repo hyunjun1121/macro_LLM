@@ -130,6 +130,94 @@ let currentPostId = null;
 let currentStoryFile = null;
 let uploadedMedia = [];
 
+// Advanced analytics and tracking data
+let userActivityLog = [];
+let engagementStats = {
+    totalPosts: 0,
+    totalLikes: 0,
+    totalComments: 0,
+    totalShares: 0,
+    postPerformance: [],
+    bestPostingTimes: [],
+    friendInteractionStats: {}
+};
+
+// User behavior tracking
+function logUserActivity(action, details = {}) {
+    const activity = {
+        timestamp: new Date().toISOString(),
+        action: action,
+        details: details,
+        sessionId: getSessionId()
+    };
+
+    userActivityLog.push(activity);
+
+    // Keep only last 1000 activities to prevent memory issues
+    if (userActivityLog.length > 1000) {
+        userActivityLog.shift();
+    }
+
+    // Save to localStorage periodically
+    if (userActivityLog.length % 10 === 0) {
+        localStorage.setItem('fbActivityLog', JSON.stringify(userActivityLog.slice(-500)));
+    }
+}
+
+function getSessionId() {
+    let sessionId = sessionStorage.getItem('fbSessionId');
+    if (!sessionId) {
+        sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        sessionStorage.setItem('fbSessionId', sessionId);
+    }
+    return sessionId;
+}
+
+// Engagement analytics
+function updateEngagementStats(action, postId = null) {
+    const hour = new Date().getHours();
+
+    switch (action) {
+        case 'post_created':
+            engagementStats.totalPosts++;
+            break;
+        case 'post_liked':
+            engagementStats.totalLikes++;
+            break;
+        case 'comment_posted':
+            engagementStats.totalComments++;
+            break;
+        case 'post_shared':
+            engagementStats.totalShares++;
+            break;
+    }
+
+    // Track posting times for optimization
+    if (action === 'post_created') {
+        engagementStats.bestPostingTimes.push(hour);
+    }
+
+    // Save updated stats
+    localStorage.setItem('fbEngagementStats', JSON.stringify(engagementStats));
+}
+
+function getOptimalPostingTime() {
+    if (engagementStats.bestPostingTimes.length === 0) return null;
+
+    // Count frequency of each hour
+    const hourCounts = {};
+    engagementStats.bestPostingTimes.forEach(hour => {
+        hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+    });
+
+    // Find most frequent hour
+    const sortedHours = Object.entries(hourCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(entry => parseInt(entry[0]));
+
+    return sortedHours.slice(0, 3); // Return top 3 optimal hours
+}
+
 // Initialize enhanced functionality
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Enhanced script loading...');
@@ -317,9 +405,17 @@ function updatePostButton() {
 }
 
 function submitPost() {
-    const postText = document.getElementById('postText').value.trim();
-    const privacy = document.getElementById('postPrivacy').value;
-    
+    const postTextElement = document.getElementById('postText');
+    const privacyElement = document.getElementById('postPrivacy');
+
+    if (!postTextElement || !privacyElement) {
+        console.error('Required form elements not found');
+        return;
+    }
+
+    const postText = postTextElement.value.trim();
+    const privacy = privacyElement.value;
+
     if (postText.length === 0 && uploadedMedia.length === 0) return;
     
     const newPost = {
@@ -339,6 +435,15 @@ function submitPost() {
     posts.unshift(newPost);
     loadEnhancedPosts();
     closePostModal();
+
+    // Log activity and update stats
+    logUserActivity('post_created', {
+        postId: newPost.id,
+        contentLength: postText.length,
+        hasMedia: uploadedMedia.length > 0,
+        privacy: privacy
+    });
+    updateEngagementStats('post_created', newPost.id);
 
     // Save data immediately
     saveDataToStorage();
@@ -532,6 +637,14 @@ function toggleReaction(postId, reaction) {
         post.reactions[reaction] = (post.reactions[reaction] || 0) + 1;
     }
 
+    // Log reaction activity
+    logUserActivity('post_reaction', {
+        postId: postId,
+        reaction: reaction,
+        removed: removedReaction
+    });
+    updateEngagementStats('post_liked', postId);
+
     // Save data immediately
     saveDataToStorage();
 
@@ -609,6 +722,14 @@ function submitComment() {
     const container = document.getElementById('commentsContainer');
     container.innerHTML = post.comments.map(comment => createCommentHTML(comment)).join('');
     container.scrollTop = container.scrollHeight;
+
+    // Log comment activity
+    logUserActivity('comment_posted', {
+        postId: currentPostId,
+        commentLength: content.length,
+        authorId: newComment.author
+    });
+    updateEngagementStats('comment_posted', currentPostId);
 
     // Save data immediately
     saveDataToStorage();
@@ -967,18 +1088,45 @@ function loadDataFromStorage() {
     try {
         const savedPosts = localStorage.getItem('fbPosts');
         const savedStories = localStorage.getItem('fbStories');
+        const savedActivityLog = localStorage.getItem('fbActivityLog');
+        const savedEngagementStats = localStorage.getItem('fbEngagementStats');
 
         if (savedPosts) {
-            posts = JSON.parse(savedPosts);
+            const parsedPosts = JSON.parse(savedPosts);
+            if (Array.isArray(parsedPosts)) {
+                posts = parsedPosts;
+            }
         }
 
         if (savedStories) {
-            stories = JSON.parse(savedStories);
+            const parsedStories = JSON.parse(savedStories);
+            if (Array.isArray(parsedStories)) {
+                stories = parsedStories;
+            }
+        }
+
+        if (savedActivityLog) {
+            const parsedActivityLog = JSON.parse(savedActivityLog);
+            if (Array.isArray(parsedActivityLog)) {
+                userActivityLog = parsedActivityLog;
+            }
+        }
+
+        if (savedEngagementStats) {
+            const parsedEngagementStats = JSON.parse(savedEngagementStats);
+            if (parsedEngagementStats && typeof parsedEngagementStats === 'object') {
+                engagementStats = { ...engagementStats, ...parsedEngagementStats };
+            }
         }
 
         console.log('Data loaded from localStorage');
+        console.log(`Loaded ${userActivityLog.length} activity logs and engagement stats`);
     } catch (error) {
         console.warn('Failed to load data from localStorage:', error);
+        // Reset to default data on error
+        posts = posts || [];
+        stories = stories || [];
+        userActivityLog = [];
     }
 }
 
@@ -1070,85 +1218,58 @@ window.selectReaction = selectReaction;
 window.toggleReaction = toggleReaction;
 
 // Missing functions implementation
-function closeCommentsModal() {
-    document.getElementById('commentsModal').style.display = 'none';
-    currentPostId = null;
-}
-
-function handleCommentKeyPress(event) {
-    if (event.key === 'Enter') {
-        submitComment();
-    }
-}
-
-function createCommentHTML(comment) {
-    const user = users[comment.author];
-    return `
-        <div class="comment">
-            <img src="${user.avatar}" alt="${user.name}">
-            <div class="comment-content">
-                <div class="comment-header">
-                    <h4>${user.name}</h4>
-                    <span class="comment-time">${comment.time}</span>
-                </div>
-                <p>${comment.content}</p>
-                <div class="comment-actions">
-                    <button onclick="likeComment(${comment.id})">
-                        <i class="fas fa-thumbs-up"></i> ${comment.likes || 0}
-                    </button>
-                    <button onclick="replyToComment(${comment.id})">
-                        Reply
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
 function replyToComment(commentId) {
     showNotification('Reply feature coming soon!', 'info');
 }
 
-function addFeeling() {
-    const feelings = ['😊 Happy', '😢 Sad', '😍 Loved', '😄 Excited', '😤 Angry', '🤔 Thoughtful'];
-    const selectedFeeling = feelings[Math.floor(Math.random() * feelings.length)];
-    const postText = document.getElementById('postText');
-    if (postText) {
-        postText.value += ` — feeling ${selectedFeeling}`;
-        updatePostButton();
-    }
-    showNotification('Feeling added!', 'success');
+function openImageModal(imageSrc) {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.9);
+        z-index: 10001;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    `;
+
+    modal.innerHTML = `
+        <img src="${imageSrc}" alt="Full size image"
+             style="max-width: 90%; max-height: 90%; object-fit: contain; border-radius: 8px;">
+    `;
+
+    modal.addEventListener('click', () => modal.remove());
+    document.body.appendChild(modal);
 }
 
-function addLocation() {
-    const locations = ['📍 New York, NY', '📍 San Francisco, CA', '📍 Los Angeles, CA', '📍 Chicago, IL'];
-    const selectedLocation = locations[Math.floor(Math.random() * locations.length)];
-    const postText = document.getElementById('postText');
-    if (postText) {
-        postText.value += ` — at ${selectedLocation}`;
-        updatePostButton();
-    }
-    showNotification('Location added!', 'success');
-}
+function showReactionsList(postId) {
+    const post = posts.find(p => p.id === postId);
+    if (!post || !post.reactions) return;
 
-function tagFriends() {
-    const userNames = Object.values(users).map(u => u.name).filter(name => name !== 'John Doe');
-    const randomFriend = userNames[Math.floor(Math.random() * userNames.length)];
-    const postText = document.getElementById('postText');
-    if (postText) {
-        postText.value += ` — with ${randomFriend}`;
-        updatePostButton();
-    }
-    showNotification('Friend tagged!', 'success');
+    const reactionsText = Object.entries(post.reactions)
+        .filter(([reaction, count]) => count > 0)
+        .map(([reaction, count]) => `${reaction}: ${count}`)
+        .join(', ');
+
+    showNotification(`Reactions: ${reactionsText}`, 'info');
 }
 
 // Additional function exports for compatibility
 window.openPostCreator = openPostModal;
 window.showComments = openComments;
 window.sharePost = openShareModal;
-window.closeCommentsModal = closeCommentsModal;
-window.handleCommentKeyPress = handleCommentKeyPress;
 window.replyToComment = replyToComment;
-window.addFeeling = addFeeling;
-window.addLocation = addLocation;
-window.tagFriends = tagFriends;
+window.openImageModal = openImageModal;
+window.showReactionsList = showReactionsList;
+
+// Analytics and tracking exports for advanced macro tasks
+window.getUserActivityLog = () => userActivityLog;
+window.getEngagementStats = () => engagementStats;
+window.getOptimalPostingTime = getOptimalPostingTime;
+window.logUserActivity = logUserActivity;
+window.updateEngagementStats = updateEngagementStats;

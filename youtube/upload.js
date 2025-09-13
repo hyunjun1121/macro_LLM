@@ -96,8 +96,8 @@ class ContentManager {
                                 </div>
                                 
                                 <div class="form-actions">
-                                    <button class="btn-secondary" onclick="contentManager.closeUploadModal()">Cancel</button>
-                                    <button class="btn-primary" onclick="contentManager.publishVideo()">Publish</button>
+                                    <button class="btn-secondary" onclick="window.contentManager && window.contentManager.closeUploadModal()">Cancel</button>
+                                    <button class="btn-primary" onclick="window.contentManager && window.contentManager.publishVideo()">Publish</button>
                                 </div>
                             </div>
                         </div>
@@ -450,8 +450,8 @@ class ContentManager {
         this.closeUploadModal();
 
         // Refresh current page if on home
-        if (router.currentRoute === 'home') {
-            router.handleRoute('home', false);
+        if (window.router && window.router.currentRoute === 'home') {
+            window.router.handleRoute('home', false);
         }
     }
 

@@ -280,10 +280,40 @@ class PageRenderer {
         this.mainContent.innerHTML = `
             <div class="video-player-container">
                 <div class="video-player">
-                    <div class="video-placeholder">
-                        <i class="fas fa-play-circle"></i>
-                        <p>Video Player - ${video.title}</p>
-                        <small>Duration: ${video.duration}</small>
+                    <div class="video-container">
+                        <div class="demo-video-player">
+                            <div class="video-thumbnail-large">
+                                <img src="${video.thumbnail}" alt="${video.title}">
+                                <div class="play-button-overlay" onclick="this.parentElement.classList.add('playing'); this.style.display='none';">
+                                    <i class="fas fa-play"></i>
+                                </div>
+                                <div class="video-info-overlay">
+                                    <h3>${video.title}</h3>
+                                    <p>Duration: ${video.duration}</p>
+                                    <small>This is a demo - click play button to simulate playback</small>
+                                </div>
+                            </div>
+                            <div class="video-controls">
+                                <button class="control-btn play-pause-btn">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-filled"></div>
+                                    </div>
+                                    <span class="time-display">0:00 / ${video.duration}</span>
+                                </div>
+                                <div class="volume-container">
+                                    <button class="control-btn volume-btn">
+                                        <i class="fas fa-volume-up"></i>
+                                    </button>
+                                    <input type="range" class="volume-slider" min="0" max="100" value="50">
+                                </div>
+                                <button class="control-btn fullscreen-btn">
+                                    <i class="fas fa-expand"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -368,6 +398,7 @@ class PageRenderer {
 
         this.attachVideoPlayerListeners(videoId);
         this.attachVideoClickListeners();
+        this.initDemoVideoPlayer();
     }
 
     renderVideoGrid(videoIds) {
@@ -638,7 +669,7 @@ class PageRenderer {
                 </div>
                 
                 <div class="studio-actions">
-                    <button class="btn-primary" onclick="contentManager.showUploadModal()">
+                    <button class="btn-primary" onclick="window.contentManager && window.contentManager.showUploadModal()">
                         <i class="fas fa-upload"></i> Upload video
                     </button>
                     <button class="btn-secondary">
@@ -673,7 +704,7 @@ class PageRenderer {
                                     </div>
                                 </div>
                             `).join('') :
-                            '<div class="no-content">No videos uploaded yet. <button class="btn-primary" onclick="contentManager.showUploadModal()">Upload your first video</button></div>'
+                            '<div class="no-content">No videos uploaded yet. <button class="btn-primary" onclick="window.contentManager && window.contentManager.showUploadModal()">Upload your first video</button></div>'
                         }
                     </div>
                 </div>
@@ -896,6 +927,125 @@ class PageRenderer {
         const video = mockData.videos[videoId];
         // Simulate download
         alert(`Downloading "${video.title}"...\n\nIn a real implementation, this would start the video download.`);
+    }
+
+    initDemoVideoPlayer() {
+        const playPauseBtn = document.querySelector('.play-pause-btn');
+        const progressBar = document.querySelector('.progress-bar');
+        const progressFilled = document.querySelector('.progress-filled');
+        const timeDisplay = document.querySelector('.time-display');
+        const volumeBtn = document.querySelector('.volume-btn');
+        const volumeSlider = document.querySelector('.volume-slider');
+        const fullscreenBtn = document.querySelector('.fullscreen-btn');
+
+        if (!playPauseBtn) return;
+
+        let isPlaying = false;
+        let currentTime = 0;
+        let duration = 300; // 5 minutes demo duration
+        let volume = 50;
+        let playInterval;
+
+        // Play/Pause button
+        playPauseBtn.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            const icon = playPauseBtn.querySelector('i');
+
+            if (isPlaying) {
+                icon.className = 'fas fa-pause';
+                // Simulate video playing
+                playInterval = setInterval(() => {
+                    currentTime += 1;
+                    if (currentTime >= duration) {
+                        currentTime = duration;
+                        isPlaying = false;
+                        icon.className = 'fas fa-play';
+                        clearInterval(playInterval);
+                    }
+                    updateProgress();
+                }, 1000);
+            } else {
+                icon.className = 'fas fa-play';
+                clearInterval(playInterval);
+            }
+        });
+
+        // Progress bar
+        if (progressBar) {
+            progressBar.addEventListener('click', (e) => {
+                const rect = progressBar.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const percentage = clickX / rect.width;
+                currentTime = Math.floor(duration * percentage);
+                updateProgress();
+            });
+        }
+
+        // Volume control
+        if (volumeSlider) {
+            volumeSlider.addEventListener('input', (e) => {
+                volume = e.target.value;
+                updateVolumeIcon();
+            });
+        }
+
+        if (volumeBtn) {
+            volumeBtn.addEventListener('click', () => {
+                if (volume > 0) {
+                    volume = 0;
+                    volumeSlider.value = 0;
+                } else {
+                    volume = 50;
+                    volumeSlider.value = 50;
+                }
+                updateVolumeIcon();
+            });
+        }
+
+        // Fullscreen
+        if (fullscreenBtn) {
+            fullscreenBtn.addEventListener('click', () => {
+                const videoContainer = document.querySelector('.demo-video-player');
+                if (videoContainer.classList.contains('fullscreen')) {
+                    videoContainer.classList.remove('fullscreen');
+                    fullscreenBtn.querySelector('i').className = 'fas fa-expand';
+                } else {
+                    videoContainer.classList.add('fullscreen');
+                    fullscreenBtn.querySelector('i').className = 'fas fa-compress';
+                }
+            });
+        }
+
+        function updateProgress() {
+            const percentage = (currentTime / duration) * 100;
+            if (progressFilled) {
+                progressFilled.style.width = percentage + '%';
+            }
+            if (timeDisplay) {
+                timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+            }
+        }
+
+        function updateVolumeIcon() {
+            const icon = volumeBtn.querySelector('i');
+            if (volume == 0) {
+                icon.className = 'fas fa-volume-mute';
+            } else if (volume < 50) {
+                icon.className = 'fas fa-volume-down';
+            } else {
+                icon.className = 'fas fa-volume-up';
+            }
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Initialize
+        updateProgress();
+        updateVolumeIcon();
     }
 }
 

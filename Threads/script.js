@@ -134,6 +134,9 @@ class ThreadsApp {
             case 'activity':
                 this.loadActivityView();
                 break;
+            case 'bookmarks':
+                this.loadBookmarksView();
+                break;
             case 'profile':
                 this.loadProfileView();
                 break;
@@ -286,10 +289,6 @@ class ThreadsApp {
         actionElement.querySelector('span').textContent = thread.reposts;
     }
 
-    showReplyModal(thread) {
-        // Simple alert for now - could be expanded to a proper modal
-        alert(`Reply to ${thread.author}'s thread: "${thread.content.substring(0, 50)}..."`);
-    }
 
     shareThread(thread) {
         if (navigator.share) {
@@ -415,8 +414,7 @@ class ThreadsApp {
     }
 
     handleSidebarSearch(query) {
-        // Simple search in sidebar - could be expanded
-        console.log('Sidebar search:', query);
+        if (query.trim()) {\n            document.getElementById('search-input').value = query;\n            this.switchView('search');\n            this.handleSearch(query);\n        }
     }
 
     loadActivityView() {

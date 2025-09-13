@@ -112,8 +112,8 @@ class PlaylistManager {
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn-secondary" onclick="playlistManager.closeCreateModal()">Cancel</button>
-                        <button class="btn-primary" onclick="playlistManager.createPlaylist()">Create</button>
+                        <button class="btn-secondary" onclick="window.playlistManager && window.playlistManager.closeCreateModal()">Cancel</button>
+                        <button class="btn-primary" onclick="window.playlistManager && window.playlistManager.createPlaylist()">Create</button>
                     </div>
                 </div>
             </div>
@@ -171,8 +171,8 @@ class PlaylistManager {
         alert(`Playlist "${name}" created successfully!`);
         
         // Refresh library page if currently viewing
-        if (router.currentRoute === 'library') {
-            router.handleRoute('library', false);
+        if (window.router && window.router.currentRoute === 'library') {
+            window.router.handleRoute('library', false);
         }
     }
 
@@ -211,15 +211,15 @@ class PlaylistManager {
                             `).join('')}
                         </div>
                         <div class="create-new-playlist">
-                            <button class="btn-secondary" onclick="playlistManager.showCreatePlaylistModal()">
+                            <button class="btn-secondary" onclick="window.playlistManager && window.playlistManager.showCreatePlaylistModal()">
                                 <i class="fas fa-plus"></i>
                                 Create new playlist
                             </button>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn-secondary" onclick="playlistManager.closeSaveModal()">Cancel</button>
-                        <button class="btn-primary" onclick="playlistManager.saveToPlaylists('${videoId}')">Save</button>
+                        <button class="btn-secondary" onclick="window.playlistManager && window.playlistManager.closeSaveModal()">Cancel</button>
+                        <button class="btn-primary" onclick="window.playlistManager && window.playlistManager.saveToPlaylists('${videoId}')">Save</button>
                     </div>
                 </div>
             </div>
@@ -273,7 +273,9 @@ class PlaylistManager {
     showPlaylistPage(playlistId) {
         const playlist = mockData.playlists[playlistId];
         if (!playlist) {
-            router.handleRoute('404');
+            if (window.router) {
+                window.router.handleRoute('404');
+            }
             return;
         }
         
@@ -303,25 +305,25 @@ class PlaylistManager {
                     </div>
                     ${playlist.description ? `<p class="playlist-description">${playlist.description}</p>` : ''}
                     <div class="playlist-actions">
-                        <button class="btn-primary" onclick="playlistManager.playAll('${playlistId}')">
+                        <button class="btn-primary" onclick="window.playlistManager && window.playlistManager.playAll('${playlistId}')">
                             <i class="fas fa-play"></i>
                             Play all
                         </button>
-                        <button class="btn-secondary" onclick="playlistManager.shufflePlay('${playlistId}')">
+                        <button class="btn-secondary" onclick="window.playlistManager && window.playlistManager.shufflePlay('${playlistId}')">
                             <i class="fas fa-random"></i>
                             Shuffle
                         </button>
                         ${isOwner ? `
-                            <button class="btn-secondary" onclick="playlistManager.editPlaylist('${playlistId}')">
+                            <button class="btn-secondary" onclick="window.playlistManager && window.playlistManager.editPlaylist('${playlistId}')">
                                 <i class="fas fa-edit"></i>
                                 Edit
                             </button>
-                            <button class="btn-secondary" onclick="playlistManager.deletePlaylist('${playlistId}')">
+                            <button class="btn-secondary" onclick="window.playlistManager && window.playlistManager.deletePlaylist('${playlistId}')">
                                 <i class="fas fa-trash"></i>
                                 Delete
                             </button>
                         ` : ''}
-                        <button class="btn-secondary" onclick="playlistManager.sharePlaylist('${playlistId}')">
+                        <button class="btn-secondary" onclick="window.playlistManager && window.playlistManager.sharePlaylist('${playlistId}')">
                             <i class="fas fa-share"></i>
                             Share
                         </button>
@@ -356,13 +358,13 @@ class PlaylistManager {
         return `
             <div class="playlist-video-item" data-video-id="${video.id}">
                 <div class="video-index">${index + 1}</div>
-                <div class="video-thumbnail" onclick="router.navigate('watch', {id: '${video.id}'})">
+                <div class="video-thumbnail" onclick="window.router && window.router.navigate('watch', {id: '${video.id}'})">
                     <img src="${video.thumbnail}" alt="${video.title}">
                     <div class="play-overlay">
                         <i class="fas fa-play"></i>
                     </div>
                 </div>
-                <div class="video-details" onclick="router.navigate('watch', {id: '${video.id}'})">
+                <div class="video-details" onclick="window.router && window.router.navigate('watch', {id: '${video.id}'})">
                     <h3 class="video-title">${video.title}</h3>
                     <p class="video-channel">${video.channelName}</p>
                     <p class="video-stats">${video.views} views</p>
@@ -370,7 +372,7 @@ class PlaylistManager {
                 <div class="video-duration">${video.duration}</div>
                 ${isOwner ? `
                     <div class="video-actions">
-                        <button class="action-btn" onclick="playlistManager.removeFromPlaylist('${playlistId}', '${video.id}')" title="Remove from playlist">
+                        <button class="action-btn" onclick="window.playlistManager && window.playlistManager.removeFromPlaylist('${playlistId}', '${video.id}')" title="Remove from playlist">
                             <i class="fas fa-times"></i>
                         </button>
                         <button class="action-btn drag-handle" title="Drag to reorder">
@@ -384,16 +386,16 @@ class PlaylistManager {
 
     playAll(playlistId) {
         const playlist = mockData.playlists[playlistId];
-        if (playlist.videos.length > 0) {
-            router.navigate('watch', { id: playlist.videos[0] });
+        if (playlist.videos.length > 0 && window.router) {
+            window.router.navigate('watch', { id: playlist.videos[0] });
         }
     }
 
     shufflePlay(playlistId) {
         const playlist = mockData.playlists[playlistId];
-        if (playlist.videos.length > 0) {
+        if (playlist.videos.length > 0 && window.router) {
             const randomIndex = Math.floor(Math.random() * playlist.videos.length);
-            router.navigate('watch', { id: playlist.videos[randomIndex] });
+            window.router.navigate('watch', { id: playlist.videos[randomIndex] });
         }
     }
 
@@ -457,8 +459,8 @@ class PlaylistManager {
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn-secondary" onclick="playlistManager.closeEditModal()">Cancel</button>
-                        <button class="btn-primary" onclick="playlistManager.savePlaylistEdits('${playlistId}')">Save changes</button>
+                        <button class="btn-secondary" onclick="window.playlistManager && window.playlistManager.closeEditModal()">Cancel</button>
+                        <button class="btn-primary" onclick="window.playlistManager && window.playlistManager.savePlaylistEdits('${playlistId}')">Save changes</button>
                     </div>
                 </div>
             </div>
@@ -521,7 +523,9 @@ class PlaylistManager {
         mockData.user.playlists = mockData.user.playlists.filter(id => id !== playlistId);
         
         alert('Playlist deleted successfully.');
-        router.navigate('library');
+        if (window.router) {
+            window.router.navigate('library');
+        }
     }
 
     removeFromPlaylist(playlistId, videoId) {

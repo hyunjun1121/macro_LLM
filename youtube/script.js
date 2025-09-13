@@ -466,9 +466,9 @@ function showUserMenu() {
             </div>
         </div>
         <hr>
-        <a href="#" onclick="router.navigate('studio'); this.parentElement.remove();">Your channel</a>
-        <a href="#" onclick="router.navigate('studio'); this.parentElement.remove();">YouTube Studio</a>
-        <a href="#" onclick="router.navigate('settings'); this.parentElement.remove();">Settings</a>
+        <a href="#" onclick="window.router && window.router.navigate('studio'); this.parentElement.remove();">Your channel</a>
+        <a href="#" onclick="window.router && window.router.navigate('studio'); this.parentElement.remove();">YouTube Studio</a>
+        <a href="#" onclick="window.router && window.router.navigate('settings'); this.parentElement.remove();">Settings</a>
         <hr>
         <a href="#" onclick="alert('Sign out functionality would be implemented here'); this.parentElement.remove();">Sign out</a>
     `;

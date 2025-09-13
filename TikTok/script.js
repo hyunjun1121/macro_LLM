@@ -123,13 +123,27 @@ const closeButtons = {
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
+    // Core initialization
     initializeEventListeners();
     initializeVideoPlayers();
+    initializeVideoControls();
+
+    // Content loading
     loadUserProfile();
     loadFollowingContent();
+
+    // Feature initialization
     initializeSearchSuggestions();
-    initializeVideoControls();
     initializeInfiniteScroll();
+    initializeBookmarks();
+    initializeEnhancedKeyboardShortcuts();
+    optimizePerformance();
+
+    // Add interactive features
+    initializeInteractiveFeatures();
+
+    // Track page load
+    trackEvent('page_loaded', { page: 'home' });
 });
 
 // Event Listeners
@@ -262,11 +276,22 @@ function performSearch() {
     if (!query) return;
 
     // Combine different data sources for search
-    const allResults = [
-        ...mockData.searchResults,
-        ...junAccountData.following.map(user => ({ ...user, type: 'user' })),
-        ...trendingContent.hashtags.map(hashtag => ({ ...hashtag, type: 'hashtag' }))
-    ];
+    let allResults = [];
+
+    // Add mockData search results if available
+    if (typeof mockData !== 'undefined' && mockData.searchResults) {
+        allResults = [...allResults, ...mockData.searchResults];
+    }
+
+    // Add junAccountData following if available
+    if (typeof junAccountData !== 'undefined' && junAccountData.following) {
+        allResults = [...allResults, ...junAccountData.following.map(user => ({ ...user, type: 'user' }))];
+    }
+
+    // Add trendingContent hashtags if available
+    if (typeof trendingContent !== 'undefined' && trendingContent.hashtags) {
+        allResults = [...allResults, ...trendingContent.hashtags.map(hashtag => ({ ...hashtag, type: 'hashtag' }))];
+    }
 
     // Filter search results based on query
     const results = allResults.filter(item => {
@@ -344,10 +369,16 @@ function displaySearchResults(results) {
 // Filter videos by hashtag
 function filterVideosByHashtag(hashtag) {
     navigateToPage('home');
-    
+
+    // Check if junAccountData exists
+    if (typeof junAccountData === 'undefined' || !junAccountData.posts) {
+        console.warn('junAccountData posts not available for hashtag filtering');
+        return;
+    }
+
     // Find videos that contain this hashtag
-    const matchingVideos = junAccountData.posts.filter(post => 
-        post.hashtags.some(tag => tag.toLowerCase() === hashtag.toLowerCase())
+    const matchingVideos = junAccountData.posts.filter(post =>
+        post.hashtags && post.hashtags.some(tag => tag.toLowerCase() === hashtag.toLowerCase())
     );
     
     if (matchingVideos.length > 0) {
@@ -363,6 +394,25 @@ function filterVideosByHashtag(hashtag) {
                 <video class="video-player" muted loop>
                     <source src="${post.videoUrl}" type="video/mp4">
                 </video>
+                <div class="video-controls">
+                    <div class="video-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                    <div class="control-buttons">
+                        <button class="control-btn play-pause-btn">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="control-btn volume-btn">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                        <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="0">
+                        <button class="control-btn fullscreen-btn">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                </div>
                 <div class="video-overlay">
                     <div class="video-info">
                         <div class="user-info">
@@ -387,7 +437,7 @@ function filterVideosByHashtag(hashtag) {
                             <span>Share</span>
                         </button>
                         <button class="action-btn bookmark-btn">
-                            <i class="fas fa-bookmark"></i>
+                            <i class="far fa-bookmark"></i>
                         </button>
                     </div>
                 </div>
@@ -401,7 +451,17 @@ function filterVideosByHashtag(hashtag) {
             
             const likeBtn = videoContainer.querySelector('.like-btn');
             likeBtn.addEventListener('click', toggleLike);
-            
+
+            // Initialize bookmark for new video
+            const bookmarkBtn = videoContainer.querySelector('.bookmark-btn');
+            initializeBookmarkForVideo(bookmarkBtn);
+
+            // Add video progress tracking
+            const video = videoContainer.querySelector('.video-player');
+            video.addEventListener('timeupdate', () => {
+                updateVideoProgress(video);
+            });
+
             videoFeed.appendChild(videoContainer);
         });
         
@@ -823,23 +883,29 @@ function switchTab(tab) {
 
 // Profile loading
 function loadUserProfile() {
+    // Check if junAccountData exists
+    if (typeof junAccountData === 'undefined' || !junAccountData.profile) {
+        console.warn('junAccountData not available, skipping profile load');
+        return;
+    }
+
     const junUser = junAccountData.profile;
-    
+
     // Update profile information
     const profileAvatar = document.querySelector('.profile-avatar');
     const profileName = document.querySelector('.profile-details h2');
     const profileBio = document.querySelector('.profile-details p');
-    
+
     if (profileAvatar) profileAvatar.src = junUser.avatar;
     if (profileName) profileName.textContent = junUser.username;
     if (profileBio) profileBio.textContent = junUser.bio;
-    
+
     // Update stats
     const stats = document.querySelectorAll('.stat strong');
     if (stats[0]) stats[0].textContent = junUser.following;
     if (stats[1]) stats[1].textContent = junUser.followers;
     if (stats[2]) stats[2].textContent = junUser.likes;
-    
+
     // Load jun's videos
     loadJunVideos();
 }
@@ -848,9 +914,15 @@ function loadUserProfile() {
 function loadJunVideos() {
     const videosGrid = document.getElementById('junVideosGrid');
     if (!videosGrid) return;
-    
+
+    // Check if junAccountData exists
+    if (typeof junAccountData === 'undefined' || !junAccountData.posts) {
+        console.warn('junAccountData posts not available');
+        return;
+    }
+
     videosGrid.innerHTML = '';
-    
+
     junAccountData.posts.forEach(post => {
         const videoThumbnail = document.createElement('div');
         videoThumbnail.className = 'video-thumbnail';
@@ -888,6 +960,25 @@ function playVideoInFeed(post) {
         <video class="video-player" autoplay muted loop>
             <source src="${post.videoUrl}" type="video/mp4">
         </video>
+        <div class="video-controls">
+            <div class="video-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+            <div class="control-buttons">
+                <button class="control-btn play-pause-btn">
+                    <i class="fas fa-pause"></i>
+                </button>
+                <button class="control-btn volume-btn">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+                <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="0">
+                <button class="control-btn fullscreen-btn">
+                    <i class="fas fa-expand"></i>
+                </button>
+            </div>
+        </div>
         <div class="video-overlay">
             <div class="video-info">
                 <div class="user-info">
@@ -912,7 +1003,7 @@ function playVideoInFeed(post) {
                     <span>Share</span>
                 </button>
                 <button class="action-btn bookmark-btn">
-                    <i class="fas fa-bookmark"></i>
+                    <i class="far fa-bookmark"></i>
                 </button>
             </div>
         </div>
@@ -927,14 +1018,23 @@ function playVideoInFeed(post) {
     // Add event listeners to new video
     const newVideo = newVideoContainer.querySelector('.video-player');
     const newLikeBtn = newVideoContainer.querySelector('.like-btn');
-    
+    const newBookmarkBtn = newVideoContainer.querySelector('.bookmark-btn');
+
     newVideoContainer.addEventListener('click', (e) => {
-        if (!e.target.closest('.video-actions')) {
+        if (!e.target.closest('.video-actions') && !e.target.closest('.video-controls')) {
             toggleVideoPlay(newVideoContainer);
         }
     });
-    
+
     newLikeBtn.addEventListener('click', toggleLike);
+
+    // Initialize bookmark for new video
+    initializeBookmarkForVideo(newBookmarkBtn);
+
+    // Add video progress tracking
+    newVideo.addEventListener('timeupdate', () => {
+        updateVideoProgress(newVideo);
+    });
     
     // Pause other videos and play this one
     pauseAllVideos();
@@ -1030,15 +1130,15 @@ function debounce(func, wait) {
     };
 }
 
-// Add some interactive features
-document.addEventListener('DOMContentLoaded', function() {
+// Interactive features initialization
+function initializeInteractiveFeatures() {
     // Add hover effects to video thumbnails
     const videoThumbnails = document.querySelectorAll('.video-thumbnail');
     videoThumbnails.forEach(thumbnail => {
         thumbnail.addEventListener('mouseenter', () => {
             thumbnail.style.transform = 'scale(1.05)';
         });
-        
+
         thumbnail.addEventListener('mouseleave', () => {
             thumbnail.style.transform = 'scale(1)';
         });
@@ -1052,7 +1152,7 @@ document.addEventListener('DOMContentLoaded', function() {
             performSearch();
         });
     });
-});
+}
 
 // Following page functionality
 function switchFollowingTab(tab) {
@@ -1079,6 +1179,12 @@ function loadFollowingContent() {
     if (followingVideosTab) {
         const followingVideos = followingVideosTab.querySelector('.following-videos');
         if (followingVideos) {
+            // Check if junAccountData exists
+            if (typeof junAccountData === 'undefined' || !junAccountData.following) {
+                followingVideos.innerHTML = '<p>Loading following content...</p>';
+                return;
+            }
+
             // Load videos from followed users
             const followedUsersVideos = junAccountData.following.slice(0, 3).map((user, index) => {
                 return `
@@ -1418,6 +1524,12 @@ function initializeSearchSuggestions() {
 }
 
 function showSearchSuggestions(query) {
+    // Check if searchSuggestions exists
+    if (typeof searchSuggestions === 'undefined') {
+        console.warn('searchSuggestions not available');
+        return;
+    }
+
     const suggestions = searchSuggestions.filter(suggestion =>
         suggestion.toLowerCase().includes(query)
     ).slice(0, 5);
@@ -1514,6 +1626,14 @@ function loadMoreVideos() {
             video.addEventListener('timeupdate', () => {
                 updateVideoProgress(video);
             });
+
+            // Initialize bookmark for new video
+            const bookmarkBtn = videoElement.querySelector('.bookmark-btn');
+            initializeBookmarkForVideo(bookmarkBtn);
+
+            // Add event listeners for new video actions
+            const likeBtn = videoElement.querySelector('.like-btn');
+            likeBtn.addEventListener('click', toggleLike);
 
             // Add to intersection observer
             videoObserver.observe(videoElement);
@@ -1658,20 +1778,38 @@ function toggleBookmark(button) {
 // Initialize bookmarks on load
 function initializeBookmarks() {
     document.querySelectorAll('.bookmark-btn').forEach(btn => {
-        const videoContainer = btn.closest('.video-container');
-        const videoId = videoContainer.dataset.videoId;
-        const icon = btn.querySelector('i');
-
-        if (bookmarkedVideos.includes(videoId)) {
-            icon.classList.remove('far');
-            icon.classList.add('fas');
-            btn.style.color = '#ff0050';
-        } else {
-            icon.classList.remove('fas');
-            icon.classList.add('far');
-            btn.style.color = 'rgba(255, 255, 255, 0.8)';
-        }
+        initializeBookmarkForVideo(btn);
     });
+}
+
+// Initialize bookmark for a single video
+function initializeBookmarkForVideo(btn) {
+    if (!btn) return;
+
+    const videoContainer = btn.closest('.video-container');
+    if (!videoContainer) return;
+
+    const videoId = videoContainer.dataset.videoId;
+    const icon = btn.querySelector('i');
+
+    if (bookmarkedVideos.includes(videoId)) {
+        icon.classList.remove('far');
+        icon.classList.add('fas');
+        btn.style.color = '#ff0050';
+    } else {
+        icon.classList.remove('fas');
+        icon.classList.add('far');
+        btn.style.color = 'rgba(255, 255, 255, 0.8)';
+    }
+
+    // Add click event listener if not already added
+    if (!btn.hasAttribute('data-initialized')) {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleBookmark(btn);
+        });
+        btn.setAttribute('data-initialized', 'true');
+    }
 }
 
 // Toast notification system
@@ -1837,22 +1975,6 @@ function trackEvent(eventName, properties = {}) {
     // In a real app, this would send data to analytics service
 }
 
-// Update initialization to include new features
-document.addEventListener('DOMContentLoaded', function() {
-    initializeEventListeners();
-    initializeVideoPlayers();
-    loadUserProfile();
-    loadFollowingContent();
-    initializeSearchSuggestions();
-    initializeVideoControls();
-    initializeInfiniteScroll();
-    initializeBookmarks();
-    initializeEnhancedKeyboardShortcuts();
-    optimizePerformance();
-
-    // Track page load
-    trackEvent('page_loaded', { page: 'home' });
-});
 
 // Simulate real-time updates
 setInterval(() => {

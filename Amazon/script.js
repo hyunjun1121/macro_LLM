@@ -27,33 +27,6 @@ function initializeWebsite() {
 
 // ==================== SEARCH FUNCTIONALITY ====================
 
-function setupSearchFunctionality() {
-    const searchInput = document.getElementById('searchInput');
-    const searchBtn = document.querySelector('.search-btn');
-    
-    // Real-time search suggestions
-    searchInput.addEventListener('input', function() {
-        showSearchSuggestions(this.value);
-    });
-    
-    // Search on Enter key
-    searchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            performSearch();
-        }
-    });
-    
-    // Search button click
-    searchBtn.addEventListener('click', performSearch);
-    
-    // Close suggestions when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.search-container')) {
-            hideSearchSuggestions();
-        }
-    });
-}
-
 function showSearchSuggestions(query) {
     if (query.length < 2) {
         hideSearchSuggestions();
@@ -118,30 +91,6 @@ function selectSuggestion(suggestion) {
     performSearch();
 }
 
-function performSearch() {
-    const searchInput = document.getElementById('searchInput');
-    const searchTerm = searchInput.value.trim();
-    const category = document.querySelector('.search-category').value;
-    
-    if (!searchTerm) {
-        showNotification('Please enter a search term', 'warning');
-        return;
-    }
-    
-    // Add to search history
-    addToSearchHistory(searchTerm);
-    
-    // Filter products
-    currentProducts = filterProducts(searchTerm, category);
-    currentSearchTerm = searchTerm;
-    currentCategory = category;
-    
-    // Update UI
-    updateMainContent('search');
-    hideSearchSuggestions();
-    
-    console.log(`Search performed: "${searchTerm}" in category "${category}", found ${currentProducts.length} results`);
-}
 
 function filterProducts(searchTerm, category) {
     let filtered = allProducts;
@@ -512,15 +461,6 @@ function showRecommendations() {
 
 // ==================== CATEGORY NAVIGATION ====================
 
-function showCategory(category) {
-    currentCategory = category;
-    currentProducts = category === 'all' ? allProducts : allProducts.filter(p => p.category === category);
-    currentSearchTerm = '';
-    
-    document.getElementById('searchInput').value = '';
-    updateMainContent('category');
-}
-
 // ==================== RECENTLY VIEWED ====================
 
 function addToRecentlyViewed(product) {
@@ -582,12 +522,14 @@ function updateMainContent(view) {
 
 function createSearchResultsHTML() {
     const sortFilterControls = createSortFilterControls();
+    const priceFilter = createPriceFilter();
     
     return `
         <div class="search-results">
             <h2>Search Results for "${currentSearchTerm}" ${currentCategory !== 'all' ? `in ${categories[currentCategory]}` : ''}</h2>
             <div class="results-count">${currentProducts.length} results found</div>
             ${sortFilterControls}
+            ${priceFilter}
             <div class="${currentViewMode === 'grid' ? 'products-grid' : 'products-list'}">
                 ${currentViewMode === 'grid' ? 
                     currentProducts.map(product => createProductCard(product)).join('') :
@@ -601,12 +543,14 @@ function createSearchResultsHTML() {
 
 function createCategoryHTML() {
     const sortFilterControls = createSortFilterControls();
+    const priceFilter = createPriceFilter();
     
     return `
         <div class="category-results">
             <h2>${categories[currentCategory] || 'All Products'}</h2>
             <div class="results-count">${currentProducts.length} products</div>
             ${sortFilterControls}
+            ${priceFilter}
             <div class="${currentViewMode === 'grid' ? 'products-grid' : 'products-list'}">
                 ${currentViewMode === 'grid' ? 
                     currentProducts.map(product => createProductCard(product)).join('') :
@@ -1072,6 +1016,224 @@ function isInputFocused() {
     );
 }
 
+// ==================== PRICE FILTERING ====================
+
+function createPriceFilter() {
+    return `
+        <div class="price-filter">
+            <h4>Price Range</h4>
+            <div class="price-range">
+                <input type="number" class="price-input" id="minPrice" 
+                       placeholder="Min" value="${minPrice}" min="0">
+                <span>to</span>
+                <input type="number" class="price-input" id="maxPrice" 
+                       placeholder="Max" value="${maxPrice}" min="0">
+                <button class="apply-filter" onclick="applyPriceFilter()">Apply</button>
+            </div>
+        </div>
+    `;
+}
+
+function applyPriceFilter() {
+    const minPriceInput = document.getElementById('minPrice');
+    const maxPriceInput = document.getElementById('maxPrice');
+    
+    const newMinPrice = parseFloat(minPriceInput.value) || 0;
+    const newMaxPrice = parseFloat(maxPriceInput.value) || 10000;
+    
+    if (newMinPrice > newMaxPrice) {
+        showNotification('Minimum price cannot be greater than maximum price', 'warning');
+        return;
+    }
+    
+    minPrice = newMinPrice;
+    maxPrice = newMaxPrice;
+    
+    // Filter current products by price
+    let baseProducts = [];
+    
+    // Determine base products based on current view
+    if (currentView === 'search') {
+        baseProducts = filterProducts(currentSearchTerm, currentCategory);
+    } else if (currentView === 'category') {
+        baseProducts = currentCategory === 'all' ? allProducts : allProducts.filter(p => p.category === currentCategory);
+    } else {
+        baseProducts = allProducts;
+    }
+    
+    // Apply price filter
+    const filteredProducts = baseProducts.filter(product => 
+        product.price >= minPrice && product.price <= maxPrice
+    );
+    
+    // Apply current sort
+    currentProducts = sortProducts(filteredProducts, currentSort);
+    
+    // Update display
+    renderProductsView();
+    
+    showNotification(`Applied price filter: $${minPrice} - $${maxPrice}`, 'success');
+}
+
+// ==================== LOADING STATES ====================
+
+function showLoadingOverlay(message = 'Loading...') {
+    const existingOverlay = document.querySelector('.loading-overlay');
+    if (existingOverlay) return;
+    
+    const overlay = document.createElement('div');
+    overlay.className = 'loading-overlay';
+    overlay.innerHTML = `
+        <div class="loading"></div>
+        <span class="loading-text">${message}</span>
+    `;
+    document.body.appendChild(overlay);
+}
+
+function hideLoadingOverlay() {
+    const overlay = document.querySelector('.loading-overlay');
+    if (overlay) {
+        overlay.remove();
+    }
+}
+
+function simulateLoading(callback, message = 'Loading...', duration = 800) {
+    showLoadingOverlay(message);
+    setTimeout(() => {
+        hideLoadingOverlay();
+        callback();
+    }, duration);
+}
+
+// ==================== PERFORMANCE OPTIMIZATIONS ====================
+
+// Debounce function for search
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Debounced search suggestions
+const debouncedShowSearchSuggestions = debounce(showSearchSuggestions, 300);
+
+// ==================== ENHANCED SEARCH FUNCTIONALITY ====================
+
+function setupSearchFunctionality() {
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.querySelector('.search-btn');
+    
+    // Real-time search suggestions (debounced)
+    searchInput.addEventListener('input', function() {
+        debouncedShowSearchSuggestions(this.value);
+    });
+    
+    // Search on Enter key
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            performSearch();
+        }
+    });
+    
+    // Search button click
+    searchBtn.addEventListener('click', performSearch);
+    
+    // Close suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-container')) {
+            hideSearchSuggestions();
+        }
+    });
+}
+
+// ==================== ENHANCED NAVIGATION ====================
+
+function showCategory(category) {
+    simulateLoading(() => {
+        currentCategory = category;
+        currentProducts = category === 'all' ? allProducts : allProducts.filter(p => p.category === category);
+        currentSearchTerm = '';
+        
+        // Apply current sort
+        currentProducts = sortProducts(currentProducts, currentSort);
+        
+        document.getElementById('searchInput').value = '';
+        updateMainContent('category');
+        
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, `Loading ${categories[category] || 'products'}...`, 600);
+}
+
+function performSearch() {
+    const searchInput = document.getElementById('searchInput');
+    const searchTerm = searchInput.value.trim();
+    const category = document.querySelector('.search-category').value;
+    
+    if (!searchTerm) {
+        showNotification('Please enter a search term', 'warning');
+        return;
+    }
+    
+    simulateLoading(() => {
+        // Add to search history
+        addToSearchHistory(searchTerm);
+        
+        // Filter products
+        currentProducts = filterProducts(searchTerm, category);
+        
+        // Apply current sort
+        currentProducts = sortProducts(currentProducts, currentSort);
+        
+        currentSearchTerm = searchTerm;
+        currentCategory = category;
+        
+        // Update UI
+        updateMainContent('search');
+        hideSearchSuggestions();
+        
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        console.log(`Search performed: "${searchTerm}" in category "${category}", found ${currentProducts.length} results`);
+    }, `Searching for "${searchTerm}"...`, 500);
+}
+
+// ==================== ANALYTICS & TRACKING ====================
+
+function trackUserAction(action, details = {}) {
+    // Simulate analytics tracking
+    const trackingData = {
+        timestamp: new Date().toISOString(),
+        action: action,
+        details: details,
+        user: 'jun',
+        session: sessionStorage.getItem('sessionId') || generateSessionId()
+    };
+    
+    console.log('Analytics:', trackingData);
+    
+    // Store in sessionStorage for demo purposes
+    const analytics = JSON.parse(sessionStorage.getItem('analytics')) || [];
+    analytics.push(trackingData);
+    if (analytics.length > 100) {
+        analytics.shift(); // Keep only last 100 events
+    }
+    sessionStorage.setItem('analytics', JSON.stringify(analytics));
+}
+
+function generateSessionId() {
+    const sessionId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    sessionStorage.setItem('sessionId', sessionId);
+    return sessionId;
+}
+
 // ==================== ENHANCED INITIALIZATION ====================
 
 function initializeWebsite() {
@@ -1083,7 +1245,25 @@ function initializeWebsite() {
     setupKeyboardNavigation();
     loadRecentlyViewed();
     
-    console.log('Amazon website initialized successfully with enhanced features');
+    // Initialize analytics
+    generateSessionId();
+    
+    console.log('Amazon website initialized successfully with all enhanced features');
 }
 
-console.log('Amazon simulation script loaded successfully');
+// Override existing functions to include tracking
+const originalAddToCart = addToCart;
+window.addToCart = function(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    trackUserAction('add_to_cart', { productId, productName: product?.title, price: product?.price });
+    return originalAddToCart(productId);
+};
+
+const originalShowProductDetail = showProductDetail;
+window.showProductDetail = function(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    trackUserAction('view_product', { productId, productName: product?.title, category: product?.category });
+    return originalShowProductDetail(productId);
+};
+
+console.log('Amazon simulation script loaded successfully with all features');

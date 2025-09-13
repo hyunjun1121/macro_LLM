@@ -1228,6 +1228,167 @@ class InstagramApp {
         this.showModal('createStoryModal');
     }
 
+    // Story and Highlight functionality
+    publishStory() {
+        const storyContent = document.getElementById('storyContent');
+        if (storyContent && storyContent.files && storyContent.files[0]) {
+            const file = storyContent.files[0];
+            const validation = this.inputValidator.validateFileUpload(file);
+
+            if (!validation.isValid) {
+                this.errorHandler.showErrorMessage(validation.message);
+                return;
+            }
+
+            // Add to user's stories
+            const newStory = {
+                id: Date.now(),
+                type: file.type.startsWith('video/') ? 'video' : 'image',
+                content: URL.createObjectURL(file),
+                timestamp: new Date().toISOString(),
+                views: 0
+            };
+
+            if (!this.mockData.userStories) {
+                this.mockData.userStories = [];
+            }
+            this.mockData.userStories.push(newStory);
+
+            this.errorHandler.showSuccessMessage('Story published successfully! 📱');
+            this.hideModal('createStoryModal');
+            this.updateStoriesDisplay();
+        }
+    }
+
+    updateStoriesDisplay() {
+        // Update the "Your story" display to show new story available
+        const yourStory = document.querySelector('.add-story');
+        if (yourStory && this.mockData.userStories && this.mockData.userStories.length > 0) {
+            yourStory.innerHTML = `
+                <div class="story-img-container">
+                    <img src="${this.mockData.userStories[0].content}" alt="Your story" class="story-img">
+                </div>
+                <span class="story-username">Your story</span>
+            `;
+        }
+    }
+
+    viewStory(username) {
+        this.showStoryModal(username);
+    }
+
+    showStoryModal(username) {
+        const storyModal = document.createElement('div');
+        storyModal.id = 'storyViewModal';
+        storyModal.className = 'modal';
+        storyModal.style.display = 'block';
+        storyModal.innerHTML = `
+            <div class="modal-content story-view-modal">
+                <div class="story-view-container">
+                    <div class="story-view-header">
+                        <div class="story-user-info">
+                            <img src="https://via.placeholder.com/32" alt="${username}" class="story-profile-img">
+                            <span class="story-username">${username}</span>
+                            <span class="story-time">2h ago</span>
+                        </div>
+                        <button class="close-modal" onclick="instagramApp.hideModal('storyViewModal')">&times;</button>
+                    </div>
+                    <div class="story-content">
+                        <img src="https://via.placeholder.com/400x600" alt="Story content" class="story-media">
+                    </div>
+                    <div class="story-controls">
+                        <input type="text" placeholder="Reply to ${username}..." class="story-reply-input">
+                        <button class="story-reply-btn">Send</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(storyModal);
+        document.body.style.overflow = 'hidden';
+
+        // Auto-advance story after 5 seconds
+        setTimeout(() => {
+            if (document.getElementById('storyViewModal')) {
+                this.hideModal('storyViewModal');
+            }
+        }, 5000);
+    }
+
+    // Highlight management
+    createHighlight() {
+        const highlightModal = document.createElement('div');
+        highlightModal.id = 'createHighlightModal';
+        highlightModal.className = 'modal';
+        highlightModal.style.display = 'block';
+        highlightModal.innerHTML = `
+            <div class="modal-content create-highlight-modal">
+                <div class="highlight-modal-header">
+                    <h2>New Highlight</h2>
+                    <button class="close-modal" onclick="instagramApp.hideModal('createHighlightModal')">&times;</button>
+                </div>
+                <div class="highlight-modal-content">
+                    <div class="highlight-cover-selection">
+                        <h3>Choose Cover</h3>
+                        <div class="cover-options">
+                            <div class="cover-option" data-cover="https://via.placeholder.com/77">
+                                <img src="https://via.placeholder.com/77" alt="Cover option">
+                            </div>
+                            <div class="cover-option" data-cover="https://via.placeholder.com/77">
+                                <img src="https://via.placeholder.com/77" alt="Cover option">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="highlight-title-input">
+                        <input type="text" id="highlightTitle" placeholder="Highlight name" maxlength="30">
+                        <span class="character-count">0/30</span>
+                    </div>
+                    <button onclick="instagramApp.saveHighlight()" class="save-highlight-btn">Done</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(highlightModal);
+        document.body.style.overflow = 'hidden';
+
+        // Add character counter
+        const titleInput = highlightModal.querySelector('#highlightTitle');
+        const charCount = highlightModal.querySelector('.character-count');
+        titleInput.addEventListener('input', () => {
+            charCount.textContent = `${titleInput.value.length}/30`;
+        });
+    }
+
+    saveHighlight() {
+        const titleInput = document.getElementById('highlightTitle');
+        const title = titleInput.value.trim();
+
+        if (!title) {
+            this.errorHandler.showErrorMessage('Please enter a highlight name');
+            return;
+        }
+
+        const selectedCover = document.querySelector('.cover-option.selected');
+        const coverImage = selectedCover ? selectedCover.dataset.cover : 'https://via.placeholder.com/77';
+
+        const newHighlight = {
+            id: Date.now(),
+            title: this.inputValidator.sanitizeInput(title),
+            cover: coverImage,
+            stories: []
+        };
+
+        this.mockData.highlights.push(newHighlight);
+        this.errorHandler.showSuccessMessage('Highlight created successfully!');
+        this.hideModal('createHighlightModal');
+        this.updateHighlightsDisplay();
+    }
+
+    updateHighlightsDisplay() {
+        // This would update the highlights section in the profile
+        console.log('Highlights updated:', this.mockData.highlights);
+    }
+
     handleStoryUpload(file) {
         if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
             const reader = new FileReader();
@@ -1960,6 +2121,633 @@ class InstagramApp {
             this.mockData.closeFriends.splice(index, 1);
             this.errorHandler.showSuccessMessage(`Removed ${username} from close friends`);
         }
+    }
+
+    // Reels functionality
+    createReel() {
+        const reelModal = document.createElement('div');
+        reelModal.id = 'createReelModal';
+        reelModal.className = 'modal';
+        reelModal.style.display = 'block';
+        reelModal.innerHTML = `
+            <div class="modal-content create-reel-modal">
+                <div class="reel-modal-header">
+                    <button class="close-modal" onclick="instagramApp.hideModal('createReelModal')">&times;</button>
+                    <h2>Create Reel</h2>
+                    <button class="reel-next-btn" onclick="instagramApp.publishReel()">Share</button>
+                </div>
+                <div class="reel-modal-content">
+                    <div class="reel-upload-area">
+                        <i class="fas fa-video"></i>
+                        <p>Select video for your Reel</p>
+                        <input type="file" id="reelVideoUpload" accept="video/*" style="display: none;">
+                        <button onclick="document.getElementById('reelVideoUpload').click()" class="select-video-btn">Select from device</button>
+                    </div>
+                    <div class="reel-edit-section" style="display: none;">
+                        <div class="reel-preview">
+                            <video id="reelPreview" controls></video>
+                        </div>
+                        <div class="reel-options">
+                            <textarea id="reelCaption" placeholder="Write a caption..." maxlength="2200"></textarea>
+                            <div class="reel-settings">
+                                <label>
+                                    <input type="checkbox" id="allowComments"> Allow comments
+                                </label>
+                                <label>
+                                    <input type="checkbox" id="showLikes"> Show likes
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(reelModal);
+        document.body.style.overflow = 'hidden';
+
+        // Handle video upload
+        const videoInput = reelModal.querySelector('#reelVideoUpload');
+        videoInput.addEventListener('change', (e) => {
+            this.handleReelVideoUpload(e.target.files[0]);
+        });
+    }
+
+    handleReelVideoUpload(file) {
+        const validation = this.inputValidator.validateFileUpload(file);
+        if (!validation.isValid) {
+            this.errorHandler.showErrorMessage(validation.message);
+            return;
+        }
+
+        if (!file.type.startsWith('video/')) {
+            this.errorHandler.showErrorMessage('Please select a video file');
+            return;
+        }
+
+        const reelPreview = document.getElementById('reelPreview');
+        const uploadArea = document.querySelector('.reel-upload-area');
+        const editSection = document.querySelector('.reel-edit-section');
+
+        reelPreview.src = URL.createObjectURL(file);
+        uploadArea.style.display = 'none';
+        editSection.style.display = 'block';
+    }
+
+    publishReel() {
+        const caption = document.getElementById('reelCaption').value.trim();
+        const allowComments = document.getElementById('allowComments').checked;
+        const showLikes = document.getElementById('showLikes').checked;
+
+        const validation = this.inputValidator.validatePostCaption(caption);
+        if (!validation.isValid) {
+            this.errorHandler.showErrorMessage(validation.message);
+            return;
+        }
+
+        const newReel = {
+            id: Date.now(),
+            type: 'reel',
+            username: this.currentUser.username,
+            avatar: this.currentUser.avatar,
+            video: document.getElementById('reelPreview').src,
+            caption: this.inputValidator.sanitizeInput(caption),
+            likes: 0,
+            comments: [],
+            shares: 0,
+            plays: 0,
+            timeAgo: 'now',
+            liked: false,
+            bookmarked: false,
+            allowComments,
+            showLikes
+        };
+
+        // Add to posts or separate reels array
+        this.mockData.posts.unshift(newReel);
+        this.savePosts();
+
+        this.errorHandler.showSuccessMessage('Reel shared successfully! 🎬');
+        this.hideModal('createReelModal');
+        this.refreshFeed();
+    }
+
+    // Shopping functionality
+    tagProducts(postId) {
+        const productModal = document.createElement('div');
+        productModal.id = 'productTagModal';
+        productModal.className = 'modal';
+        productModal.style.display = 'block';
+        productModal.innerHTML = `
+            <div class="modal-content product-tag-modal">
+                <div class="product-tag-header">
+                    <h2>Tag Products</h2>
+                    <button class="close-modal" onclick="instagramApp.hideModal('productTagModal')">&times;</button>
+                </div>
+                <div class="product-tag-content">
+                    <div class="product-search">
+                        <input type="text" placeholder="Search products..." id="productSearch">
+                        <div class="product-suggestions" id="productSuggestions"></div>
+                    </div>
+                    <div class="tagged-products-list" id="taggedProductsList">
+                        <h3>Tagged Products</h3>
+                        <div class="tagged-products"></div>
+                    </div>
+                    <button onclick="instagramApp.saveProductTags(${postId})" class="save-tags-btn">Done</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(productModal);
+        document.body.style.overflow = 'hidden';
+
+        // Mock product search functionality
+        const searchInput = productModal.querySelector('#productSearch');
+        searchInput.addEventListener('input', (e) => {
+            this.searchProducts(e.target.value);
+        });
+    }
+
+    searchProducts(query) {
+        if (query.length < 2) {
+            document.getElementById('productSuggestions').innerHTML = '';
+            return;
+        }
+
+        // Mock product data
+        const mockProducts = [
+            { id: 1, name: 'Wireless Headphones', price: '$99.99', image: 'https://via.placeholder.com/50' },
+            { id: 2, name: 'Smartphone Case', price: '$24.99', image: 'https://via.placeholder.com/50' },
+            { id: 3, name: 'Coffee Mug', price: '$14.99', image: 'https://via.placeholder.com/50' },
+            { id: 4, name: 'Laptop Stand', price: '$49.99', image: 'https://via.placeholder.com/50' }
+        ];
+
+        const filteredProducts = mockProducts.filter(product =>
+            product.name.toLowerCase().includes(query.toLowerCase())
+        );
+
+        const suggestionsHTML = filteredProducts.map(product => `
+            <div class="product-suggestion" onclick="instagramApp.addProductTag(${product.id}, '${product.name}', '${product.price}', '${product.image}')">
+                <img src="${product.image}" alt="${product.name}">
+                <div class="product-info">
+                    <span class="product-name">${product.name}</span>
+                    <span class="product-price">${product.price}</span>
+                </div>
+            </div>
+        `).join('');
+
+        document.getElementById('productSuggestions').innerHTML = suggestionsHTML;
+    }
+
+    addProductTag(productId, name, price, image) {
+        const taggedProducts = document.querySelector('.tagged-products');
+        const existingTag = taggedProducts.querySelector(`[data-product-id="${productId}"]`);
+
+        if (existingTag) {
+            this.errorHandler.showErrorMessage('Product already tagged');
+            return;
+        }
+
+        const productTag = document.createElement('div');
+        productTag.className = 'tagged-product-item';
+        productTag.dataset.productId = productId;
+        productTag.innerHTML = `
+            <img src="${image}" alt="${name}">
+            <div class="tagged-product-info">
+                <span class="tagged-product-name">${name}</span>
+                <span class="tagged-product-price">${price}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="remove-tag-btn">&times;</button>
+        `;
+
+        taggedProducts.appendChild(productTag);
+        document.getElementById('productSuggestions').innerHTML = '';
+        document.getElementById('productSearch').value = '';
+    }
+
+    saveProductTags(postId) {
+        const taggedProducts = Array.from(document.querySelectorAll('.tagged-product-item')).map(item => ({
+            id: item.dataset.productId,
+            name: item.querySelector('.tagged-product-name').textContent,
+            price: item.querySelector('.tagged-product-price').textContent
+        }));
+
+        // Save product tags to post
+        const post = this.mockData.posts.find(p => p.id === postId);
+        if (post) {
+            post.productTags = taggedProducts;
+            this.savePosts();
+        }
+
+        this.errorHandler.showSuccessMessage(`Tagged ${taggedProducts.length} products`);
+        this.hideModal('productTagModal');
+    }
+
+    // Business account features
+    viewInsights() {
+        const insightsModal = document.createElement('div');
+        insightsModal.id = 'insightsModal';
+        insightsModal.className = 'modal';
+        insightsModal.style.display = 'block';
+        insightsModal.innerHTML = `
+            <div class="modal-content insights-modal">
+                <div class="insights-header">
+                    <h2>Insights</h2>
+                    <button class="close-modal" onclick="instagramApp.hideModal('insightsModal')">&times;</button>
+                </div>
+                <div class="insights-content">
+                    <div class="insights-overview">
+                        <div class="insight-metric" data-metric="reach">
+                            <span class="metric-value">1,234</span>
+                            <span class="metric-label">Accounts reached</span>
+                        </div>
+                        <div class="insight-metric" data-metric="interactions">
+                            <span class="metric-value">567</span>
+                            <span class="metric-label">Content interactions</span>
+                        </div>
+                        <div class="insight-metric" data-metric="followers">
+                            <span class="metric-value">89</span>
+                            <span class="metric-label">Total followers</span>
+                        </div>
+                    </div>
+                    <div class="insights-chart">
+                        <h3>Activity</h3>
+                        <div class="chart-placeholder">
+                            <p>📊 Chart would be displayed here</p>
+                        </div>
+                    </div>
+                    <div class="export-insights">
+                        <button onclick="instagramApp.exportInsights()" class="export-btn">Export Data</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(insightsModal);
+        document.body.style.overflow = 'hidden';
+    }
+
+    exportInsights() {
+        const insightsData = {
+            reach: document.querySelector('[data-metric="reach"] .metric-value').textContent,
+            interactions: document.querySelector('[data-metric="interactions"] .metric-value').textContent,
+            followers: document.querySelector('[data-metric="followers"] .metric-value').textContent,
+            exportDate: new Date().toISOString()
+        };
+
+        console.log('Insights exported:', insightsData);
+        this.errorHandler.showSuccessMessage('Insights data exported successfully!');
+    }
+
+    // Auto-reply functionality
+    enableAutoReply(messages = []) {
+        if (!this.autoReplyActive) {
+            this.autoReplyActive = true;
+            this.autoReplyMessages = messages.length > 0 ? messages : [
+                "Thanks for your message!",
+                "I'll get back to you soon!",
+                "Appreciate you reaching out!",
+                "Thanks for connecting!"
+            ];
+            this.errorHandler.showSuccessMessage('Auto-reply enabled');
+        }
+    }
+
+    disableAutoReply() {
+        this.autoReplyActive = false;
+        this.errorHandler.showSuccessMessage('Auto-reply disabled');
+    }
+
+    // Bulk action functionality
+    bulkActionPosts(action, postIds = []) {
+        if (postIds.length === 0) {
+            // Get all visible post IDs if none specified
+            postIds = Array.from(document.querySelectorAll('.post')).map(post =>
+                parseInt(post.dataset.postId)
+            ).filter(id => !isNaN(id));
+        }
+
+        let successCount = 0;
+        postIds.forEach(postId => {
+            const post = this.mockData.posts.find(p => p.id === postId);
+            if (post) {
+                switch(action) {
+                    case 'like':
+                        post.liked = true;
+                        post.likes = (post.likes || 0) + 1;
+                        break;
+                    case 'bookmark':
+                        post.bookmarked = true;
+                        this.savePost(postId);
+                        break;
+                    case 'archive':
+                        this.archivePost(postId);
+                        break;
+                }
+                successCount++;
+            }
+        });
+
+        this.savePosts();
+        this.refreshFeed();
+        this.errorHandler.showSuccessMessage(`Bulk ${action} completed on ${successCount} posts`);
+    }
+
+    // Hashtag analysis functionality
+    analyzeHashtags(content) {
+        const hashtags = content.match(/#[\w]+/g) || [];
+        const analysis = {
+            count: hashtags.length,
+            hashtags: hashtags,
+            popularityScore: hashtags.length * 10 + Math.random() * 50,
+            suggestions: ['#popular', '#trending', '#viral']
+        };
+
+        return analysis;
+    }
+
+    // Content scheduling (mock functionality)
+    schedulePost(content, scheduledTime) {
+        const scheduledPost = {
+            id: Date.now(),
+            content: this.inputValidator.sanitizeInput(content),
+            scheduledTime: scheduledTime,
+            status: 'scheduled',
+            createdAt: new Date().toISOString()
+        };
+
+        if (!this.mockData.scheduledPosts) {
+            this.mockData.scheduledPosts = [];
+        }
+        this.mockData.scheduledPosts.push(scheduledPost);
+
+        this.errorHandler.showSuccessMessage('Post scheduled successfully!');
+        return scheduledPost.id;
+    }
+
+    // Advanced features for macro tasks
+
+    // Multi-account management system
+    switchAccount(accountData) {
+        if (!this.accounts) {
+            this.accounts = [];
+        }
+
+        const newAccount = {
+            username: accountData.username,
+            token: accountData.token,
+            avatar: accountData.avatar || 'https://via.placeholder.com/32',
+            switchedAt: new Date().toISOString()
+        };
+
+        this.accounts.push(newAccount);
+        this.currentUser = { ...this.currentUser, ...newAccount };
+        this.updateUIForAccount(newAccount);
+
+        console.log(`Switched to account: ${newAccount.username}`);
+    }
+
+    updateUIForAccount(account) {
+        // Update profile images
+        const profileImages = document.querySelectorAll('.profile-img, .sidebar-profile-img');
+        profileImages.forEach(img => {
+            img.src = account.avatar;
+            img.alt = `${account.username}'s profile picture`;
+        });
+
+        // Update username displays
+        const usernameElements = document.querySelectorAll('.sidebar-username, .post-username');
+        usernameElements.forEach(element => {
+            if (element.classList.contains('sidebar-username')) {
+                element.textContent = account.username;
+            }
+        });
+    }
+
+    // Data extraction and analysis
+    extractProfileData(username) {
+        const profileData = {
+            username: username,
+            extractedAt: new Date().toISOString(),
+            followers: this.generateRandomMetric(100, 10000),
+            following: this.generateRandomMetric(50, 2000),
+            posts: this.generateRandomMetric(10, 500),
+            bio: this.generateSampleBio(),
+            engagement_rate: (Math.random() * 10).toFixed(2),
+            last_active: this.generateRecentDate(),
+            hashtags_used: this.extractHashtags(),
+            avg_likes: this.generateRandomMetric(50, 1000)
+        };
+
+        // Store extracted data
+        if (!this.extractedData) {
+            this.extractedData = [];
+        }
+        this.extractedData.push(profileData);
+
+        return profileData;
+    }
+
+    generateRandomMetric(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    generateSampleBio() {
+        const bios = [
+            "📸 Photography enthusiast | 🌍 Travel blogger",
+            "💻 Software Developer | ☕ Coffee lover",
+            "🎨 Digital Artist | 🌟 Creating magic daily",
+            "🏋️‍♀️ Fitness coach | 💪 Transform your life",
+            "📚 Book reviewer | 🌱 Sustainable living"
+        ];
+        return bios[Math.floor(Math.random() * bios.length)];
+    }
+
+    generateRecentDate() {
+        const now = new Date();
+        const daysAgo = Math.floor(Math.random() * 30);
+        const recentDate = new Date(now.getTime() - (daysAgo * 24 * 60 * 60 * 1000));
+        return recentDate.toISOString();
+    }
+
+    extractHashtags() {
+        const commonHashtags = ['#photography', '#travel', '#food', '#fitness', '#art', '#nature', '#love', '#instagood'];
+        const count = Math.floor(Math.random() * 5) + 3;
+        return commonHashtags.slice(0, count);
+    }
+
+    // Content analysis and pattern detection
+    analyzeEngagementPatterns() {
+        const posts = document.querySelectorAll('.post');
+        const patterns = {
+            total_posts: posts.length,
+            avg_likes: 0,
+            peak_hours: [],
+            trending_hashtags: [],
+            engagement_trends: []
+        };
+
+        posts.forEach(post => {
+            const likesElement = post.querySelector('.post-likes');
+            if (likesElement) {
+                const likes = this.extractNumberFromText(likesElement.textContent);
+                patterns.avg_likes += likes;
+            }
+
+            const captionElement = post.querySelector('.caption-text');
+            if (captionElement) {
+                const hashtags = this.extractHashtagsFromText(captionElement.textContent);
+                patterns.trending_hashtags = patterns.trending_hashtags.concat(hashtags);
+            }
+        });
+
+        patterns.avg_likes = Math.round(patterns.avg_likes / posts.length);
+        patterns.trending_hashtags = [...new Set(patterns.trending_hashtags)]; // Remove duplicates
+
+        return patterns;
+    }
+
+    extractNumberFromText(text) {
+        const matches = text.match(/\d+/g);
+        return matches ? parseInt(matches[0].replace(/,/g, '')) : 0;
+    }
+
+    extractHashtagsFromText(text) {
+        const hashtags = text.match(/#\w+/g);
+        return hashtags || [];
+    }
+
+    // Automated content generation
+    generateContextualComment(postCaption) {
+        const caption = postCaption.toLowerCase();
+
+        if (caption.includes('food') || caption.includes('restaurant')) {
+            return this.getRandomComment([
+                "Looks delicious! 😋",
+                "Making me hungry! 🤤",
+                "What's the recipe?",
+                "Where is this place?"
+            ]);
+        }
+
+        if (caption.includes('travel') || caption.includes('vacation')) {
+            return this.getRandomComment([
+                "Amazing view! 🌟",
+                "Added to my bucket list!",
+                "How was the weather?",
+                "Beautiful destination! 📸"
+            ]);
+        }
+
+        if (caption.includes('workout') || caption.includes('gym')) {
+            return this.getRandomComment([
+                "Keep it up! 💪",
+                "Motivation goals! 🔥",
+                "What's your routine?",
+                "Inspiring! 👏"
+            ]);
+        }
+
+        // Default comments
+        return this.getRandomComment([
+            "Great post! 👍",
+            "Love this! ❤️",
+            "Amazing! 🌟",
+            "Nice shot! 📸"
+        ]);
+    }
+
+    getRandomComment(comments) {
+        return comments[Math.floor(Math.random() * comments.length)];
+    }
+
+    // Advanced automation helpers
+    simulateHumanBehavior() {
+        const delay = Math.random() * 2000 + 500; // Random delay between 0.5-2.5 seconds
+        return new Promise(resolve => setTimeout(resolve, delay));
+    }
+
+    async performBulkActions(actions, options = {}) {
+        const { delay = true, maxConcurrent = 3 } = options;
+        const results = [];
+
+        for (let i = 0; i < actions.length; i += maxConcurrent) {
+            const batch = actions.slice(i, i + maxConcurrent);
+
+            const batchPromises = batch.map(async (action) => {
+                try {
+                    if (delay) await this.simulateHumanBehavior();
+                    const result = await this.executeAction(action);
+                    return { success: true, action, result };
+                } catch (error) {
+                    return { success: false, action, error: error.message };
+                }
+            });
+
+            const batchResults = await Promise.all(batchPromises);
+            results.push(...batchResults);
+        }
+
+        return results;
+    }
+
+    async executeAction(action) {
+        switch (action.type) {
+            case 'like':
+                return this.performLikeAction(action.target);
+            case 'comment':
+                return this.performCommentAction(action.target, action.text);
+            case 'follow':
+                return this.performFollowAction(action.target);
+            case 'bookmark':
+                return this.performBookmarkAction(action.target);
+            default:
+                throw new Error(`Unknown action type: ${action.type}`);
+        }
+    }
+
+    performLikeAction(selector) {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.click();
+            return { clicked: true, selector };
+        }
+        throw new Error(`Element not found: ${selector}`);
+    }
+
+    performCommentAction(postSelector, commentText) {
+        // Implementation for adding comments
+        const post = document.querySelector(postSelector);
+        if (post) {
+            const commentBtn = post.querySelector('.action-btn[aria-label*="Comment"]');
+            if (commentBtn) {
+                commentBtn.click();
+                // Add comment logic here
+                return { commented: true, text: commentText };
+            }
+        }
+        throw new Error(`Comment action failed for: ${postSelector}`);
+    }
+
+    performFollowAction(userSelector) {
+        const followBtn = document.querySelector(`${userSelector} .follow-btn`);
+        if (followBtn && followBtn.textContent.includes('Follow')) {
+            followBtn.click();
+            return { followed: true, user: userSelector };
+        }
+        throw new Error(`Follow action failed for: ${userSelector}`);
+    }
+
+    performBookmarkAction(postSelector) {
+        const post = document.querySelector(postSelector);
+        if (post) {
+            const bookmarkBtn = post.querySelector('.bookmark-btn');
+            if (bookmarkBtn) {
+                bookmarkBtn.click();
+                return { bookmarked: true, post: postSelector };
+            }
+        }
+        throw new Error(`Bookmark action failed for: ${postSelector}`);
     }
 
     viewProfile(username) {
