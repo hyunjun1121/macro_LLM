@@ -62,7 +62,7 @@ class CommentSystem {
             </div>
             <div class="comment-buttons">
                 <button class="btn-secondary" onclick="window.commentSystem && window.commentSystem.cancelComment()">Cancel</button>
-                <button class="btn-primary" onclick="window.commentSystem && window.commentSystem.addComment()">Comment</button>
+                <button class="btn-primary comment-submit" onclick="window.commentSystem && window.commentSystem.addComment()">Comment</button>
             </div>
         `;
         
@@ -348,18 +348,18 @@ class CommentSystem {
         const canModerate = true; // Assume current user is video owner
         
         return `
-            <div class="comment" data-comment-id="${comment.id}">
+            <div class="comment comment-item" data-comment-id="${comment.id}">
                 ${comment.pinned ? '<div class="pinned-indicator"><i class="fas fa-thumbtack"></i> Pinned by creator</div>' : ''}
                 <img src="${comment.avatar}" alt="${comment.username}" class="comment-avatar">
                 <div class="comment-content">
                     <div class="comment-header">
                         <span class="comment-author">${comment.username}</span>
-                        <span class="comment-time">${comment.timestamp}${comment.edited ? ' (edited)' : ''}</span>
+                        <span class="comment-time comment-timestamp">${comment.timestamp}${comment.edited ? ' (edited)' : ''}</span>
                         ${comment.hearted ? '<i class="fas fa-heart hearted" title="Hearted by creator"></i>' : ''}
                     </div>
                     <p class="comment-text">${comment.text}</p>
                     <div class="comment-actions">
-                        <button class="comment-action ${comment.likedByUser ? 'active' : ''}" onclick="window.commentSystem && window.commentSystem.likeComment('${comment.id}')">
+                        <button class="comment-action comment-likes ${comment.likedByUser ? 'active' : ''}" onclick="window.commentSystem && window.commentSystem.likeComment('${comment.id}')">
                             <i class="fas fa-thumbs-up"></i>
                             <span>${comment.likes || ''}</span>
                         </button>
@@ -367,7 +367,7 @@ class CommentSystem {
                             <i class="fas fa-thumbs-down"></i>
                             ${comment.dislikes ? `<span>${comment.dislikes}</span>` : ''}
                         </button>
-                        <button class="comment-action" onclick="window.commentSystem && window.commentSystem.replyToComment('${comment.id}')">Reply</button>
+                        <button class="comment-action reply-btn" onclick="window.commentSystem && window.commentSystem.replyToComment('${comment.id}')">Reply</button>
                         
                         <div class="comment-menu">
                             <button class="comment-action menu-toggle" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'">

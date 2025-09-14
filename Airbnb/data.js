@@ -1007,21 +1007,49 @@ const pricingHistory = {
     ]
 };
 
-// Availability calendar data
+// Availability calendar data with 90-day forecast
 const availabilityData = {};
 listings.forEach(listing => {
     const calendar = [];
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 90; i++) {
         const date = new Date();
         date.setDate(date.getDate() + i);
+        
+        // Create realistic availability patterns
+        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+        const isHoliday = Math.random() > 0.85;
+        let baseAvailability = 0.7;
+        
+        if (listing.category === 'luxury') baseAvailability = 0.6;
+        if (isWeekend) baseAvailability -= 0.2;
+        if (isHoliday) baseAvailability -= 0.3;
+        
         calendar.push({
             date: date.toISOString().split('T')[0],
-            available: Math.random() > 0.3,
-            price: listing.price + Math.floor(Math.random() * 20) - 10
+            available: Math.random() < baseAvailability,
+            price: listing.price + Math.floor(Math.random() * 40) - 20,
+            demandScore: Math.random() * 10,
+            lastUpdated: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString()
         });
     }
     availabilityData[listing.id] = calendar;
 });
+
+// Calendar widget simulation data
+const calendarWidgetData = {
+    currentMonth: new Date().getMonth(),
+    currentYear: new Date().getFullYear(),
+    selectedDates: [],
+    availabilityCache: {},
+    
+    // Simulate real-time availability changes
+    simulateAvailabilityChange: function() {
+        const randomListing = Object.keys(availabilityData)[Math.floor(Math.random() * Object.keys(availabilityData).length)];
+        const randomDay = Math.floor(Math.random() * 30);
+        availabilityData[randomListing][randomDay].available = !availabilityData[randomListing][randomDay].available;
+        availabilityData[randomListing][randomDay].lastUpdated = new Date().toISOString();
+    }
+};
 
 // Export data for use in other scripts
 if (typeof window !== 'undefined') {
@@ -1037,6 +1065,7 @@ if (typeof window !== 'undefined') {
         sessionTokens,
         messages,
         pricingHistory,
-        availabilityData
+        availabilityData,
+        calendarWidgetData
     };
 }

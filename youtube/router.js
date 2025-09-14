@@ -160,13 +160,21 @@ class PageRenderer {
             <div class="page-header">
                 <h1>Library</h1>
                 <p>Your saved videos and playlists</p>
+                <div class="export-actions">
+                    <button class="btn-secondary csv-export-btn" onclick="window.userAnalytics && window.userAnalytics.exportLikedVideosCSV()" data-export="liked">
+                        <i class="fas fa-download"></i> Export Liked Videos
+                    </button>
+                    <button class="btn-secondary csv-export-btn" onclick="window.userAnalytics && window.userAnalytics.exportCompleteAnalyticsCSV()" data-export="complete">
+                        <i class="fas fa-chart-bar"></i> Export Analytics
+                    </button>
+                </div>
             </div>
             
             <div class="library-sections">
                 <div class="library-section">
                     <div class="section-header">
                         <h3>Recently created</h3>
-                        <button class="btn-primary" onclick="window.playlistManager && window.playlistManager.showCreatePlaylistModal()">
+                        <button class="btn-primary" onclick="window.playlistManager && window.playlistManager.showCreatePlaylistModal()" data-action="createPlaylist">
                             <i class="fas fa-plus"></i> New playlist
                         </button>
                     </div>
@@ -233,6 +241,17 @@ class PageRenderer {
             <div class="page-header">
                 <h1>History</h1>
                 <p>Videos you've watched</p>
+                <div class="export-actions">
+                    <button class="btn-secondary csv-export-btn" onclick="window.userAnalytics && window.userAnalytics.exportWatchHistoryCSV()" data-export="history">
+                        <i class="fas fa-download"></i> Export Watch History
+                    </button>
+                    <button class="btn-secondary csv-export-btn" onclick="window.userAnalytics && window.userAnalytics.exportActivityLogCSV()" data-export="activity">
+                        <i class="fas fa-list"></i> Export Activity Log
+                    </button>
+                    <button class="btn-secondary csv-export-btn" onclick="window.userAnalytics && window.userAnalytics.exportEngagementDataCSV()" data-export="engagement">
+                        <i class="fas fa-chart-line"></i> Export Engagement
+                    </button>
+                </div>
             </div>
             <div class="video-list">
                 ${mockData.user.watchHistory.length > 0 ? 
@@ -322,7 +341,7 @@ class PageRenderer {
                     <div class="video-meta">
                         <span class="video-stats">${video.views} views • ${video.uploadDate}</span>
                         <div class="video-actions">
-                            <button class="action-btn like-btn ${mockData.user.likedVideos.includes(videoId) ? 'active' : ''}">
+                            <button class="action-btn btn-like like-btn ${mockData.user.likedVideos.includes(videoId) ? 'active' : ''}">
                                 <i class="fas fa-thumbs-up"></i>
                                 <span>${this.formatNumber(video.likes)}</span>
                             </button>
@@ -338,8 +357,8 @@ class PageRenderer {
                                 <i class="fas fa-download"></i>
                                 Download
                             </button>
-                            <button class="action-btn">
-                                <i class="fas fa-plus"></i>
+                            <button class="action-btn btn-secondary save-btn" title="Save" onclick="window.playlistManager && window.playlistManager.showSaveToPlaylistModal('${videoId}')">
+                                <i class="fas fa-bookmark"></i>
                                 Save
                             </button>
                         </div>
@@ -360,6 +379,12 @@ class PageRenderer {
                     
                     <div class="video-description">
                         <p>${video.description}</p>
+                        ${video.tags ? `<div class="video-tags">
+                            ${video.tags.map(tag => `<span class="video-tag">#${tag}</span>`).join(' ')}
+                        </div>` : ''}
+                        <div class="video-metadata">
+                            <span class="upload-date">Published on ${video.uploadDate}</span>
+                        </div>
                     </div>
                 </div>
                 
@@ -383,10 +408,17 @@ class PageRenderer {
                 </div>
             </div>
             
-            <div class="suggested-videos">
+            <div class="suggested-videos related-videos">
                 <h3>Up next</h3>
-                <div class="suggested-list">
+                <div class="suggested-list related-list">
                     ${this.renderSuggestedVideos(videoId)}
+                </div>
+
+                <div class="recommendations">
+                    <h4>Recommended for you</h4>
+                    <div class="recommended-grid">
+                        ${this.renderRecommendedVideos(videoId)}
+                    </div>
                 </div>
             </div>
         `;
@@ -532,6 +564,62 @@ class PageRenderer {
         }).join('');
     }
 
+    renderRecommendedVideos(currentVideoId) {
+        const currentVideo = mockData.videos[currentVideoId];
+        if (!currentVideo) return '';
+
+        // Get recommended videos based on current video's category and tags
+        const recommendations = Object.keys(mockData.videos)
+            .filter(id => id !== currentVideoId)
+            .map(id => {
+                const video = mockData.videos[id];
+                let relevanceScore = 0;
+
+                // Score based on category match
+                if (video.category === currentVideo.category) {
+                    relevanceScore += 3;
+                }
+
+                // Score based on channel match
+                if (video.channelId === currentVideo.channelId) {
+                    relevanceScore += 2;
+                }
+
+                // Score based on user's watch history
+                if (mockData.user.watchHistory.includes(id)) {
+                    relevanceScore += 1;
+                }
+
+                // Score based on user's liked videos
+                if (mockData.user.likedVideos.includes(id)) {
+                    relevanceScore += 2;
+                }
+
+                return { id, relevanceScore, video };
+            })
+            .sort((a, b) => b.relevanceScore - a.relevanceScore)
+            .slice(0, 6);
+
+        return recommendations.map(({ id, video }) => {
+            const channel = mockData.channels[video.channelId];
+
+            return `
+                <div class="recommended-video" data-video-id="${id}">
+                    <div class="recommended-thumbnail">
+                        <img src="${video.thumbnail}" alt="${video.title}">
+                        <span class="video-duration">${video.duration}</span>
+                    </div>
+                    <div class="recommended-info">
+                        <h4 class="recommended-title">${video.title}</h4>
+                        <p class="recommended-channel">${video.channelName}</p>
+                        <p class="recommended-stats">${video.views} views • ${video.uploadDate}</p>
+                        <p class="recommended-category">${video.category}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
     render404(title = '404 - Page Not Found', message = 'The page you\'re looking for doesn\'t exist.') {
         this.mainContent.innerHTML = `
             <div class="error-page">
@@ -600,11 +688,11 @@ class PageRenderer {
                 <div class="settings-section">
                     <h3>Privacy</h3>
                     <div class="setting-item checkbox">
-                        <input type="checkbox" id="private-subscriptions" checked>
+                        <input type="checkbox" class="toggle-switch" id="private-subscriptions" checked>
                         <label for="private-subscriptions">Keep all my subscriptions private</label>
                     </div>
                     <div class="setting-item checkbox">
-                        <input type="checkbox" id="private-playlists">
+                        <input type="checkbox" class="toggle-switch" id="private-playlists">
                         <label for="private-playlists">Keep all my saved playlists private</label>
                     </div>
                 </div>
@@ -612,11 +700,11 @@ class PageRenderer {
                 <div class="settings-section">
                     <h3>Notifications</h3>
                     <div class="setting-item checkbox">
-                        <input type="checkbox" id="email-notifications" checked>
+                        <input type="checkbox" class="toggle-switch" id="email-notifications" checked>
                         <label for="email-notifications">Send me email notifications</label>
                     </div>
                     <div class="setting-item checkbox">
-                        <input type="checkbox" id="push-notifications" checked>
+                        <input type="checkbox" class="toggle-switch" id="push-notifications" checked>
                         <label for="push-notifications">Send me push notifications</label>
                     </div>
                 </div>
@@ -625,7 +713,7 @@ class PageRenderer {
                     <h3>Playback and performance</h3>
                     <div class="setting-item">
                         <label>Default video quality</label>
-                        <select>
+                        <select class="dropdown-select">
                             <option value="auto" selected>Auto</option>
                             <option value="1080p">1080p</option>
                             <option value="720p">720p</option>
@@ -635,6 +723,22 @@ class PageRenderer {
                     <div class="setting-item checkbox">
                         <input type="checkbox" id="autoplay" checked>
                         <label for="autoplay">Autoplay next video</label>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Data and privacy</h3>
+                    <div class="setting-item">
+                        <label>Export your data</label>
+                        <p class="setting-description">Download your YouTube data for analysis</p>
+                    </div>
+                    <div class="export-buttons">
+                        <button class="btn-secondary csv-export-btn" onclick="window.userAnalytics && window.userAnalytics.exportCategoryPreferencesCSV()" data-export="categories">
+                            <i class="fas fa-download"></i> Export Category Preferences
+                        </button>
+                        <button class="btn-secondary csv-export-btn" onclick="window.userAnalytics && window.userAnalytics.exportCompleteAnalyticsCSV()" data-export="complete">
+                            <i class="fas fa-chart-bar"></i> Export Complete Analytics
+                        </button>
                     </div>
                 </div>
             </div>

@@ -373,7 +373,7 @@ export class MultiModelBenchmarkRunner {
 }
 
 // CLI interface
-if (process.argv[1] && import.meta.url === `file:///${process.argv[1].replace(/\\\\/g, '/')}`) {
+if (process.argv[1] && process.argv[1].includes('multiModelBenchmark.js')) {
   const runner = new MultiModelBenchmarkRunner();
   await runner.loadSupportedModels();
 

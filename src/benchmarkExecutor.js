@@ -212,41 +212,24 @@ export class BenchmarkExecutor {
   }
 
   wrapMacroCode(macroCode) {
-    // Wrap the macro code with proper imports and error handling
-    return `
-import path from 'path';
+    // Remove any duplicate imports from LLM code and use it directly
+    let cleanedCode = macroCode.trim();
 
-export default async function executeMacro(page, fileUrl, screenshotsDir) {
-  try {
-    // Ensure screenshots directory exists
-    await page.evaluate(() => {
-      // Add any page-level setup if needed
-    });
-
-    ${macroCode}
-
-  } catch (error) {
-    console.error('Macro execution error:', error);
-
-    // Take error screenshot
-    try {
-      await page.screenshot({
-        path: path.join(screenshotsDir, 'error_screenshot.png'),
-        fullPage: true
-      });
-    } catch (screenshotError) {
-      console.error('Could not take error screenshot:', screenshotError);
+    // If LLM code doesn't start with import, add necessary imports
+    if (!cleanedCode.includes('import path')) {
+      cleanedCode = `import path from 'path';\n\n${cleanedCode}`;
     }
 
-    return {
-      success: false,
-      error: error.message,
-      action: 'Macro execution failed',
-      extractedData: {},
-      screenshots: []
-    };
-  }
-}`;
+    // If LLM code doesn't have export default, add it
+    if (!cleanedCode.includes('export default')) {
+      // Extract the function part and add export default
+      const functionMatch = cleanedCode.match(/async function[^{]*\{[\s\S]*\}$/);
+      if (functionMatch) {
+        cleanedCode = cleanedCode.replace(/async function/, 'export default async function');
+      }
+    }
+
+    return cleanedCode;
   }
 
   async cleanup() {

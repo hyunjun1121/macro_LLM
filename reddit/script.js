@@ -191,6 +191,15 @@ document.addEventListener('DOMContentLoaded', function() {
     initInfiniteScroll();
     setupKeyboardNavigation();
     updateTabPanelLabel('hot');
+
+    // Initialize activity tracking
+    userActivityTracker.loadActivityData();
+    userActivityTracker.startSession();
+
+    // Track page unload
+    window.addEventListener('beforeunload', () => {
+        userActivityTracker.endSession();
+    });
 });
 
 // Setup event listeners
@@ -534,13 +543,130 @@ function updateUserStats() {
     document.querySelector('.stat-item:nth-child(3) .stat-value').textContent = userProfile.comments;
 }
 
-// Community navigation
+// Enhanced Community navigation and analysis
 function navigateToCommunity(communityName) {
-    const filteredPosts = postsData.filter(post => 
+    const filteredPosts = postsData.filter(post =>
         post.community.toLowerCase().includes(communityName.toLowerCase())
     );
     currentPosts = filteredPosts;
     renderPosts();
+
+    // Generate community analytics
+    const analytics = generateCommunityAnalytics(communityName, filteredPosts);
+    console.log(`Community Analytics for ${communityName}:`, analytics);
+
+    return analytics;
+}
+
+function generateCommunityAnalytics(communityName, posts) {
+    const analytics = {
+        communityName: communityName,
+        totalPosts: posts.length,
+        totalEngagement: posts.reduce((sum, post) => sum + post.upvotes + post.downvotes + post.comments, 0),
+        averageUpvotes: posts.reduce((sum, post) => sum + post.upvotes, 0) / posts.length || 0,
+        averageComments: posts.reduce((sum, post) => sum + post.comments, 0) / posts.length || 0,
+        topAuthors: getTopAuthors(posts),
+        postingPatterns: analyzePostingPatterns(posts),
+        engagementTrends: analyzeEngagementTrends(posts),
+        popularTopics: extractPopularTopics(posts)
+    };
+
+    return analytics;
+}
+
+function getTopAuthors(posts) {
+    const authorStats = {};
+    posts.forEach(post => {
+        if (!authorStats[post.author]) {
+            authorStats[post.author] = {
+                postCount: 0,
+                totalUpvotes: 0,
+                totalComments: 0
+            };
+        }
+        authorStats[post.author].postCount++;
+        authorStats[post.author].totalUpvotes += post.upvotes;
+        authorStats[post.author].totalComments += post.comments;
+    });
+
+    return Object.entries(authorStats)
+        .sort((a, b) => b[1].totalUpvotes - a[1].totalUpvotes)
+        .slice(0, 5)
+        .map(([author, stats]) => ({
+            author,
+            ...stats,
+            avgUpvotes: stats.totalUpvotes / stats.postCount
+        }));
+}
+
+function analyzePostingPatterns(posts) {
+    const patterns = {
+        timeDistribution: {},
+        contentLengthDistribution: {
+            short: 0,  // < 100 chars
+            medium: 0, // 100-500 chars
+            long: 0    // > 500 chars
+        }
+    };
+
+    posts.forEach(post => {
+        // Analyze posting times (simplified)
+        const timeCategory = categorizePostTime(post.time);
+        patterns.timeDistribution[timeCategory] = (patterns.timeDistribution[timeCategory] || 0) + 1;
+
+        // Analyze content length
+        const contentLength = (post.content || '').length;
+        if (contentLength < 100) patterns.contentLengthDistribution.short++;
+        else if (contentLength < 500) patterns.contentLengthDistribution.medium++;
+        else patterns.contentLengthDistribution.long++;
+    });
+
+    return patterns;
+}
+
+function categorizePostTime(timeString) {
+    // Simplified time categorization
+    if (timeString.includes('hour')) return 'recent';
+    if (timeString.includes('day')) return 'daily';
+    return 'older';
+}
+
+function analyzeEngagementTrends(posts) {
+    return posts.map(post => ({
+        id: post.id,
+        title: post.title,
+        engagementScore: calculateEngagementScore(post),
+        viralityIndex: calculateViralityIndex(post)
+    })).sort((a, b) => b.engagementScore - a.engagementScore);
+}
+
+function calculateEngagementScore(post) {
+    return (post.upvotes * 1.5) + (post.comments * 2) - (post.downvotes * 0.5);
+}
+
+function calculateViralityIndex(post) {
+    const ratio = post.upvotes / Math.max(post.downvotes, 1);
+    const commentRatio = post.comments / Math.max(post.upvotes, 1);
+    return ratio * commentRatio;
+}
+
+function extractPopularTopics(posts) {
+    const topicWords = {};
+
+    posts.forEach(post => {
+        const words = (post.title + ' ' + (post.content || '')).toLowerCase()
+            .split(/\s+/)
+            .filter(word => word.length > 3);
+
+        words.forEach(word => {
+            topicWords[word] = (topicWords[word] || 0) + 1;
+        });
+    });
+
+    return Object.entries(topicWords)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([word, count]) => ({ word, frequency: count }));
 }
 
 // Add community click handlers
@@ -1131,6 +1257,225 @@ function findParentOfComment(comments, targetCommentId) {
     }
     return null;
 }
+
+// Advanced User Activity Tracking System
+let userActivityTracker = {
+    sessions: [],
+    interactions: [],
+    preferences: {},
+    currentSession: null,
+
+    startSession() {
+        this.currentSession = {
+            startTime: Date.now(),
+            interactions: 0,
+            postsViewed: [],
+            commentsViewed: [],
+            votesGiven: [],
+            communitiesVisited: [],
+            searchQueries: [],
+            timeSpentByTab: {
+                hot: 0,
+                new: 0,
+                top: 0,
+                rising: 0
+            }
+        };
+    },
+
+    endSession() {
+        if (this.currentSession) {
+            this.currentSession.duration = Date.now() - this.currentSession.startTime;
+            this.sessions.push(this.currentSession);
+            this.saveActivityData();
+        }
+    },
+
+    trackInteraction(type, data) {
+        const interaction = {
+            timestamp: Date.now(),
+            type: type,
+            data: data
+        };
+
+        this.interactions.push(interaction);
+
+        if (this.currentSession) {
+            this.currentSession.interactions++;
+
+            switch (type) {
+                case 'post_view':
+                    this.currentSession.postsViewed.push(data.postId);
+                    break;
+                case 'comment_view':
+                    this.currentSession.commentsViewed.push(data.commentId);
+                    break;
+                case 'vote':
+                    this.currentSession.votesGiven.push({
+                        postId: data.postId,
+                        voteType: data.voteType
+                    });
+                    break;
+                case 'community_visit':
+                    if (!this.currentSession.communitiesVisited.includes(data.community)) {
+                        this.currentSession.communitiesVisited.push(data.community);
+                    }
+                    break;
+                case 'search':
+                    this.currentSession.searchQueries.push(data.query);
+                    break;
+                case 'tab_switch':
+                    this.currentSession.timeSpentByTab[data.tab] += 1;
+                    break;
+            }
+        }
+    },
+
+    generateUserProfile() {
+        const profile = {
+            totalSessions: this.sessions.length,
+            totalInteractions: this.interactions.length,
+            averageSessionDuration: this.getAverageSessionDuration(),
+            mostActiveTab: this.getMostActiveTab(),
+            favoriteCommunitites: this.getFavoriteCommunities(),
+            engagementPatterns: this.getEngagementPatterns(),
+            behaviorScore: this.calculateBehaviorScore(),
+            activityHeatmap: this.generateActivityHeatmap(),
+            interactionVelocity: this.calculateInteractionVelocity()
+        };
+
+        return profile;
+    },
+
+    getAverageSessionDuration() {
+        if (this.sessions.length === 0) return 0;
+        const totalDuration = this.sessions.reduce((sum, session) => sum + (session.duration || 0), 0);
+        return totalDuration / this.sessions.length;
+    },
+
+    getMostActiveTab() {
+        const tabCounts = {};
+        this.sessions.forEach(session => {
+            Object.entries(session.timeSpentByTab || {}).forEach(([tab, time]) => {
+                tabCounts[tab] = (tabCounts[tab] || 0) + time;
+            });
+        });
+
+        return Object.entries(tabCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'hot';
+    },
+
+    getFavoriteCommunities() {
+        const communityCounts = {};
+        this.sessions.forEach(session => {
+            (session.communitiesVisited || []).forEach(community => {
+                communityCounts[community] = (communityCounts[community] || 0) + 1;
+            });
+        });
+
+        return Object.entries(communityCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([community, visits]) => ({ community, visits }));
+    },
+
+    getEngagementPatterns() {
+        const patterns = {
+            votingBehavior: this.analyzeVotingBehavior(),
+            commentingFrequency: this.analyzeCommentingFrequency(),
+            browsingDepth: this.analyzeBrowsingDepth()
+        };
+
+        return patterns;
+    },
+
+    analyzeVotingBehavior() {
+        const votes = this.sessions.flatMap(s => s.votesGiven || []);
+        const upvotes = votes.filter(v => v.voteType === 1).length;
+        const downvotes = votes.filter(v => v.voteType === -1).length;
+
+        return {
+            totalVotes: votes.length,
+            upvoteRatio: votes.length > 0 ? upvotes / votes.length : 0,
+            downvoteRatio: votes.length > 0 ? downvotes / votes.length : 0,
+            votingActivity: votes.length / Math.max(this.sessions.length, 1)
+        };
+    },
+
+    analyzeCommentingFrequency() {
+        const commentInteractions = this.interactions.filter(i =>
+            i.type === 'comment_add' || i.type === 'comment_reply'
+        );
+
+        return {
+            totalComments: commentInteractions.length,
+            averageCommentsPerSession: commentInteractions.length / Math.max(this.sessions.length, 1),
+            commentEngagementRate: commentInteractions.length / Math.max(this.interactions.length, 1)
+        };
+    },
+
+    analyzeBrowsingDepth() {
+        const avgPostsPerSession = this.sessions.reduce((sum, s) =>
+            sum + (s.postsViewed || []).length, 0) / Math.max(this.sessions.length, 1);
+
+        const avgCommentsPerSession = this.sessions.reduce((sum, s) =>
+            sum + (s.commentsViewed || []).length, 0) / Math.max(this.sessions.length, 1);
+
+        return {
+            averagePostsViewed: avgPostsPerSession,
+            averageCommentsViewed: avgCommentsPerSession,
+            browsingDepthScore: avgPostsPerSession + (avgCommentsPerSession * 0.5)
+        };
+    },
+
+    calculateBehaviorScore() {
+        const engagementScore = this.interactions.length / Math.max(this.sessions.length, 1);
+        const diversityScore = this.getFavoriteCommunities().length;
+        const consistencyScore = this.sessions.length > 1 ?
+            Math.min(this.getAverageSessionDuration() / 300000, 1) : 0; // Normalize to 5 minutes
+
+        return {
+            engagement: engagementScore,
+            diversity: diversityScore,
+            consistency: consistencyScore,
+            overall: (engagementScore * 0.4) + (diversityScore * 0.3) + (consistencyScore * 0.3)
+        };
+    },
+
+    generateActivityHeatmap() {
+        const heatmap = {};
+        this.interactions.forEach(interaction => {
+            const hour = new Date(interaction.timestamp).getHours();
+            heatmap[hour] = (heatmap[hour] || 0) + 1;
+        });
+
+        return heatmap;
+    },
+
+    calculateInteractionVelocity() {
+        if (this.interactions.length < 2) return 0;
+
+        const timespan = this.interactions[this.interactions.length - 1].timestamp -
+                        this.interactions[0].timestamp;
+        return this.interactions.length / (timespan / (1000 * 60)); // interactions per minute
+    },
+
+    saveActivityData() {
+        safeLocalStorage('set', 'reddit_user_activity', {
+            sessions: this.sessions,
+            interactions: this.interactions.slice(-1000), // Keep last 1000 interactions
+            preferences: this.preferences
+        });
+    },
+
+    loadActivityData() {
+        const data = safeLocalStorage('get', 'reddit_user_activity');
+        if (data) {
+            this.sessions = data.sessions || [];
+            this.interactions = data.interactions || [];
+            this.preferences = data.preferences || {};
+        }
+    }
+};
 
 // Dark Mode Functions
 function toggleDarkMode() {

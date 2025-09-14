@@ -1,41 +1,381 @@
 // Enhanced Facebook functionality with full interactivity
 
-// Extended sample data
+// Extended sample data with comprehensive personal information
 const users = {
     john: {
         name: 'John Doe',
+        firstName: 'John',
+        lastName: 'Doe',
         avatar: 'https://via.placeholder.com/40/1877f2/ffffff?text=JD',
-        status: 'online'
+        status: 'online',
+        email: 'john.doe@email.com',
+        phone: '+1 (555) 123-4567',
+        birthday: '1990-05-15',
+        age: 33,
+        location: {
+            current: 'New York, NY, USA',
+            hometown: 'Boston, MA, USA',
+            coordinates: { lat: 40.7128, lng: -74.0060 }
+        },
+        work: {
+            company: 'TechCorp Inc.',
+            position: 'Senior Software Engineer',
+            startDate: '2018-03-01',
+            location: 'New York, NY',
+            description: 'Full-stack development with focus on React and Node.js'
+        },
+        education: [
+            {
+                school: 'Massachusetts Institute of Technology',
+                degree: 'Master of Science',
+                field: 'Computer Science',
+                startYear: 2014,
+                endYear: 2016
+            },
+            {
+                school: 'Boston University',
+                degree: 'Bachelor of Science',
+                field: 'Computer Engineering',
+                startYear: 2010,
+                endYear: 2014
+            }
+        ],
+        relationship: {
+            status: 'Single',
+            interestedIn: ['Women'],
+            lookingFor: ['Friendship', 'Dating']
+        },
+        languages: ['English (Native)', 'Spanish (Conversational)', 'French (Basic)'],
+        interests: ['Technology', 'Gaming', 'Photography', 'Travel', 'Cooking'],
+        bio: 'Software engineer passionate about creating innovative solutions. Love to travel and try new cuisines!',
+        website: 'https://johndoe.dev',
+        socialMedia: {
+            instagram: '@johndoe_dev',
+            twitter: '@john_codes',
+            linkedin: 'linkedin.com/in/johndoedev'
+        },
+        privacy: {
+            profileVisibility: 'friends',
+            contactInfo: 'friends',
+            posts: 'public',
+            friendsList: 'friends'
+        },
+        joined: '2018-01-15T10:30:00Z',
+        lastActive: '2024-02-15T14:22:00Z'
     },
     sarah: {
         name: 'Sarah Johnson',
+        firstName: 'Sarah',
+        lastName: 'Johnson',
         avatar: 'https://via.placeholder.com/40/e91e63/ffffff?text=SJ',
-        status: 'online'
+        status: 'online',
+        email: 'sarah.johnson@gmail.com',
+        phone: '+1 (555) 234-5678',
+        birthday: '1992-08-22',
+        age: 31,
+        location: {
+            current: 'San Francisco, CA, USA',
+            hometown: 'Portland, OR, USA',
+            coordinates: { lat: 37.7749, lng: -122.4194 }
+        },
+        work: {
+            company: 'Design Studios LLC',
+            position: 'Creative Director',
+            startDate: '2020-06-01',
+            location: 'San Francisco, CA',
+            description: 'Leading creative campaigns for Fortune 500 companies'
+        },
+        education: [
+            {
+                school: 'Art Institute of California',
+                degree: 'Master of Fine Arts',
+                field: 'Graphic Design',
+                startYear: 2014,
+                endYear: 2016
+            }
+        ],
+        relationship: {
+            status: 'In a relationship',
+            partner: 'Mike Chen',
+            since: '2023-01-01',
+            interestedIn: ['Men'],
+            lookingFor: ['Friendship']
+        },
+        languages: ['English (Native)', 'Korean (Fluent)'],
+        interests: ['Art', 'Photography', 'Hiking', 'Yoga', 'Sustainable Living'],
+        bio: 'Creative director with a passion for sustainable design. Always looking for new adventures!',
+        website: 'https://sarahjohnsondesign.com',
+        socialMedia: {
+            instagram: '@sarahj_designs',
+            behance: 'sarahjohnson'
+        },
+        privacy: {
+            profileVisibility: 'public',
+            contactInfo: 'friends',
+            posts: 'public',
+            friendsList: 'friends'
+        },
+        joined: '2019-03-20T16:45:00Z',
+        lastActive: '2024-02-15T15:10:00Z'
     },
     mike: {
         name: 'Mike Chen',
+        firstName: 'Mike',
+        lastName: 'Chen',
         avatar: 'https://via.placeholder.com/40/42b883/ffffff?text=MC',
-        status: 'online'
+        status: 'online',
+        email: 'mike.chen@techmail.com',
+        phone: '+1 (555) 345-6789',
+        birthday: '1988-12-03',
+        age: 35,
+        location: {
+            current: 'Austin, TX, USA',
+            hometown: 'Houston, TX, USA',
+            coordinates: { lat: 30.2672, lng: -97.7431 }
+        },
+        work: {
+            company: 'Startup Innovations',
+            position: 'Co-Founder & CTO',
+            startDate: '2021-01-01',
+            location: 'Austin, TX',
+            description: 'Building next-generation fintech solutions'
+        },
+        education: [
+            {
+                school: 'University of Texas at Austin',
+                degree: 'Doctor of Philosophy',
+                field: 'Computer Science',
+                startYear: 2012,
+                endYear: 2017
+            }
+        ],
+        relationship: {
+            status: 'In a relationship',
+            partner: 'Sarah Johnson',
+            since: '2023-01-01',
+            interestedIn: ['Women'],
+            lookingFor: ['Friendship']
+        },
+        languages: ['English (Native)', 'Mandarin (Native)', 'Japanese (Intermediate)'],
+        interests: ['Entrepreneurship', 'AI/ML', 'Rock Climbing', 'Chess', 'Craft Beer'],
+        bio: 'Tech entrepreneur focused on fintech innovation. Rock climbing enthusiast and chess player.',
+        website: 'https://mikechen.tech',
+        socialMedia: {
+            twitter: '@mike_codes',
+            linkedin: 'linkedin.com/in/mikechen-tech'
+        },
+        privacy: {
+            profileVisibility: 'friends',
+            contactInfo: 'friends',
+            posts: 'friends',
+            friendsList: 'me'
+        },
+        joined: '2019-06-10T12:20:00Z',
+        lastActive: '2024-02-15T13:55:00Z'
     },
     emma: {
         name: 'Emma Wilson',
+        firstName: 'Emma',
+        lastName: 'Wilson',
         avatar: 'https://via.placeholder.com/40/f39c12/ffffff?text=EW',
-        status: 'offline'
+        status: 'offline',
+        email: 'emma.wilson@university.edu',
+        phone: '+1 (555) 456-7890',
+        birthday: '1995-03-10',
+        age: 28,
+        location: {
+            current: 'Chicago, IL, USA',
+            hometown: 'Milwaukee, WI, USA',
+            coordinates: { lat: 41.8781, lng: -87.6298 }
+        },
+        work: {
+            company: 'Northwestern University',
+            position: 'Research Associate',
+            startDate: '2022-09-01',
+            location: 'Chicago, IL',
+            description: 'Conducting research in environmental sustainability'
+        },
+        education: [
+            {
+                school: 'Northwestern University',
+                degree: 'Master of Science',
+                field: 'Environmental Engineering',
+                startYear: 2020,
+                endYear: 2022
+            }
+        ],
+        relationship: {
+            status: 'Single',
+            interestedIn: ['Men', 'Women'],
+            lookingFor: ['Friendship', 'Dating']
+        },
+        languages: ['English (Native)', 'German (Intermediate)'],
+        interests: ['Environmental Science', 'Running', 'Reading', 'Volunteer Work', 'Gardening'],
+        bio: 'Environmental researcher working to make the world more sustainable. Marathon runner and book lover.',
+        privacy: {
+            profileVisibility: 'friends',
+            contactInfo: 'me',
+            posts: 'friends',
+            friendsList: 'friends'
+        },
+        joined: '2020-11-05T09:15:00Z',
+        lastActive: '2024-02-14T22:30:00Z'
     },
     alex: {
         name: 'Alex Rodriguez',
+        firstName: 'Alex',
+        lastName: 'Rodriguez',
         avatar: 'https://via.placeholder.com/40/9b59b6/ffffff?text=AR',
-        status: 'online'
+        status: 'online',
+        email: 'alex.rodriguez@media.com',
+        phone: '+1 (555) 567-8901',
+        birthday: '1991-07-18',
+        age: 32,
+        location: {
+            current: 'Los Angeles, CA, USA',
+            hometown: 'Phoenix, AZ, USA',
+            coordinates: { lat: 34.0522, lng: -118.2437 }
+        },
+        work: {
+            company: 'Media Productions Inc.',
+            position: 'Video Producer',
+            startDate: '2019-04-15',
+            location: 'Los Angeles, CA',
+            description: 'Producing content for digital media platforms'
+        },
+        education: [
+            {
+                school: 'UCLA',
+                degree: 'Bachelor of Arts',
+                field: 'Film and Television',
+                startYear: 2009,
+                endYear: 2013
+            }
+        ],
+        relationship: {
+            status: 'Married',
+            partner: 'Maria Rodriguez',
+            since: '2020-06-20',
+            interestedIn: ['Women'],
+            lookingFor: ['Friendship']
+        },
+        languages: ['English (Native)', 'Spanish (Native)'],
+        interests: ['Filmmaking', 'Music Production', 'Soccer', 'Travel', 'Food'],
+        bio: 'Video producer passionate about storytelling. Love exploring new cultures and cuisines.',
+        website: 'https://alexrodriguezproductions.com',
+        socialMedia: {
+            instagram: '@alex_produces',
+            youtube: 'AlexRodriguezFilms'
+        },
+        privacy: {
+            profileVisibility: 'public',
+            contactInfo: 'friends',
+            posts: 'public',
+            friendsList: 'friends'
+        },
+        joined: '2018-05-22T14:00:00Z',
+        lastActive: '2024-02-15T16:40:00Z'
     },
     lisa: {
         name: 'Lisa Park',
+        firstName: 'Lisa',
+        lastName: 'Park',
         avatar: 'https://via.placeholder.com/40/e74c3c/ffffff?text=LP',
-        status: 'offline'
+        status: 'offline',
+        email: 'lisa.park@healthsystem.org',
+        phone: '+1 (555) 678-9012',
+        birthday: '1987-11-25',
+        age: 36,
+        location: {
+            current: 'Seattle, WA, USA',
+            hometown: 'Vancouver, BC, Canada',
+            coordinates: { lat: 47.6062, lng: -122.3321 }
+        },
+        work: {
+            company: 'Seattle Medical Center',
+            position: 'Pediatric Nurse',
+            startDate: '2015-08-01',
+            location: 'Seattle, WA',
+            description: 'Providing compassionate care to children and families'
+        },
+        education: [
+            {
+                school: 'University of Washington',
+                degree: 'Bachelor of Science',
+                field: 'Nursing',
+                startYear: 2009,
+                endYear: 2013
+            }
+        ],
+        relationship: {
+            status: 'Divorced',
+            interestedIn: ['Men'],
+            lookingFor: ['Friendship', 'Dating']
+        },
+        languages: ['English (Native)', 'Korean (Fluent)', 'French (Basic)'],
+        interests: ['Healthcare', 'Children', 'Hiking', 'Knitting', 'Cooking'],
+        bio: 'Pediatric nurse dedicated to caring for children. Love spending time in nature and crafting.',
+        privacy: {
+            profileVisibility: 'friends',
+            contactInfo: 'friends',
+            posts: 'friends',
+            friendsList: 'me'
+        },
+        joined: '2017-09-30T11:25:00Z',
+        lastActive: '2024-02-14T20:15:00Z'
     },
     jun: {
         name: 'Jun Kim',
+        firstName: 'Jun',
+        lastName: 'Kim',
         avatar: 'https://via.placeholder.com/40/2c3e50/ffffff?text=JK',
-        status: 'online'
+        status: 'online',
+        email: 'jun.kim@fitness.com',
+        phone: '+1 (555) 789-0123',
+        birthday: '1993-09-08',
+        age: 30,
+        location: {
+            current: 'Miami, FL, USA',
+            hometown: 'Seoul, South Korea',
+            coordinates: { lat: 25.7617, lng: -80.1918 }
+        },
+        work: {
+            company: 'Elite Fitness Centers',
+            position: 'Personal Trainer & Nutritionist',
+            startDate: '2020-01-15',
+            location: 'Miami, FL',
+            description: 'Helping clients achieve their fitness and wellness goals'
+        },
+        education: [
+            {
+                school: 'University of Miami',
+                degree: 'Bachelor of Science',
+                field: 'Exercise Science',
+                startYear: 2012,
+                endYear: 2016
+            }
+        ],
+        relationship: {
+            status: 'Single',
+            interestedIn: ['Women'],
+            lookingFor: ['Dating', 'Friendship']
+        },
+        languages: ['Korean (Native)', 'English (Fluent)', 'Spanish (Intermediate)'],
+        interests: ['Fitness', 'Nutrition', 'Marathon Running', 'Martial Arts', 'Beach Volleyball'],
+        bio: 'Personal trainer and marathon runner. Passionate about helping people live healthier lives!',
+        website: 'https://junkimfitness.com',
+        socialMedia: {
+            instagram: '@jun_fitness',
+            youtube: 'JunKimFitness'
+        },
+        privacy: {
+            profileVisibility: 'public',
+            contactInfo: 'friends',
+            posts: 'public',
+            friendsList: 'public'
+        },
+        joined: '2020-02-14T13:45:00Z',
+        lastActive: '2024-02-15T17:20:00Z'
     }
 };
 
@@ -1136,6 +1476,104 @@ setInterval(saveDataToStorage, 30000);
 // Save data before page unload
 window.addEventListener('beforeunload', saveDataToStorage);
 
+// Birthday tracking and reminder system
+function checkBirthdays() {
+    const today = new Date();
+    const todayMonth = today.getMonth() + 1; // getMonth() returns 0-11
+    const todayDate = today.getDate();
+
+    Object.entries(users).forEach(([userId, user]) => {
+        if (user.birthday) {
+            const birthday = new Date(user.birthday);
+            const birthdayMonth = birthday.getMonth() + 1;
+            const birthdayDate = birthday.getDate();
+
+            if (birthdayMonth === todayMonth && birthdayDate === todayDate) {
+                sendBirthdayMessage(userId);
+                logUserActivity('birthday_reminder', {
+                    targetUser: userId,
+                    userName: user.name,
+                    action: 'birthday_reminder_sent'
+                });
+            }
+        }
+    });
+}
+
+function sendBirthdayMessage(userId) {
+    const user = users[userId];
+    if (!user) return;
+
+    const birthdayMessage = {
+        id: generateId(),
+        sender: 'currentUser',
+        receiver: userId,
+        text: `Happy Birthday ${user.firstName}! 🎉 Hope you have a wonderful day!`,
+        timestamp: new Date().toISOString(),
+        type: 'birthday_message',
+        isRead: false
+    };
+
+    // Add to chat messages if structure exists
+    if (typeof chatMessages !== 'undefined') {
+        if (!chatMessages[userId]) {
+            chatMessages[userId] = [];
+        }
+        chatMessages[userId].push(birthdayMessage);
+    }
+
+    // Create notification
+    showNotification(`Birthday message sent to ${user.name}`, 'success');
+
+    console.log(`Birthday reminder sent to ${user.name}`);
+}
+
+function getUpcomingBirthdays(daysAhead = 7) {
+    const today = new Date();
+    const upcomingBirthdays = [];
+
+    Object.entries(users).forEach(([userId, user]) => {
+        if (user.birthday) {
+            const birthday = new Date(user.birthday);
+            const thisYearBirthday = new Date(today.getFullYear(), birthday.getMonth(), birthday.getDate());
+
+            // If birthday already passed this year, check next year
+            if (thisYearBirthday < today) {
+                thisYearBirthday.setFullYear(today.getFullYear() + 1);
+            }
+
+            const timeDiff = thisYearBirthday.getTime() - today.getTime();
+            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+            if (daysDiff <= daysAhead) {
+                upcomingBirthdays.push({
+                    userId: userId,
+                    name: user.name,
+                    birthday: user.birthday,
+                    daysUntil: daysDiff,
+                    age: today.getFullYear() - birthday.getFullYear()
+                });
+            }
+        }
+    });
+
+    return upcomingBirthdays.sort((a, b) => a.daysUntil - b.daysUntil);
+}
+
+function initializeBirthdaySystem() {
+    // Check birthdays on page load
+    checkBirthdays();
+
+    // Set up daily birthday check (runs every 24 hours)
+    setInterval(checkBirthdays, 24 * 60 * 60 * 1000);
+
+    // Store birthday reminders in localStorage
+    const upcomingBirthdays = getUpcomingBirthdays();
+    localStorage.setItem('fbUpcomingBirthdays', JSON.stringify(upcomingBirthdays));
+
+    console.log(`Birthday system initialized. Found ${upcomingBirthdays.length} upcoming birthdays.`);
+}
+
 // Update user interface with current user data
 function updateUIWithUserData() {
     const userData = JSON.parse(localStorage.getItem('fbDemoUser') || '{}');
@@ -1174,6 +1612,15 @@ window.addEventListener('load', function() {
 
     // Update UI with user data
     updateUIWithUserData();
+
+    // Initialize birthday system
+    initializeBirthdaySystem();
+
+    // Initialize friend interaction system
+    initializeFriendInteractionSystem();
+
+    // Initialize content moderation system
+    initializeModerationSystem();
 
     // Setup additional listeners that might need DOM to be fully loaded
     setTimeout(() => {
@@ -1273,3 +1720,563 @@ window.getEngagementStats = () => engagementStats;
 window.getOptimalPostingTime = getOptimalPostingTime;
 window.logUserActivity = logUserActivity;
 window.updateEngagementStats = updateEngagementStats;
+
+// Birthday system exports
+window.checkBirthdays = checkBirthdays;
+window.sendBirthdayMessage = sendBirthdayMessage;
+window.getUpcomingBirthdays = getUpcomingBirthdays;
+window.initializeBirthdaySystem = initializeBirthdaySystem;
+
+// Friend interaction tracking system
+let friendInteractions = {
+    userPairs: {},
+    interactionHistory: [],
+    relationshipStrengths: {}
+};
+
+function trackFriendInteraction(userId1, userId2, interactionType, metadata = {}) {
+    const pairKey = [userId1, userId2].sort().join('-');
+
+    if (!friendInteractions.userPairs[pairKey]) {
+        friendInteractions.userPairs[pairKey] = {
+            messages: 0,
+            likes: 0,
+            comments: 0,
+            shares: 0,
+            profileViews: 0,
+            photoTags: 0,
+            lastInteraction: null,
+            firstInteraction: new Date().toISOString(),
+            totalInteractions: 0
+        };
+    }
+
+    const interaction = friendInteractions.userPairs[pairKey];
+
+    // Update interaction counts
+    if (interaction.hasOwnProperty(interactionType)) {
+        interaction[interactionType]++;
+    }
+
+    interaction.totalInteractions++;
+    interaction.lastInteraction = new Date().toISOString();
+
+    // Add to history
+    const historyEntry = {
+        id: generateId(),
+        timestamp: new Date().toISOString(),
+        users: [userId1, userId2],
+        type: interactionType,
+        metadata: metadata
+    };
+
+    friendInteractions.interactionHistory.push(historyEntry);
+
+    // Calculate relationship strength
+    updateRelationshipStrength(pairKey, userId1, userId2);
+
+    // Log activity
+    logUserActivity('friend_interaction', {
+        users: [userId1, userId2],
+        type: interactionType,
+        pairKey: pairKey
+    });
+
+    // Save to localStorage
+    localStorage.setItem('fbFriendInteractions', JSON.stringify(friendInteractions));
+}
+
+function updateRelationshipStrength(pairKey, userId1, userId2) {
+    const interaction = friendInteractions.userPairs[pairKey];
+
+    // Calculate strength based on weighted interactions
+    const weights = {
+        messages: 3,
+        comments: 2,
+        likes: 1,
+        shares: 4,
+        profileViews: 1,
+        photoTags: 2
+    };
+
+    let totalScore = 0;
+    Object.keys(weights).forEach(type => {
+        totalScore += (interaction[type] || 0) * weights[type];
+    });
+
+    // Factor in recency (interactions in last 30 days get bonus)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const recentInteractions = friendInteractions.interactionHistory.filter(entry =>
+        entry.users.includes(userId1) &&
+        entry.users.includes(userId2) &&
+        new Date(entry.timestamp) > thirtyDaysAgo
+    ).length;
+
+    const recencyBonus = Math.min(recentInteractions * 0.5, 10);
+    const finalScore = totalScore + recencyBonus;
+
+    // Classify relationship strength
+    let strength = 'weak';
+    if (finalScore > 50) strength = 'very_strong';
+    else if (finalScore > 30) strength = 'strong';
+    else if (finalScore > 15) strength = 'moderate';
+    else if (finalScore > 5) strength = 'weak';
+    else strength = 'minimal';
+
+    friendInteractions.relationshipStrengths[pairKey] = {
+        score: finalScore,
+        strength: strength,
+        lastUpdated: new Date().toISOString()
+    };
+}
+
+function getFriendInteractionData(userId1, userId2) {
+    const pairKey = [userId1, userId2].sort().join('-');
+    return {
+        interactions: friendInteractions.userPairs[pairKey] || null,
+        strength: friendInteractions.relationshipStrengths[pairKey] || null,
+        history: friendInteractions.interactionHistory.filter(entry =>
+            entry.users.includes(userId1) && entry.users.includes(userId2)
+        )
+    };
+}
+
+function getStrongestRelationships(userId, limit = 10) {
+    const userRelationships = [];
+
+    Object.entries(friendInteractions.relationshipStrengths).forEach(([pairKey, strength]) => {
+        const [user1, user2] = pairKey.split('-');
+        if (user1 === userId || user2 === userId) {
+            const otherUser = user1 === userId ? user2 : user1;
+            userRelationships.push({
+                userId: otherUser,
+                userName: users[otherUser]?.name || 'Unknown User',
+                ...strength,
+                interactions: friendInteractions.userPairs[pairKey]
+            });
+        }
+    });
+
+    return userRelationships
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limit);
+}
+
+function initializeFriendInteractionSystem() {
+    // Load existing data
+    const savedInteractions = localStorage.getItem('fbFriendInteractions');
+    if (savedInteractions) {
+        try {
+            friendInteractions = JSON.parse(savedInteractions);
+        } catch (error) {
+            console.warn('Failed to load friend interactions:', error);
+        }
+    }
+
+    // Set up automatic tracking for various interactions
+    setupInteractionTracking();
+
+    console.log('Friend interaction tracking system initialized');
+}
+
+function setupInteractionTracking() {
+    // Override existing functions to track interactions
+    const originalSubmitComment = window.submitComment;
+    if (originalSubmitComment) {
+        window.submitComment = function(postId) {
+            const result = originalSubmitComment.call(this, postId);
+            // Track comment interaction
+            const post = posts.find(p => p.id === postId);
+            if (post && post.author) {
+                trackFriendInteraction('currentUser', post.author, 'comments', { postId });
+            }
+            return result;
+        };
+    }
+
+    // Track likes
+    const originalToggleReaction = window.toggleReaction;
+    if (originalToggleReaction) {
+        window.toggleReaction = function(postId, reaction) {
+            const result = originalToggleReaction.call(this, postId, reaction);
+            const post = posts.find(p => p.id === postId);
+            if (post && post.author) {
+                trackFriendInteraction('currentUser', post.author, 'likes', { postId, reaction });
+            }
+            return result;
+        };
+    }
+}
+
+// Friend interaction system exports
+window.trackFriendInteraction = trackFriendInteraction;
+window.getFriendInteractionData = getFriendInteractionData;
+window.getStrongestRelationships = getStrongestRelationships;
+window.initializeFriendInteractionSystem = initializeFriendInteractionSystem;
+
+// Content moderation and spam detection system
+let moderationSystem = {
+    spamKeywords: [
+        'buy now', 'click here', 'free money', 'limited time', 'act now',
+        'urgent', 'congratulations', 'winner', 'cash prize', 'inheritance',
+        'nigerian prince', 'work from home', 'make money fast', 'get rich',
+        'miracle cure', 'lose weight fast', 'penis enlargement', 'viagra'
+    ],
+    suspiciousPatterns: [
+        /(\w)\1{4,}/g,  // Repeated characters (aaaaaaa)
+        /[A-Z]{5,}/g,   // All caps words
+        /(https?:\/\/[^\s]+)/g,  // URLs
+        /(\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4})/g,  // Credit card patterns
+        /call\s*now/gi,
+        /click\s*here/gi
+    ],
+    reportedContent: {},
+    moderationActions: [],
+    autoModerationEnabled: true
+};
+
+function detectSpam(content) {
+    if (!content || typeof content !== 'string') return { isSpam: false, confidence: 0, reasons: [] };
+
+    const reasons = [];
+    let spamScore = 0;
+
+    // Check for spam keywords
+    const lowerContent = content.toLowerCase();
+    const foundKeywords = moderationSystem.spamKeywords.filter(keyword =>
+        lowerContent.includes(keyword.toLowerCase())
+    );
+
+    if (foundKeywords.length > 0) {
+        spamScore += foundKeywords.length * 10;
+        reasons.push(`Contains spam keywords: ${foundKeywords.join(', ')}`);
+    }
+
+    // Check suspicious patterns
+    moderationSystem.suspiciousPatterns.forEach((pattern, index) => {
+        const matches = content.match(pattern);
+        if (matches) {
+            spamScore += matches.length * 5;
+            switch(index) {
+                case 0: reasons.push('Contains excessive repeated characters'); break;
+                case 1: reasons.push('Contains excessive capital letters'); break;
+                case 2: reasons.push('Contains suspicious URLs'); break;
+                case 3: reasons.push('Contains potential credit card numbers'); break;
+                case 4:
+                case 5: reasons.push('Contains suspicious call-to-action phrases'); break;
+            }
+        }
+    });
+
+    // Check content length vs caps ratio
+    const capsCount = (content.match(/[A-Z]/g) || []).length;
+    const capsRatio = capsCount / content.length;
+    if (capsRatio > 0.3 && content.length > 10) {
+        spamScore += 15;
+        reasons.push('Excessive use of capital letters');
+    }
+
+    // Check for excessive punctuation
+    const punctuationCount = (content.match(/[!?]{2,}/g) || []).length;
+    if (punctuationCount > 0) {
+        spamScore += punctuationCount * 5;
+        reasons.push('Excessive punctuation');
+    }
+
+    const confidence = Math.min(spamScore / 100, 1);
+    const isSpam = spamScore >= 30;
+
+    return {
+        isSpam,
+        confidence,
+        score: spamScore,
+        reasons
+    };
+}
+
+function moderateContent(content, contentType = 'post', contentId = null) {
+    const spamAnalysis = detectSpam(content);
+
+    const moderationResult = {
+        id: generateId(),
+        timestamp: new Date().toISOString(),
+        contentId,
+        contentType,
+        content: content.substring(0, 100) + (content.length > 100 ? '...' : ''),
+        spamAnalysis,
+        action: 'none',
+        autoModerated: false
+    };
+
+    if (moderationSystem.autoModerationEnabled && spamAnalysis.isSpam) {
+        if (spamAnalysis.confidence > 0.7) {
+            moderationResult.action = 'blocked';
+            moderationResult.autoModerated = true;
+        } else if (spamAnalysis.confidence > 0.4) {
+            moderationResult.action = 'flagged';
+            moderationResult.autoModerated = true;
+        }
+    }
+
+    // Store moderation action
+    moderationSystem.moderationActions.push(moderationResult);
+
+    // Save to localStorage
+    localStorage.setItem('fbModerationSystem', JSON.stringify(moderationSystem));
+
+    // Log activity
+    logUserActivity('content_moderation', {
+        contentType,
+        action: moderationResult.action,
+        spamScore: spamAnalysis.score,
+        autoModerated: moderationResult.autoModerated
+    });
+
+    return moderationResult;
+}
+
+function reportContent(contentId, contentType, reason, reportedBy = 'currentUser') {
+    const reportId = generateId();
+
+    if (!moderationSystem.reportedContent[contentId]) {
+        moderationSystem.reportedContent[contentId] = {
+            contentId,
+            contentType,
+            reports: [],
+            status: 'pending',
+            created: new Date().toISOString()
+        };
+    }
+
+    moderationSystem.reportedContent[contentId].reports.push({
+        id: reportId,
+        reportedBy,
+        reason,
+        timestamp: new Date().toISOString()
+    });
+
+    // Auto-escalate if multiple reports
+    const reportCount = moderationSystem.reportedContent[contentId].reports.length;
+    if (reportCount >= 3) {
+        moderationSystem.reportedContent[contentId].status = 'escalated';
+    }
+
+    localStorage.setItem('fbModerationSystem', JSON.stringify(moderationSystem));
+
+    logUserActivity('content_report', {
+        contentId,
+        contentType,
+        reason,
+        reportCount
+    });
+
+    return reportId;
+}
+
+function getModerationStats() {
+    const stats = {
+        totalActions: moderationSystem.moderationActions.length,
+        blockedContent: moderationSystem.moderationActions.filter(a => a.action === 'blocked').length,
+        flaggedContent: moderationSystem.moderationActions.filter(a => a.action === 'flagged').length,
+        autoModerated: moderationSystem.moderationActions.filter(a => a.autoModerated).length,
+        totalReports: Object.values(moderationSystem.reportedContent).reduce((sum, item) => sum + item.reports.length, 0),
+        pendingReports: Object.values(moderationSystem.reportedContent).filter(item => item.status === 'pending').length,
+        escalatedReports: Object.values(moderationSystem.reportedContent).filter(item => item.status === 'escalated').length
+    };
+
+    return stats;
+}
+
+function initializeModerationSystem() {
+    // Load existing data
+    const savedModeration = localStorage.getItem('fbModerationSystem');
+    if (savedModeration) {
+        try {
+            const loadedData = JSON.parse(savedModeration);
+            moderationSystem = { ...moderationSystem, ...loadedData };
+        } catch (error) {
+            console.warn('Failed to load moderation system:', error);
+        }
+    }
+
+    // Override post submission to include moderation
+    const originalSubmitPost = window.submitPost;
+    if (originalSubmitPost) {
+        window.submitPost = function() {
+            const postText = document.getElementById('postText');
+            if (postText && postText.value) {
+                const moderationResult = moderateContent(postText.value, 'post');
+
+                if (moderationResult.action === 'blocked') {
+                    showNotification('Your post was blocked due to policy violations', 'error');
+                    return false;
+                } else if (moderationResult.action === 'flagged') {
+                    showNotification('Your post has been flagged for review', 'warning');
+                }
+            }
+
+            return originalSubmitPost.call(this);
+        };
+    }
+
+    // Override comment submission to include moderation
+    const originalSubmitComment = window.submitComment;
+    if (originalSubmitComment) {
+        window.submitComment = function(postId) {
+            const commentText = document.getElementById('commentText');
+            if (commentText && commentText.value) {
+                const moderationResult = moderateContent(commentText.value, 'comment');
+
+                if (moderationResult.action === 'blocked') {
+                    showNotification('Your comment was blocked due to policy violations', 'error');
+                    return false;
+                } else if (moderationResult.action === 'flagged') {
+                    showNotification('Your comment has been flagged for review', 'warning');
+                }
+            }
+
+            return originalSubmitComment.call(this, postId);
+        };
+    }
+
+    console.log('Content moderation system initialized');
+    console.log(`Loaded ${moderationSystem.moderationActions.length} previous moderation actions`);
+}
+
+// Content moderation system exports
+window.detectSpam = detectSpam;
+window.moderateContent = moderateContent;
+window.reportContent = reportContent;
+window.getModerationStats = getModerationStats;
+window.initializeModerationSystem = initializeModerationSystem;
+
+// Profile management functions
+function openProfileModal(userId = 'john') {
+    const modal = document.getElementById('profileModal');
+    if (!modal) return;
+
+    const user = users[userId];
+    if (!user) {
+        console.warn(`User ${userId} not found`);
+        return;
+    }
+
+    // Populate profile modal with user data
+    const avatar = document.getElementById('profileModalAvatar');
+    const name = document.getElementById('profileModalName');
+    const location = document.getElementById('profileModalLocation');
+    const workplace = document.getElementById('profileWorkplace');
+    const education = document.getElementById('profileEducation');
+    const profileLocation = document.getElementById('profileLocation');
+    const hometown = document.getElementById('profileHometown');
+    const relationship = document.getElementById('profileRelationship');
+    const birthday = document.getElementById('profileBirthday');
+    const email = document.getElementById('profileEmail');
+    const phone = document.getElementById('profilePhone');
+    const website = document.getElementById('profileWebsite');
+    const friendsCount = document.getElementById('profileFriendsCount');
+    const followersCount = document.getElementById('profileFollowersCount');
+    const postsCount = document.getElementById('profilePostsCount');
+
+    if (avatar) avatar.src = user.avatar;
+    if (name) name.textContent = user.name;
+    if (location) location.textContent = user.location?.current || 'Location not specified';
+    if (workplace) workplace.textContent = user.work?.company || 'Workplace not specified';
+    if (education && user.education && user.education.length > 0) {
+        education.textContent = user.education[0].school || 'Education not specified';
+    }
+    if (profileLocation) profileLocation.textContent = user.location?.current || 'Location not specified';
+    if (hometown) hometown.textContent = user.location?.hometown || 'Hometown not specified';
+    if (relationship) relationship.textContent = user.relationship?.status || 'Not specified';
+    if (birthday) birthday.textContent = user.birthday ? new Date(user.birthday).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not specified';
+    if (email) email.textContent = user.email || 'Not provided';
+    if (phone) phone.textContent = user.phone || 'Not provided';
+    if (website) website.textContent = user.socialMedia?.website || 'Not provided';
+    if (friendsCount) friendsCount.textContent = user.stats?.friendsCount || '0';
+    if (followersCount) followersCount.textContent = user.stats?.followersCount || '0';
+    if (postsCount) postsCount.textContent = user.stats?.postsCount || '0';
+
+    // Set privacy settings
+    const profileVisibility = document.getElementById('profileVisibility');
+    const contactVisibility = document.getElementById('contactVisibility');
+    const allowFriendRequests = document.getElementById('allowFriendRequests');
+
+    if (profileVisibility && user.privacy?.profileVisibility) {
+        profileVisibility.value = user.privacy.profileVisibility;
+    }
+    if (contactVisibility && user.privacy?.contactVisibility) {
+        contactVisibility.value = user.privacy.contactVisibility;
+    }
+    if (allowFriendRequests && user.privacy?.allowFriendRequests !== undefined) {
+        allowFriendRequests.checked = user.privacy.allowFriendRequests;
+    }
+
+    modal.style.display = 'flex';
+}
+
+function closeProfileModal() {
+    const modal = document.getElementById('profileModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function editProfile() {
+    showNotification('Profile editing feature opened!', 'info');
+
+    // Log activity
+    logUserActivity('profile_edit', {
+        action: 'edit_profile_opened',
+        userId: 'currentUser'
+    });
+}
+
+function loadProfilePage(userId = 'john') {
+    openProfileModal(userId);
+
+    logUserActivity('profile_view', {
+        action: 'profile_viewed',
+        targetUser: userId,
+        viewedBy: 'currentUser'
+    });
+
+    // Track profile view interaction
+    if (typeof trackFriendInteraction === 'function') {
+        trackFriendInteraction('currentUser', userId, 'profileViews', {
+            timestamp: new Date().toISOString()
+        });
+    }
+}
+
+function updateProfileSettings() {
+    const profileVisibility = document.getElementById('profileVisibility')?.value;
+    const contactVisibility = document.getElementById('contactVisibility')?.value;
+    const allowFriendRequests = document.getElementById('allowFriendRequests')?.checked;
+
+    const currentUser = users.john; // Assuming current user is john
+    if (currentUser && currentUser.privacy) {
+        currentUser.privacy.profileVisibility = profileVisibility;
+        currentUser.privacy.contactVisibility = contactVisibility;
+        currentUser.privacy.allowFriendRequests = allowFriendRequests;
+    }
+
+    // Save updated user data
+    localStorage.setItem('fbUsers', JSON.stringify(users));
+
+    logUserActivity('privacy_settings_update', {
+        profileVisibility,
+        contactVisibility,
+        allowFriendRequests
+    });
+
+    showNotification('Privacy settings updated!', 'success');
+}
+
+// Profile system exports
+window.openProfileModal = openProfileModal;
+window.closeProfileModal = closeProfileModal;
+window.editProfile = editProfile;
+window.loadProfilePage = loadProfilePage;
+window.updateProfileSettings = updateProfileSettings;

@@ -372,7 +372,7 @@ class PlaylistManager {
                 <div class="video-duration">${video.duration}</div>
                 ${isOwner ? `
                     <div class="video-actions">
-                        <button class="action-btn" onclick="window.playlistManager && window.playlistManager.removeFromPlaylist('${playlistId}', '${video.id}')" title="Remove from playlist">
+                        <button class="action-btn remove-btn" onclick="window.playlistManager && window.playlistManager.removeFromPlaylist('${playlistId}', '${video.id}')" title="Remove from playlist">
                             <i class="fas fa-times"></i>
                         </button>
                         <button class="action-btn drag-handle" title="Drag to reorder">

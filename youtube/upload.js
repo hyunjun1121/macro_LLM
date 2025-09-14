@@ -37,7 +37,7 @@ class ContentManager {
                                 </div>
                                 <h3>Drag and drop video files to upload</h3>
                                 <p>Your videos will be private until you publish them.</p>
-                                <input type="file" id="video-file" accept="video/*" multiple style="display: none;">
+                                <input type="file" class="upload-input" id="video-file" accept="video/*" multiple style="display: none;">
                                 <button class="btn-primary" onclick="document.getElementById('video-file').click()">
                                     SELECT FILES
                                 </button>
@@ -46,7 +46,7 @@ class ContentManager {
                             <div class="upload-form" id="upload-form" style="display: none;">
                                 <div class="form-section">
                                     <label for="video-title">Title (required)</label>
-                                    <input type="text" id="video-title" placeholder="Add a title that describes your video" maxlength="100">
+                                    <input type="text" class="video-title-input" id="video-title" placeholder="Add a title that describes your video" maxlength="100">
                                     <div class="char-count">0/100</div>
                                 </div>
                                 
@@ -74,7 +74,7 @@ class ContentManager {
                                 
                                 <div class="form-section">
                                     <label for="video-visibility">Visibility</label>
-                                    <select id="video-visibility">
+                                    <select class="privacy-options" id="video-visibility">
                                         <option value="private">Private</option>
                                         <option value="unlisted">Unlisted</option>
                                         <option value="public">Public</option>
@@ -93,6 +93,12 @@ class ContentManager {
                                         <option value="technology">Science & Technology</option>
                                         <option value="travel">Travel & Events</option>
                                     </select>
+                                </div>
+
+                                <div class="form-section">
+                                    <label for="video-tags">Tags</label>
+                                    <input type="text" class="video-tags" id="video-tags" placeholder="Add tags separated by commas (e.g., tutorial, beginner, javascript)">
+                                    <small>Tags help people discover your video. Use keywords that describe your content.</small>
                                 </div>
                                 
                                 <div class="form-actions">
@@ -173,26 +179,29 @@ class ContentManager {
         this.notificationPanel.innerHTML = `
             <div class="notification-header">
                 <h3>Notifications</h3>
-                <button class="mark-all-read">Mark all as read</button>
+                <button class="mark-all-read mark-read-btn">Mark all as read</button>
             </div>
             <div class="notification-list">
-                <div class="notification-item unread">
+                <div class="notification-item unread" data-type="upload">
                     <img src="https://via.placeholder.com/32x32?text=CH" alt="Channel" class="notification-avatar">
                     <div class="notification-content">
+                        <span class="notification-type">upload</span>
                         <p><strong>Gaming Central</strong> uploaded a new video: "Epic Gaming Moments - Part 2"</p>
                         <span class="notification-time">2 hours ago</span>
                     </div>
                 </div>
-                <div class="notification-item unread">
+                <div class="notification-item unread" data-type="live">
                     <img src="https://via.placeholder.com/32x32?text=ST" alt="Channel" class="notification-avatar">
                     <div class="notification-content">
+                        <span class="notification-type">live</span>
                         <p><strong>Science Today</strong> is live now: "Breaking: New Scientific Discovery"</p>
                         <span class="notification-time">3 hours ago</span>
                     </div>
                 </div>
-                <div class="notification-item">
+                <div class="notification-item" data-type="upload">
                     <img src="https://via.placeholder.com/32x32?text=CA" alt="Channel" class="notification-avatar">
                     <div class="notification-content">
+                        <span class="notification-type">upload</span>
                         <p><strong>Code Academy</strong> uploaded: "Advanced JavaScript Concepts"</p>
                         <span class="notification-time">1 day ago</span>
                     </div>

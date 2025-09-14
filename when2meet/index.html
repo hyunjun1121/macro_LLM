@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>When2Meet - Find the perfect time for everyone</title>
+    <meta name="description" content="When2Meet helps you find the perfect time for meetings with multiple participants. Create events, share availability, and schedule efficiently.">
+    <meta name="keywords" content="meeting scheduler, when2meet, calendar, availability, scheduling, team meetings">
+    <meta name="author" content="When2Meet Team">
+    <meta property="og:title" content="When2Meet - Meeting Scheduler">
+    <meta property="og:description" content="Find the perfect time for everyone to meet">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://example.com/when2meet/">
+    <meta property="og:image" content="favicon.svg">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -190,5 +200,75 @@
     <script src="data.js"></script>
     <script src="utils.js"></script>
     <script src="script.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/when2meet/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful:', registration);
+                        
+                        // Check for updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New service worker available
+                                    if (confirm('A new version of When2Meet is available. Reload to update?')) {
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+            });
+        }
+        
+        // PWA Install Prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button or banner
+            const installBanner = document.createElement('div');
+            installBanner.innerHTML = `
+                <div style="position: fixed; bottom: 20px; left: 20px; right: 20px; background: #667eea; color: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; z-index: 10000;">
+                    <span>Install When2Meet for a better experience!</span>
+                    <button id="installBtn" style="background: white; color: #667eea; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-weight: 600;">Install</button>
+                    <button id="dismissBtn" style="background: transparent; color: white; border: 1px solid white; padding: 8px 16px; border-radius: 5px; cursor: pointer; margin-left: 10px;">Later</button>
+                </div>
+            `;
+            document.body.appendChild(installBanner);
+            
+            document.getElementById('installBtn').addEventListener('click', () => {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                    installBanner.remove();
+                });
+            });
+            
+            document.getElementById('dismissBtn').addEventListener('click', () => {
+                installBanner.remove();
+            });
+        });
+        
+        // Hide install banner after installation
+        window.addEventListener('appinstalled', () => {
+            console.log('When2Meet was installed');
+            const banner = document.querySelector('[style*="position: fixed"]');
+            if (banner) banner.remove();
+        });
+    </script>
 </body>
 </html>

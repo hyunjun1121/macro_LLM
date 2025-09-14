@@ -584,6 +584,106 @@ class PerformanceUtils {
     }
 }
 
+// Smart tagging utilities for TASK_019
+class SmartTaggingUtils {
+    static getTagSuggestions(title, description = '') {
+        const text = `${title} ${description}`.toLowerCase();
+        const tags = [];
+        
+        // Meeting types
+        if (text.includes('standup') || text.includes('daily') || text.includes('scrum')) {
+            tags.push('standup', 'daily', 'agile');
+        }
+        if (text.includes('retrospective') || text.includes('retro')) {
+            tags.push('retrospective', 'agile', 'review');
+        }
+        if (text.includes('planning') || text.includes('plan')) {
+            tags.push('planning', 'strategic');
+        }
+        if (text.includes('review') || text.includes('demo')) {
+            tags.push('review', 'demo');
+        }
+        if (text.includes('kickoff') || text.includes('kick-off')) {
+            tags.push('kickoff', 'project');
+        }
+        
+        // Social/Casual
+        if (text.includes('coffee') || text.includes('lunch') || text.includes('social')) {
+            tags.push('social', 'informal');
+        }
+        if (text.includes('team building') || text.includes('teambuilding')) {
+            tags.push('team-building', 'social');
+        }
+        if (text.includes('happy hour') || text.includes('celebration')) {
+            tags.push('social', 'celebration');
+        }
+        
+        // Meeting frequency
+        if (text.includes('weekly') || text.includes('week')) {
+            tags.push('weekly', 'recurring');
+        }
+        if (text.includes('monthly') || text.includes('month')) {
+            tags.push('monthly', 'recurring');
+        }
+        if (text.includes('daily') || text.includes('day')) {
+            tags.push('daily', 'recurring');
+        }
+        if (text.includes('quarterly') || text.includes('quarter')) {
+            tags.push('quarterly', 'strategic');
+        }
+        
+        // Work categories
+        if (text.includes('interview') || text.includes('candidate')) {
+            tags.push('interview', 'hr');
+        }
+        if (text.includes('client') || text.includes('customer')) {
+            tags.push('client', 'external');
+        }
+        if (text.includes('training') || text.includes('workshop') || text.includes('learning')) {
+            tags.push('training', 'education');
+        }
+        if (text.includes('presentation') || text.includes('demo') || text.includes('showcase')) {
+            tags.push('presentation', 'demo');
+        }
+        
+        // Urgency/Priority
+        if (text.includes('urgent') || text.includes('asap') || text.includes('emergency')) {
+            tags.push('urgent', 'high-priority');
+        }
+        if (text.includes('important') || text.includes('critical')) {
+            tags.push('important', 'high-priority');
+        }
+        
+        return [...new Set(tags)]; // Remove duplicates
+    }
+    
+    static categorizeEvent(title, description = '') {
+        const tags = this.getTagSuggestions(title, description);
+        
+        // Determine primary category
+        if (tags.some(tag => ['standup', 'daily', 'scrum', 'agile'].includes(tag))) {
+            return { category: 'Agile/Scrum', tags };
+        }
+        if (tags.some(tag => ['social', 'informal', 'team-building'].includes(tag))) {
+            return { category: 'Social', tags };
+        }
+        if (tags.some(tag => ['client', 'external', 'presentation'].includes(tag))) {
+            return { category: 'External', tags };
+        }
+        if (tags.some(tag => ['planning', 'strategic', 'quarterly'].includes(tag))) {
+            return { category: 'Planning', tags };
+        }
+        if (tags.some(tag => ['training', 'education', 'workshop'].includes(tag))) {
+            return { category: 'Training', tags };
+        }
+        if (tags.some(tag => ['urgent', 'high-priority', 'important'].includes(tag))) {
+            return { category: 'High Priority', tags };
+        }
+        
+        return { category: 'General', tags: tags.length > 0 ? tags : ['meeting'] };
+    }
+}
+
 // Export utilities
 if (typeof window !== 'undefined') {
     window.TimezoneUtils = TimezoneUtils;
@@ -593,6 +693,7 @@ if (typeof window !== 'undefined') {
     window.StorageUtils = StorageUtils;
     window.ValidationUtils = ValidationUtils;
     window.PerformanceUtils = PerformanceUtils;
+    window.SmartTaggingUtils = SmartTaggingUtils;
 }
 
 // Also export for Node.js if needed

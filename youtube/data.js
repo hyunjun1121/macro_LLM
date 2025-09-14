@@ -785,6 +785,167 @@ const userAnalytics = {
             activityPatterns: this.getActivityPatterns(),
             recommendations: this.getPersonalizedRecommendations()
         };
+    },
+
+    // CSV Export functions
+    exportToCSV(data, filename = 'youtube_data.csv') {
+        let csvContent = '';
+
+        if (Array.isArray(data) && data.length > 0) {
+            // Get headers from first object
+            const headers = Object.keys(data[0]);
+            csvContent += headers.join(',') + '\n';
+
+            // Add data rows
+            data.forEach(row => {
+                const values = headers.map(header => {
+                    const value = row[header] || '';
+                    // Escape quotes and wrap in quotes if contains comma
+                    return typeof value === 'string' && (value.includes(',') || value.includes('"'))
+                        ? `"${value.replace(/"/g, '""')}"`
+                        : value;
+                });
+                csvContent += values.join(',') + '\n';
+            });
+        } else if (typeof data === 'object') {
+            // Export object as key-value pairs
+            csvContent = 'Key,Value\n';
+            Object.entries(data).forEach(([key, value]) => {
+                const formattedValue = typeof value === 'object'
+                    ? JSON.stringify(value).replace(/"/g, '""')
+                    : value;
+                csvContent += `"${key}","${formattedValue}"\n`;
+            });
+        }
+
+        // Download CSV file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    },
+
+    // Export watch history to CSV
+    exportWatchHistoryCSV() {
+        const watchHistoryData = mockData.user.watchHistory.map(videoId => {
+            const video = mockData.videos[videoId];
+            const watchActivity = mockData.user.activityLog.find(log =>
+                log.action === 'video_watch' && log.videoId === videoId
+            );
+
+            return {
+                videoId,
+                title: video?.title || 'Unknown',
+                channel: video?.channelName || 'Unknown',
+                category: video?.category || 'Unknown',
+                duration: video?.duration || 'Unknown',
+                views: video?.views || '0',
+                uploadDate: video?.uploadDate || 'Unknown',
+                watchedAt: watchActivity?.timestamp ? new Date(watchActivity.timestamp).toISOString() : 'Unknown'
+            };
+        });
+
+        this.exportToCSV(watchHistoryData, 'youtube_watch_history.csv');
+    },
+
+    // Export liked videos to CSV
+    exportLikedVideosCSV() {
+        const likedVideosData = mockData.user.likedVideos.map(videoId => {
+            const video = mockData.videos[videoId];
+
+            return {
+                videoId,
+                title: video?.title || 'Unknown',
+                channel: video?.channelName || 'Unknown',
+                category: video?.category || 'Unknown',
+                duration: video?.duration || 'Unknown',
+                views: video?.views || '0',
+                likes: video?.likes || '0',
+                uploadDate: video?.uploadDate || 'Unknown'
+            };
+        });
+
+        this.exportToCSV(likedVideosData, 'youtube_liked_videos.csv');
+    },
+
+    // Export video engagement data to CSV
+    exportEngagementDataCSV() {
+        const engagementData = this.getVideoEngagementData();
+        const engagementArray = Object.entries(engagementData).map(([videoId, data]) => {
+            const video = mockData.videos[videoId];
+            return {
+                videoId,
+                title: video?.title || 'Unknown',
+                channel: video?.channelName || 'Unknown',
+                watches: data.watches,
+                likes: data.likes,
+                comments: data.comments,
+                shares: data.shares,
+                totalWatchTime: data.totalWatchTime,
+                avgWatchTime: data.watches > 0 ? Math.round(data.totalWatchTime / data.watches) : 0
+            };
+        });
+
+        this.exportToCSV(engagementArray, 'youtube_engagement_data.csv');
+    },
+
+    // Export user activity log to CSV
+    exportActivityLogCSV() {
+        const activityData = mockData.user.activityLog.map(activity => {
+            const video = activity.videoId ? mockData.videos[activity.videoId] : null;
+
+            return {
+                timestamp: new Date(activity.timestamp).toISOString(),
+                action: activity.action,
+                videoId: activity.videoId || '',
+                videoTitle: video?.title || '',
+                channel: video?.channelName || '',
+                duration: activity.duration || 0,
+                details: activity.details || ''
+            };
+        });
+
+        this.exportToCSV(activityData, 'youtube_activity_log.csv');
+    },
+
+    // Export category preferences to CSV
+    exportCategoryPreferencesCSV() {
+        const preferences = this.getCategoryPreferences();
+        const preferencesArray = Object.entries(preferences).map(([category, count]) => ({
+            category,
+            watchCount: count,
+            percentage: Math.round((count / mockData.user.watchHistory.length) * 100)
+        }));
+
+        this.exportToCSV(preferencesArray, 'youtube_category_preferences.csv');
+    },
+
+    // Export complete user analytics to CSV
+    exportCompleteAnalyticsCSV() {
+        const userData = this.exportUserData();
+
+        // Create summary data
+        const summaryData = [{
+            totalWatchedVideos: userData.watchHistory.length,
+            totalLikedVideos: mockData.user.likedVideos.length,
+            totalPlaylists: mockData.user.playlists.length,
+            totalSubscriptions: mockData.user.subscriptions.length,
+            totalActivityLogEntries: mockData.user.activityLog.length,
+            accountCreated: mockData.user.joinDate,
+            lastActive: mockData.user.activityLog.length > 0
+                ? new Date(Math.max(...mockData.user.activityLog.map(log => log.timestamp))).toISOString()
+                : 'Never',
+            topCategory: Object.keys(userData.categoryPreferences)[0] || 'None'
+        }];
+
+        this.exportToCSV(summaryData, 'youtube_complete_analytics.csv');
     }
 };
 

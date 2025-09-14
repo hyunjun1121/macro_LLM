@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experiences - Airbnb</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <!-- Logo -->
+                <div class="logo">
+                    <a href="index.html">
+                        <i class="fab fa-airbnb" style="font-size: 2rem; color: #ff5a5f;"></i>
+                        <span>airbnb</span>
+                    </a>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="nav-links">
+                    <a href="index.html">Stays</a>
+                    <a href="experiences.html" class="active">Experiences</a>
+                </nav>
+
+                <!-- User Menu -->
+                <div class="user-menu">
+                    <a href="host-dashboard.html" class="host-link">Airbnb your home</a>
+                    <button class="language-btn">
+                        <i class="fas fa-globe"></i>
+                    </button>
+                    <div class="profile-menu">
+                        <button class="profile-btn" onclick="toggleProfileMenu()">
+                            <i class="fas fa-bars"></i>
+                            <div class="profile-avatar">
+                                <span>J</span>
+                            </div>
+                        </button>
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <a href="profile.html">Profile</a>
+                            <a href="host-dashboard.html">Host Dashboard</a>
+                            <a href="trips.html">Trips</a>
+                            <a href="#">Messages</a>
+                            <a href="#">Notifications</a>
+                            <hr>
+                            <a href="#">Help Center</a>
+                            <a href="#">Log out</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="experiences-hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Discover Airbnb Experiences</h1>
+                <p>Find unforgettable activities hosted by locals</p>
+                
+                <div class="experience-search-bar">
+                    <div class="search-field">
+                        <label>Where</label>
+                        <input type="text" placeholder="Anywhere" id="experienceLocationInput">
+                    </div>
+                    <div class="search-field">
+                        <label>Date</label>
+                        <input type="date" id="experienceDateInput">
+                    </div>
+                    <div class="search-field">
+                        <label>Guests</label>
+                        <select id="experienceGuestsInput">
+                            <option value="1">1 guest</option>
+                            <option value="2">2 guests</option>
+                            <option value="3">3 guests</option>
+                            <option value="4">4 guests</option>
+                            <option value="5">5 guests</option>
+                            <option value="6">6+ guests</option>
+                        </select>
+                    </div>
+                    <button class="search-btn" onclick="searchExperiences()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Categories -->
+    <section class="experience-categories">
+        <div class="container">
+            <h2>Browse by category</h2>
+            <div class="category-grid">
+                <div class="category-card" data-category="all" onclick="filterExperiences('all')">
+                    <i class="fas fa-star"></i>
+                    <h3>All Experiences</h3>
+                    <p>Discover everything</p>
+                </div>
+                <div class="category-card" data-category="culinary" onclick="filterExperiences('culinary')">
+                    <i class="fas fa-utensils"></i>
+                    <h3>Food & Drink</h3>
+                    <p>Culinary adventures</p>
+                </div>
+                <div class="category-card" data-category="outdoor" onclick="filterExperiences('outdoor')">
+                    <i class="fas fa-mountain"></i>
+                    <h3>Outdoor</h3>
+                    <p>Nature activities</p>
+                </div>
+                <div class="category-card" data-category="culture" onclick="filterExperiences('culture')">
+                    <i class="fas fa-palette"></i>
+                    <h3>Arts & Culture</h3>
+                    <p>Creative experiences</p>
+                </div>
+                <div class="category-card" data-category="wellness" onclick="filterExperiences('wellness')">
+                    <i class="fas fa-spa"></i>
+                    <h3>Wellness</h3>
+                    <p>Mind and body</p>
+                </div>
+                <div class="category-card" data-category="workshop" onclick="filterExperiences('workshop')">
+                    <i class="fas fa-hammer"></i>
+                    <h3>Workshops</h3>
+                    <p>Learn new skills</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experiences Grid -->
+    <section class="experiences-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Featured Experiences</h2>
+                <div class="sort-options">
+                    <select id="sortOptions" onchange="sortExperiences()">
+                        <option value="featured">Featured</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="rating">Highest Rated</option>
+                        <option value="duration">Duration</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading" id="experiencesLoading" style="display: none;">
+                <div class="loader"></div>
+                <p>Finding amazing experiences...</p>
+            </div>
+
+            <!-- Experiences Grid -->
+            <div class="experiences-grid" id="experiencesGrid">
+                <!-- Experiences will be populated by JavaScript -->
+            </div>
+
+            <!-- No Results -->
+            <div class="no-results" id="experiencesNoResults" style="display: none;">
+                <h3>No experiences found</h3>
+                <p>Try adjusting your search or filters</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Detail Modal -->
+    <div class="experience-modal" id="experienceModal" style="display: none;">
+        <div class="modal-overlay" onclick="closeExperienceModal()">
+            <div class="modal-content experience-modal-content" onclick="event.stopPropagation()">
+                <button class="modal-close" onclick="closeExperienceModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div id="experienceModalContent">
+                    <!-- Experience details will be populated -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Safety information</a></li>
+                        <li><a href="#">Cancellation options</a></li>
+                        <li><a href="#">Our COVID-19 Response</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="#">Airbnb.org: disaster relief housing</a></li>
+                        <li><a href="#">Support Afghan refugees</a></li>
+                        <li><a href="#">Combating discrimination</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Hosting</h4>
+                    <ul>
+                        <li><a href="host-dashboard.html">Try hosting</a></li>
+                        <li><a href="#">Host an experience</a></li>
+                        <li><a href="#">Explore hosting resources</a></li>
+                        <li><a href="#">Visit our community forum</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>About</h4>
+                    <ul>
+                        <li><a href="#">Newsroom</a></li>
+                        <li><a href="#">Learn about new features</a></li>
+                        <li><a href="#">Letter from our founders</a></li>
+                        <li><a href="#">Careers</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Airbnb Clone. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+    <script src="experiences.js"></script>
+</body>
+</html>

@@ -10,9 +10,14 @@ export class EnhancedMacroGenerator {
     });
   }
 
-  async analyzeHTML(htmlPath) {
+  async analyzeWebsite(htmlPath) {
     const htmlContent = await fs.readFile(htmlPath, 'utf-8');
     const $ = cheerio.load(htmlContent);
+    const path = await import('path');
+    const websiteDir = path.dirname(htmlPath);
+
+    // Analyze additional files
+    const additionalFiles = await this.loadAdditionalFiles(websiteDir, $);
 
     const structure = {
       title: $('title').text() || 'Unknown',
@@ -112,8 +117,87 @@ export class EnhancedMacroGenerator {
 
     return {
       structure,
-      htmlContent: htmlContent.substring(0, 5000) // First 5000 chars
+      htmlContent: htmlContent.substring(0, 5000), // First 5000 chars
+      additionalFiles
     };
+  }
+
+  async loadAdditionalFiles(websiteDir, $) {
+    const path = await import('path');
+    const additionalFiles = {
+      css: [],
+      js: [],
+      images: []
+    };
+
+    try {
+      // Find CSS files from HTML links
+      $('link[rel="stylesheet"]').each((i, el) => {
+        const href = $(el).attr('href');
+        if (href && !href.startsWith('http')) {
+          additionalFiles.css.push(href);
+        }
+      });
+
+      // Find JS files from HTML scripts
+      $('script[src]').each((i, el) => {
+        const src = $(el).attr('src');
+        if (src && !src.startsWith('http')) {
+          additionalFiles.js.push(src);
+        }
+      });
+
+      // Load CSS content
+      for (const cssFile of additionalFiles.css) {
+        try {
+          const cssPath = path.join(websiteDir, cssFile);
+          const cssContent = await fs.readFile(cssPath, 'utf-8');
+          additionalFiles.css[additionalFiles.css.indexOf(cssFile)] = {
+            file: cssFile,
+            content: cssContent.substring(0, 3000) // First 3000 chars
+          };
+        } catch (error) {
+          // File not found, keep just the filename
+        }
+      }
+
+      // Load JS content
+      for (const jsFile of additionalFiles.js) {
+        try {
+          const jsPath = path.join(websiteDir, jsFile);
+          const jsContent = await fs.readFile(jsPath, 'utf-8');
+          additionalFiles.js[additionalFiles.js.indexOf(jsFile)] = {
+            file: jsFile,
+            content: jsContent.substring(0, 3000) // First 3000 chars
+          };
+        } catch (error) {
+          // File not found, keep just the filename
+        }
+      }
+
+      // Find inline CSS and JS
+      const inlineCSS = $('style').map((i, el) => $(el).html()).get().join('\n');
+      const inlineJS = $('script:not([src])').map((i, el) => $(el).html()).get().join('\n');
+
+      if (inlineCSS.length > 0) {
+        additionalFiles.css.push({
+          file: 'inline-styles',
+          content: inlineCSS.substring(0, 3000)
+        });
+      }
+
+      if (inlineJS.length > 0) {
+        additionalFiles.js.push({
+          file: 'inline-scripts',
+          content: inlineJS.substring(0, 3000)
+        });
+      }
+
+    } catch (error) {
+      console.warn('Warning: Could not load additional files:', error.message);
+    }
+
+    return additionalFiles;
   }
 
   generateSelector(element) {
@@ -136,8 +220,8 @@ export class EnhancedMacroGenerator {
   }
 
   async generateMacroCode(task, htmlPath, previousAttempts = [], model = 'openai/gpt-4o-mini') {
-    console.log('      📊 Analyzing HTML structure...');
-    const analysis = await this.analyzeHTML(htmlPath);
+    console.log('      [INFO] Analyzing website structure (HTML, CSS, JS)...');
+    const analysis = await this.analyzeWebsite(htmlPath);
 
     const isRetryAttempt = previousAttempts.length > 0;
     const previousErrors = previousAttempts.map(attempt => ({
@@ -148,7 +232,7 @@ export class EnhancedMacroGenerator {
 
     const prompt = this.buildPrompt(task, analysis, isRetryAttempt, previousErrors);
 
-    console.log(`      🤖 Calling LLM (${model}) to generate macro...`);
+    console.log(`      [INFO] Calling LLM (${model}) to generate macro...`);
     const response = await this.openai.chat.completions.create({
       model: model,
       messages: [{ role: 'user', content: prompt }],
@@ -235,31 +319,57 @@ This is attempt #${previousErrors.length + 1}. The following attempts failed:`;
     prompt += `\\n\\n## HTML STRUCTURE (First 5000 chars)
 \`\`\`html
 ${analysis.htmlContent}
-\`\`\`
+\`\`\``;
 
-## MACRO GENERATION INSTRUCTIONS
+    // Add CSS files information
+    if (analysis.additionalFiles.css.length > 0) {
+      prompt += `\\n\\n## CSS FILES`;
+      analysis.additionalFiles.css.forEach((css, i) => {
+        if (typeof css === 'object') {
+          prompt += `\\n\\n**${css.file}:**
+\`\`\`css
+${css.content}
+\`\`\``;
+        } else {
+          prompt += `\\n- ${css}`;
+        }
+      });
+    }
 
-Generate a Playwright JavaScript macro that:
+    // Add JS files information
+    if (analysis.additionalFiles.js.length > 0) {
+      prompt += `\\n\\n## JAVASCRIPT FILES`;
+      analysis.additionalFiles.js.forEach((js, i) => {
+        if (typeof js === 'object') {
+          prompt += `\\n\\n**${js.file}:**
+\`\`\`javascript
+${js.content}
+\`\`\``;
+        } else {
+          prompt += `\\n- ${js}`;
+        }
+      });
+    }
 
-1. **Uses ES6 import syntax** (import, not require)
-2. **Uses provided parameters**: \`page\`, \`fileUrl\`, \`screenshotsDir\`
-3. **Navigates to the HTML file**: \`await page.goto(fileUrl)\`
-4. **Implements robust waiting**: Use \`page.waitForSelector()\`, \`page.waitForLoadState()\`
-5. **Takes screenshots**: Use \`path.join(screenshotsDir, 'step_X.png')\` for each major step
-6. **Handles errors gracefully**: Use try-catch blocks
-7. **Returns detailed result object** with:
-   - \`success: boolean\`
-   - \`action: string\` (description of what was accomplished)
-   - \`extractedData: object\` (any data extracted from the page)
-   - \`screenshots: array\` (paths to screenshots taken)
-   - \`error: string\` (if failed)
+    prompt += `\\n\\n## MACRO GENERATION INSTRUCTIONS
 
-**CRITICAL REQUIREMENTS**:
-- Wait for elements before interacting
-- Use multiple selector strategies (ID, class, text content)
+Generate a Playwright JavaScript macro following this EXACT format:
+
+**MANDATORY REQUIREMENTS:**
+1. **ALWAYS start with**: import path from 'path';
+2. **Function signature must be**: export default async function(page, fileUrl, screenshotsDir)
+3. **Use try-catch blocks** for error handling
+4. **Return the exact object format** shown in the template below
+
+**FUNCTIONALITY REQUIREMENTS:**
+- Navigate to HTML file with await page.goto(fileUrl)
+- Wait for elements before interacting (page.waitForSelector, page.waitForLoadState)
+- Take screenshots using: await page.screenshot({ path: path.join(screenshotsDir, 'filename.png') })
+- Use multiple selector strategies (ID, class, text content, xpath)
 - Handle dynamic content loading
-- Take screenshot after each significant action
 - Extract meaningful data to verify task completion
+
+**CRITICAL - NO DEVIATION FROM TEMPLATE STRUCTURE**
 
 ${isRetryAttempt ? '**IMPORTANT**: This is a retry - use DIFFERENT selectors and strategies from previous attempts!' : ''}
 
@@ -267,8 +377,41 @@ ${isRetryAttempt ? '**IMPORTANT**: This is a retry - use DIFFERENT selectors and
 Your response must contain the macro code between these markers:
 
 \`\`\`MACRO_CODE_START
-// Your Playwright macro code here
+import path from 'path';
+
+export default async function(page, fileUrl, screenshotsDir) {
+  try {
+    // Navigate to the HTML file
+    await page.goto(fileUrl);
+    await page.waitForLoadState('networkidle');
+
+    // Take initial screenshot
+    const screenshots = [];
+    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });
+    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));
+
+    // Your automation logic here
+
+    return {
+      success: true,
+      action: "Description of what was accomplished",
+      extractedData: {},
+      screenshots,
+      error: null
+    };
+  } catch (error) {
+    return {
+      success: false,
+      action: "Failed to complete task",
+      extractedData: {},
+      screenshots: [],
+      error: error.message
+    };
+  }
+}
 \`\`\`MACRO_CODE_END
+
+**CRITICAL**: Always start with "import path from 'path';" and use the exact function signature shown above.
 
 Generate the macro code now:`;
 
