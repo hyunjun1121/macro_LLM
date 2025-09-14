@@ -20,7 +20,7 @@ async function testSingleTask() {
     description: 'Click on a submit button',
     expectedResult: 'Button should be clicked',
     difficulty: 'easy',
-    category: 'interaction'
+    category: 'button_click'
   };
 
   // Use YouTube HTML as sample
@@ -51,11 +51,29 @@ async function testSingleTask() {
       1
     );
 
-    console.log('4. Execution result:');
+    console.log('4. Pure Rule-Based Validation Result:');
     console.log('Success:', result.success);
-    console.log('Error:', result.error);
     console.log('Action:', result.action);
+    console.log('Error:', result.error);
     console.log('Screenshots:', result.screenshots?.length || 0);
+
+    if (result.validationDetails) {
+      console.log('\n5. Validation Details:');
+      console.log('Validation Type:', result.validationDetails.validationType);
+      console.log('Success Rate:', `${result.validationDetails.passedChecks}/${result.validationDetails.totalChecks} (${((result.validationDetails.passedChecks/result.validationDetails.totalChecks)*100).toFixed(1)}%)`);
+
+      console.log('\nChecks Performed:');
+      result.validationDetails.checks?.forEach(check => {
+        const status = check.passed ? '✅ PASSED' : '❌ FAILED';
+        const description = check.description ? ` (${check.description})` : '';
+        console.log(`  - ${check.check}: ${status}${description}`);
+      });
+
+      console.log('\nValidation Evidence:');
+      Object.entries(result.validationDetails.evidence).forEach(([key, value]) => {
+        console.log(`  ${key}:`, JSON.stringify(value, null, 4));
+      });
+    }
 
   } catch (error) {
     console.error('Test failed:', error.message);

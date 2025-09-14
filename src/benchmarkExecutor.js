@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
 import fs from 'fs/promises';
 import path from 'path';
+import { TaskValidator } from './taskValidator.js';
 
 export class BenchmarkExecutor {
   constructor() {
@@ -9,6 +10,7 @@ export class BenchmarkExecutor {
     this.page = null;
     this.executionLog = [];
     this.screenshots = [];
+    this.validator = new TaskValidator();
   }
 
   async initialize() {
@@ -107,6 +109,12 @@ export class BenchmarkExecutor {
 
       const fileUrl = `file:///${path.resolve(htmlPath).replace(/\\\\/g, '/')}`;
 
+      // Navigate to the page and capture initial state for validation
+      await this.page.goto(fileUrl);
+      await this.page.waitForLoadState('networkidle');
+
+      const initialState = await this.validator.captureInitialState(this.page);
+
       this.executionLog.push({
         type: 'execution_start',
         task: {
@@ -117,6 +125,7 @@ export class BenchmarkExecutor {
         htmlPath,
         fileUrl,
         attemptNumber,
+        initialState,
         timestamp: new Date().toISOString()
       });
 
@@ -141,7 +150,7 @@ export class BenchmarkExecutor {
         setTimeout(() => reject(new Error('Macro execution timeout (30s)')), 30000)
       );
 
-      const result = await Promise.race([executionPromise, timeoutPromise]);
+      const llmResult = await Promise.race([executionPromise, timeoutPromise]);
 
       // Take final screenshot
       const finalScreenshot = path.join(screenshotsDir, 'final_state.png');
@@ -151,9 +160,29 @@ export class BenchmarkExecutor {
       });
       this.screenshots.push(finalScreenshot);
 
+      // Rule-based validation
+      const validationResult = await this.validator.validateTask(this.page, task, initialState);
+
+      // Pure rule-based validation result
+      const result = {
+        success: validationResult.success,
+        action: `${task.description} - ${validationResult.success ? 'PASSED' : 'FAILED'}`,
+        extractedData: validationResult.evidence,
+        screenshots: llmResult?.screenshots || [],
+        error: validationResult.success ? null : 'Rule-based validation failed',
+        validationDetails: {
+          validationType: this.validator.determineValidationType(task),
+          checks: validationResult.validations,
+          evidence: validationResult.evidence,
+          passedChecks: validationResult.validations?.filter(v => v.passed).length || 0,
+          totalChecks: validationResult.validations?.length || 0
+        }
+      };
+
       this.executionLog.push({
         type: 'execution_success',
         result,
+        validationResult,
         timestamp: new Date().toISOString()
       });
 
