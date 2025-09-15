@@ -7,17 +7,16 @@ const __dirname = path.dirname(__filename);
 
 // Safety-enhanced experiment: only harmful tasks with safety prompt
 const HARMFUL_TASK_EXPERIMENT = [
-    // Each website's harmful tasks (last 5 tasks typically)
     { website: 'Airbnb', tasks: ['TASK_016', 'TASK_017', 'TASK_018', 'TASK_019', 'TASK_020'] },
-    { website: 'Amazon', tasks: ['T016', 'T017', 'T018', 'T019', 'T020'] },
-    { website: 'TikTok', tasks: ['harmful_1', 'harmful_2', 'harmful_3', 'harmful_4', 'harmful_5'] }, // Need to check actual IDs
-    { website: 'Threads', tasks: ['G016', 'G017', 'G018', 'G019', 'G020'] },
+    { website: 'Amazon', tasks: ['T016', 'T018', 'T018', 'T019', 'T020'] },
+    { website: 'TikTok', tasks: ['Sheet1_1757962652779_if7vt', 'Sheet1_1757962652779_lky11', 'Sheet1_1757962652779_9hr2f', 'Sheet1_1757962652779_rk3m0', 'Sheet1_1757962652779_fvrjj'] },
+    { website: 'Threads', tasks: ['H001', 'H002', 'H003', 'H004', 'H005'] },
     { website: 'youtube', tasks: ['YT_MAL_001', 'YT_MAL_002', 'YT_MAL_003', 'YT_MAL_004', 'YT_MAL_005'] },
-    { website: 'when2meet', tasks: ['harmful_1', 'harmful_2', 'harmful_3', 'harmful_4', 'harmful_5'] }, // Need to check actual IDs
-    { website: 'reddit', tasks: ['harmful_1', 'harmful_2', 'harmful_3', 'harmful_4', 'harmful_5'] }, // Need to check actual IDs
-    { website: 'instagram', tasks: ['harmful_1', 'harmful_2', 'harmful_3', 'harmful_4', 'harmful_5'] }, // Need to check actual IDs
-    { website: 'facebook', tasks: ['harmful_1', 'harmful_2', 'harmful_3', 'harmful_4', 'harmful_5'] }, // Need to check actual IDs
-    { website: 'discord', tasks: ['harmful_1', 'harmful_2', 'harmful_3', 'harmful_4', 'harmful_5'] } // Need to check actual IDs
+    { website: 'when2meet', tasks: ['Sheet1_1757962652799_5x2td', 'Sheet1_1757962652799_dicj5', 'Sheet1_1757962652799_4h86x', 'Sheet1_1757962652799_v8qul', 'Sheet1_1757962652799_7kq4f'] },
+    { website: 'reddit', tasks: ['Sheet1_1757962652804_lt6rq', 'Sheet1_1757962652804_kdz5k', 'Sheet1_1757962652804_zuasg', 'Sheet1_1757962652804_vllvz', 'Sheet1_1757962652804_clgn3'] },
+    { website: 'instagram', tasks: ['Sheet1_1757962652808_z90bs', 'Sheet1_1757962652808_cl94b', 'Sheet1_1757962652808_kv91d', 'Sheet1_1757962652808_13xmj', 'Sheet1_1757962652808_q4gj4'] },
+    { website: 'facebook', tasks: ['Sheet1_1757962652813_0oqez', 'Sheet1_1757962652813_qsej6', 'Sheet1_1757962652813_x5iku', 'Sheet1_1757962652813_d9p6o', 'Sheet1_1757962652813_n8k61'] },
+    { website: 'discord', tasks: ['Improved_Discord_Tasks_1757962652822_o1hbj', 'Improved_Discord_Tasks_1757962652822_cfgkp', 'Improved_Discord_Tasks_1757962652822_gfon6', 'Improved_Discord_Tasks_1757962652822_ltu68', 'Improved_Discord_Tasks_1757962652822_pay7m'] },
 ];
 
 // All 4 models including Gemini for comprehensive safety analysis
