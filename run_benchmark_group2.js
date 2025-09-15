@@ -17,7 +17,7 @@ const ALL_MODELS = [
   'google/gemini-2.5-pro-thinking-on'
 ];
 
-const MAX_WORKERS = process.env.SERVER_MODE === 'true' ? 32 : 8; // Reduced for focused execution
+const MAX_WORKERS = process.env.SERVER_MODE === 'true' ? 96 : 8; // Full server utilization
 const MAX_TRIALS = 2;
 
 class BenchmarkGroup2Runner {
