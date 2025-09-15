@@ -24,8 +24,8 @@ const MISSING_COMBINATIONS = [
     { model: 'openai/gpt-4o-mini', website: 'Threads', tasks: ['G001', 'G002', 'G003', 'G004', 'G005', 'G006', 'G007', 'G008', 'G009', 'G010', 'G011', 'G012', 'G013', 'G014', 'G015', 'G016', 'G017', 'G018', 'G019', 'G020'] }
 ];
 
-// 메모리 최적화된 설정
-const MAX_WORKERS = 4; // 안정성을 위해 32에서 4로 감소
+// 서버 최적화된 설정
+const MAX_WORKERS = 32; // 서버 환경에서 고성능 병렬 처리
 const MAX_TRIALS = 3;
 const TIMEOUT_MS = 300000; // 5분 타임아웃
 
@@ -177,7 +177,7 @@ class ValidatedMissingCombinationRunner {
     async runAllMissingCombinations() {
         console.log(`🚀 Starting VALIDATED benchmark execution`);
         console.log(`📊 Total missing combinations: ${this.totalTasks}`);
-        console.log(`👷 Workers: ${MAX_WORKERS}`);
+        console.log(`👷 High-performance server workers: ${MAX_WORKERS}`);
         console.log('⏰ Start time:', new Date().toISOString());
 
         if (this.totalTasks === 0) {
@@ -331,7 +331,8 @@ class ValidatedMissingCombinationRunner {
                 successRate: `${successRate}%`,
                 executionTime: `${duration} seconds`,
                 timestamp: new Date().toISOString(),
-                duplicatePrevention: `${this.executedTaskIds.size} unique combinations tracked`
+                duplicatePrevention: `${this.executedTaskIds.size} unique combinations tracked`,
+                serverOptimization: `High-performance execution with ${MAX_WORKERS} parallel workers`
             },
             modelStats,
             websiteStats,
