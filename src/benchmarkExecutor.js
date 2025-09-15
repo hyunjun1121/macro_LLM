@@ -157,8 +157,9 @@ export class BenchmarkExecutor {
       });
 
       // Save the macro code for debugging (only in non-server mode)
+      let macroCodePath = null;
       if (!this.isServerMode) {
-        const macroCodePath = path.join(screenshotsDir, 'macro_code.js');
+        macroCodePath = path.join(screenshotsDir, 'macro_code.js');
         await fs.writeFile(macroCodePath, macroCode);
       }
 

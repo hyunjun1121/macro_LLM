@@ -156,12 +156,6 @@ class CompleteBenchmarkRunner {
         const executor = new BenchmarkExecutor();
         const executionResult = await executor.executeMacro(macroCode, htmlPath, task, attempt);
 
-        console.log(`      [DEBUG] ExecutionResult structure:`, {
-          success: executionResult?.success,
-          resultSuccess: executionResult?.result?.success,
-          hasResult: !!executionResult?.result,
-          hasError: !!executionResult?.error
-        });
 
         // Save result
         const result = {
