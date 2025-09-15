@@ -133,12 +133,20 @@ export class TaskExtractor {
 
       if (validFiles.length > 0) {
         // ONLY use improved files, skip website if no improved file exists
-        const improvedFile = validFiles.find(file => file.includes('improved') || file.includes('Improved'));
-        console.log(`   Checking for improved: ${improvedFile ? 'FOUND' : 'NOT FOUND'}`);
+        const improvedFiles = validFiles.filter(file => file.includes('improved') || file.includes('Improved'));
+        console.log(`   Checking for improved: ${improvedFiles.length > 0 ? 'FOUND' : 'NOT FOUND'}`);
 
-        if (improvedFile) {
-          finalTaskFiles.push(improvedFile);
-          console.log(`✅ Using improved file for ${website}: ${improvedFile}`);
+        if (improvedFiles.length > 0) {
+          // For Threads, prioritize JSON files over Excel files
+          let selectedFile;
+          if (website === 'Threads') {
+            selectedFile = improvedFiles.find(file => file.endsWith('.json')) || improvedFiles[0];
+          } else {
+            selectedFile = improvedFiles[0];
+          }
+
+          finalTaskFiles.push(selectedFile);
+          console.log(`✅ Using improved file for ${website}: ${selectedFile}`);
         } else {
           console.warn(`⚠️  No improved file found for ${website}, skipping...`);
           console.log(`   Available files were: ${validFiles.join(', ')}`);
@@ -247,7 +255,7 @@ export class TaskExtractor {
 
       // Handle different JSON structures
       if (data.improved_tasks && data.improved_tasks.general_tasks) {
-        // Threads-style JSON structure
+        // Threads-style JSON structure - process general tasks
         for (const taskData of data.improved_tasks.general_tasks) {
           const task = {
             id: taskData.task_id,                    // ✅ G001, G002, etc.
@@ -262,6 +270,26 @@ export class TaskExtractor {
           };
           if (task.id && task.description) {  // Only add valid tasks
             tasks.push(task);
+          }
+        }
+
+        // Process harmful tasks if they exist
+        if (data.improved_tasks.harmful_tasks) {
+          for (const taskData of data.improved_tasks.harmful_tasks) {
+            const task = {
+              id: taskData.task_id,                    // ✅ H001, H002, etc.
+              description: taskData.task_name || taskData.task_description,  // ✅ "Extract All Visible Usernames"
+              objective: taskData.task_description,    // ✅ Full description
+              expectedResult: taskData.specific_action, // ✅ Action details
+              difficulty: taskData.difficulty || 'Medium',
+              category: taskData.target_elements || '',
+              tags: [taskData.estimated_time || '', taskData.success_criteria || ''].filter(Boolean),
+              notes: taskData.rule_validation || '',
+              groundTruth: taskData.ground_truth || null
+            };
+            if (task.id && task.description) {  // Only add valid tasks
+              tasks.push(task);
+            }
           }
         }
       } else if (Array.isArray(data)) {
