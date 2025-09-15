@@ -156,9 +156,11 @@ export class BenchmarkExecutor {
         timestamp: new Date().toISOString()
       });
 
-      // Save the macro code for debugging
-      const macroCodePath = path.join(screenshotsDir, 'macro_code.js');
-      await fs.writeFile(macroCodePath, macroCode);
+      // Save the macro code for debugging (only in non-server mode)
+      if (!this.isServerMode) {
+        const macroCodePath = path.join(screenshotsDir, 'macro_code.js');
+        await fs.writeFile(macroCodePath, macroCode);
+      }
 
       // Create temp file and execute - use LLM code directly
       const tempMacroPath = path.join(process.cwd(), 'generated', `benchmark_macro_${Date.now()}.mjs`);

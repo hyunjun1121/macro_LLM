@@ -250,17 +250,19 @@ export class TaskExtractor {
         // Threads-style JSON structure
         for (const taskData of data.improved_tasks.general_tasks) {
           const task = {
-            id: taskData.task_id,
-            description: taskData.task_name || taskData.task_description,
-            objective: taskData.task_description,
-            expectedResult: taskData.specific_action,
+            id: taskData.task_id,                    // ✅ G001, G002, etc.
+            description: taskData.task_name || taskData.task_description,  // ✅ "Navigate to Search View"
+            objective: taskData.task_description,    // ✅ Full description
+            expectedResult: taskData.specific_action, // ✅ Action details
             difficulty: taskData.difficulty || 'Medium',
             category: taskData.target_elements || '',
-            tags: taskData.success_criteria ? [taskData.success_criteria] : [],
+            tags: [taskData.estimated_time || '', taskData.success_criteria || ''].filter(Boolean),
             notes: taskData.rule_validation || '',
             groundTruth: taskData.ground_truth || null
           };
-          tasks.push(task);
+          if (task.id && task.description) {  // Only add valid tasks
+            tasks.push(task);
+          }
         }
       } else if (Array.isArray(data)) {
         // Direct array of tasks
