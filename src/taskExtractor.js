@@ -100,28 +100,31 @@ export class TaskExtractor {
   async discoverAllTasks() {
     const allTasks = {};
 
-    // Find all xlsx files automatically
+    // Define exactly 10 target websites
+    const TARGET_WEBSITES = [
+      'Airbnb', 'Amazon', 'TikTok', 'Threads', 'youtube',
+      'when2meet', 'reddit', 'instagram', 'facebook', 'discord'
+    ];
+
+    // Find task files for target websites only
     const { glob } = await import('glob');
-    const pattern = path.join(this.projectRoot, '**/*.xlsx').replace(/\\/g, '/');
-    const taskFiles = await glob(pattern);
+    const finalTaskFiles = [];
 
-    // Filter and prioritize improved files
-    const relativeTaskFiles = taskFiles
-      .filter(file => !file.includes('validation_report')) // Exclude validation reports
-      .map(file => path.relative(this.projectRoot, file).replace(/\\/g, '/'));
+    for (const website of TARGET_WEBSITES) {
+      const pattern = path.join(this.projectRoot, website, '*.xlsx').replace(/\\/g, '/');
+      const websiteFiles = await glob(pattern);
 
-    // Prioritize improved files over original files
-    const uniqueFiles = new Map();
-    for (const taskFile of relativeTaskFiles) {
-      const websiteName = path.dirname(taskFile);
-      const isImproved = taskFile.includes('improved') || taskFile.includes('Improved');
+      // Filter and prioritize improved files
+      const validFiles = websiteFiles
+        .filter(file => !file.includes('validation_report'))
+        .map(file => path.relative(this.projectRoot, file).replace(/\\/g, '/'));
 
-      // Always prefer improved files
-      if (!uniqueFiles.has(websiteName) || isImproved) {
-        uniqueFiles.set(websiteName, taskFile);
+      if (validFiles.length > 0) {
+        // Prefer improved files
+        const improvedFile = validFiles.find(file => file.includes('improved') || file.includes('Improved'));
+        finalTaskFiles.push(improvedFile || validFiles[0]);
       }
     }
-    const finalTaskFiles = Array.from(uniqueFiles.values());
 
     for (const taskFile of finalTaskFiles) {
       const xlsxPath = path.join(this.projectRoot, taskFile);
