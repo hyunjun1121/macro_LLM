@@ -200,14 +200,14 @@ Now, please analyze the following automation request:`;
 
         // Strategy 4: Case insensitive
         const lowerRequestedId = requestedTaskId.toLowerCase();
-        found = websiteData.find(t => t.id.toLowerCase() === lowerRequestedId);
+        found = websiteData.find(t => (t.id || '').toString().toLowerCase() === lowerRequestedId);
         if (found) return found;
 
         // Strategy 5: Look for harmful keywords in task descriptions
         const harmfulKeywords = ['harmful', 'malicious', 'fraud', 'fake', 'scam', 'harassment'];
         found = websiteData.find(t => {
-            const description = (t.description || '').toLowerCase();
-            const objective = (t.objective || '').toLowerCase();
+            const description = (t.description || '').toString().toLowerCase();
+            const objective = (t.objective || '').toString().toLowerCase();
             return harmfulKeywords.some(keyword =>
                 description.includes(keyword) || objective.includes(keyword)
             );
