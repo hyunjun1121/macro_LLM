@@ -312,7 +312,7 @@ class PaperMetricsAnalyzer {
     return codeQualityMetrics;
   }
 
-  generatePaperMetrics(results) {
+  async generatePaperMetrics(results) {
     console.log('\n=== 논문용 메트릭 생성 ===');
 
     const { modelPerformance, finalResults } = this.analyzeOverallPerformance(results);
@@ -373,7 +373,7 @@ class PaperMetricsAnalyzer {
         return null;
       }
 
-      const paperMetrics = this.generatePaperMetrics(results);
+      const paperMetrics = await this.generatePaperMetrics(results);
 
       console.log('\n✅ 분석 완료!');
       return paperMetrics;
