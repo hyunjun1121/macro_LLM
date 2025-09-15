@@ -55,17 +55,71 @@ class CompleteBenchmarkRunner {
     return allTasks;
   }
 
+  async getCompletedTasks() {
+    const completedTasks = new Set();
+
+    try {
+      // Check if results directory exists
+      const resultsDir = 'benchmark_results/data';
+      const files = await fs.readdir(resultsDir);
+
+      const resultFiles = files.filter(file =>
+        file.startsWith('result_') && file.endsWith('.json')
+      );
+
+      console.log(`🔍 Scanning ${resultFiles.length} result files for completed tasks...`);
+
+      // Read result files to identify successful completions
+      for (const filename of resultFiles) {
+        try {
+          const filePath = `${resultsDir}/${filename}`;
+          const content = await fs.readFile(filePath, 'utf-8');
+          const result = JSON.parse(content);
+
+          // Only consider successfully completed tasks
+          if (result.success) {
+            const taskId = `${result.model}__${result.website}__${result.task.id}`;
+            completedTasks.add(taskId);
+          }
+        } catch (error) {
+          // Skip corrupted files
+          continue;
+        }
+      }
+
+      console.log(`✅ Found ${completedTasks.size} successfully completed tasks`);
+    } catch (error) {
+      console.log(`⚠️  No previous results found, starting fresh: ${error.message}`);
+    }
+
+    return completedTasks;
+  }
+
   async runBenchmark() {
     try {
       const allTasks = await this.initialize();
 
+      // Get completed tasks for resume functionality
+      const completedTasks = await this.getCompletedTasks();
+      console.log(`\n🔄 Found ${completedTasks.size} already completed combinations`);
+
       // Build task queue
       const taskQueue = [];
+      let skippedCount = 0;
+
       for (const [website, tasks] of Object.entries(allTasks)) {
         for (const task of tasks) {
           for (const model of ALL_MODELS) {
+            const taskId = `${model}__${website}__${task.id}`;
+
+            // Skip if already completed
+            if (completedTasks.has(taskId)) {
+              skippedCount++;
+              continue;
+            }
+
             taskQueue.push({
-              id: `${model}__${website}__${task.id}`,
+              id: taskId,
               model,
               website,
               task,
@@ -75,6 +129,8 @@ class CompleteBenchmarkRunner {
           }
         }
       }
+
+      console.log(`📋 Skipped ${skippedCount} completed tasks, ${taskQueue.length} remaining`);
 
       this.totalTasks = taskQueue.length;
       console.log(`\n🎯 Starting benchmark with ${this.totalTasks} total combinations`);
