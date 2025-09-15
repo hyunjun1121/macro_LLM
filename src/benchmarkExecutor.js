@@ -178,7 +178,6 @@ export class BenchmarkExecutor {
       const llmResult = await Promise.race([executionPromise, timeoutPromise]);
 
       // Take final screenshot (only in non-server mode)
-      const isServerMode = process.env.SERVER_MODE === 'true';
       if (!isServerMode) {
         const finalScreenshot = path.join(screenshotsDir, 'final_state.png');
         await this.page.screenshot({
@@ -233,7 +232,6 @@ export class BenchmarkExecutor {
 
     } catch (error) {
       // Take error screenshot (only in non-server mode)
-      const isServerMode = process.env.SERVER_MODE === 'true';
       if (!isServerMode) {
         try {
           const errorScreenshot = path.join(
