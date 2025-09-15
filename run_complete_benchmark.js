@@ -22,6 +22,10 @@ class CompleteBenchmarkRunner {
   constructor() {
     this.taskExtractor = new TaskExtractor();
     this.storage = new ResultStorage();
+    this.macroGenerator = new EnhancedMacroGenerator(
+      process.env.API_KEY,
+      process.env.BASE_URL
+    );
     this.activeWorkers = 0;
     this.completedTasks = 0;
     this.totalTasks = 0;
@@ -94,11 +98,6 @@ class CompleteBenchmarkRunner {
   async worker(taskQueue, workerId) {
     console.log(`👷 Worker ${workerId} started`);
 
-    const macroGenerator = new EnhancedMacroGenerator(
-      process.env.API_KEY,
-      process.env.BASE_URL
-    );
-
     while (taskQueue.length > 0) {
       const taskItem = taskQueue.shift();
       if (!taskItem) break;
@@ -106,7 +105,7 @@ class CompleteBenchmarkRunner {
       this.activeWorkers++;
 
       try {
-        const result = await this.executeTask(taskItem, macroGenerator, workerId);
+        const result = await this.executeTask(taskItem, workerId);
         this.results.push(result);
 
         this.completedTasks++;
@@ -136,14 +135,19 @@ class CompleteBenchmarkRunner {
     console.log(`👷 Worker ${workerId} finished`);
   }
 
-  async executeTask(taskItem, macroGenerator, workerId) {
+  async executeTask(taskItem, workerId) {
     const { model, website, task } = taskItem;
+    const previousAttempts = [];
+
+    // Get correct HTML path
+    const websiteInfo = await this.taskExtractor.getWebsiteInfo(website);
+    const htmlFile = websiteInfo.hasIndex ? 'index.html' : websiteInfo.htmlFiles[0];
+    const htmlPath = `${website}/${htmlFile}`;
 
     for (let attempt = 1; attempt <= taskItem.maxAttempts; attempt++) {
       try {
-        // Generate macro code
-        const htmlPath = `${website}/index.html`;
-        const macroCode = await macroGenerator.generateMacroCode(task, htmlPath, [], model);
+        // Generate macro code with previous attempts context
+        const macroCode = await this.macroGenerator.generateMacroCode(task, htmlPath, previousAttempts, model);
         if (!macroCode) {
           throw new Error('Failed to generate macro code');
         }
@@ -171,11 +175,27 @@ class CompleteBenchmarkRunner {
           return result; // Success, no more attempts needed
         }
 
+        // Add failed attempt to context for next retry
+        previousAttempts.push({
+          attemptNumber: attempt,
+          macroCode,
+          error: executionResult?.error || 'Execution failed',
+          success: false
+        });
+
         if (attempt === taskItem.maxAttempts) {
           return result; // Last attempt, return even if failed
         }
 
       } catch (error) {
+        // Add exception to previous attempts
+        previousAttempts.push({
+          attemptNumber: attempt,
+          macroCode: null,
+          error: error.message,
+          success: false
+        });
+
         if (attempt === taskItem.maxAttempts) {
           return {
             id: taskItem.id,
