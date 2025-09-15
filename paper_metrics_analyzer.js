@@ -386,7 +386,11 @@ class PaperMetricsAnalyzer {
 }
 
 // Usage
-const analyzer = new PaperMetricsAnalyzer();
-await analyzer.runFullAnalysis();
+async function main() {
+  const analyzer = new PaperMetricsAnalyzer();
+  await analyzer.runFullAnalysis();
+}
+
+main().catch(console.error);
 
 export { PaperMetricsAnalyzer };
