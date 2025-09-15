@@ -272,6 +272,10 @@ async function main() {
   await runner.runBenchmark();
 }
 
-if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
+// Check if this file is being run directly (multiple methods for compatibility)
+const isMain = import.meta.url.endsWith('run_complete_benchmark.js') ||
+               process.argv[1].endsWith('run_complete_benchmark.js');
+
+if (isMain) {
   main().catch(console.error);
 }
