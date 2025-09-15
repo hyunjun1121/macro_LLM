@@ -119,8 +119,8 @@ class PaperMetricsAnalyzer {
 
     // Simple heuristic for task complexity based on task description length and keywords
     const categorizeComplexity = (task) => {
-      const description = (task.description || '').toLowerCase();
-      const objective = (task.objective || '').toLowerCase();
+      const description = String(task.description || '').toLowerCase();
+      const objective = String(task.objective || '').toLowerCase();
       const text = description + ' ' + objective;
 
       // Complex keywords
