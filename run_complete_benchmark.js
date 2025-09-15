@@ -142,14 +142,14 @@ class CompleteBenchmarkRunner {
     for (let attempt = 1; attempt <= taskItem.maxAttempts; attempt++) {
       try {
         // Generate macro code
-        const macroCode = await macroGenerator.generateMacro(task, website);
+        const htmlPath = `${website}/index.html`;
+        const macroCode = await macroGenerator.generateMacroCode(task, htmlPath, [], model);
         if (!macroCode) {
           throw new Error('Failed to generate macro code');
         }
 
         // Execute macro
         const executor = new BenchmarkExecutor();
-        const htmlPath = `${website}/index.html`;
         const executionResult = await executor.executeMacro(macroCode, htmlPath, task, attempt);
 
         // Save result
@@ -272,6 +272,6 @@ async function main() {
   await runner.runBenchmark();
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
   main().catch(console.error);
 }
