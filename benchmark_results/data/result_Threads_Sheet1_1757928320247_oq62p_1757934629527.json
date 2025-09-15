@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928320247_oq62p_1757934629527",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928320247_oq62p",
+    "description": "G013",
+    "objective": "Switch Search Tab",
+    "expectedResult": "In search view, click on 'Hashtags' tab to switch search category",
+    "difficulty": ".tab-btn[data-tab='hashtags']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Switch to the Search view if not already there\n    // Find the sidebar nav-item with data-view=\"search\"\n    const searchNavSelector = \".nav-item[data-view='search']\";\n    await page.waitForSelector(searchNavSelector, { timeout: 5000 });\n    const searchNav = await page.$(searchNavSelector);\n\n    // Check if search view is already active\n    const isActive = await searchNav.evaluate(el => el.classList.contains('active'));\n    if (!isActive) {\n      await searchNav.click();\n      // Wait for the search view to become visible\n      await page.waitForSelector('#search-view.view.active', { timeout: 5000 });\n    }\n\n    // Wait for the Hashtags tab button to be present\n    // There may be multiple .tab-btn elements, so select the one with data-tab='hashtags'\n    const hashtagsTabSelector = \".tab-btn[data-tab='hashtags']\";\n    await page.waitForSelector(hashtagsTabSelector, { timeout: 5000 });\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_view.png'));\n\n    // Click the Hashtags tab\n    const hashtagsTab = await page.$(hashtagsTabSelector);\n    await hashtagsTab.click();\n\n    // Wait for the Hashtags tab to become active\n    // This is usually indicated by .tab-btn.active[data-tab='hashtags']\n    const hashtagsTabActiveSelector = \".tab-btn.active[data-tab='hashtags']\";\n    await page.waitForSelector(hashtagsTabActiveSelector, { timeout: 5000 });\n\n    // Wait for the search results area to update (if any)\n    // We'll wait a short time for UI update\n    await page.waitForTimeout(500);\n\n    // Take screenshot after switching tab\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_hashtags_tab_active.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_hashtags_tab_active.png'));\n\n    // Extract some data to verify the Hashtags tab is active\n    // We'll grab the text of all tab buttons and which one is active\n    const tabButtons = await page.$$eval('.tab-btn', btns => \n      btns.map(btn => ({\n        text: btn.textContent.trim(),\n        active: btn.classList.contains('active'),\n        dataTab: btn.getAttribute('data-tab')\n      }))\n    );\n    // Find the active tab\n    const activeTab = tabButtons.find(tab => tab.active);\n\n    return {\n      success: true,\n      action: \"Switched to the 'Hashtags' tab in the search view.\",\n      extractedData: {\n        tabButtons,\n        activeTab\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12438,
+      "timestamp": "2025-09-15T11:10:29.527Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Ensure we are in the search view by clicking the sidebar \"Search\" nav-item\n    // Use a selector based on 'data-view' attribute and visible text\n    const searchNavSelector = \"//li[contains(@class,'nav-item') and @data-view='search' and .//span[normalize-space(text())='Search']]\";\n    await page.waitForSelector(searchNavSelector, { timeout: 4000 });\n    await page.click(searchNavSelector);\n\n    // Wait for the search view to become visible (by id and .view.active class)\n    const searchViewSelector = \"#search-view.view.active\";\n    await page.waitForSelector(searchViewSelector, { timeout: 4000 });\n\n    // Wait for the search tabs to be visible, using a more robust selector\n    // Find the \"Hashtags\" tab by its button role, .tab-btn class, and text\n    const hashtagsTabXPath = \"//button[contains(@class,'tab-btn') and normalize-space(text())='Hashtags']\";\n    await page.waitForSelector(hashtagsTabXPath, { timeout: 4000 });\n\n    // Take a screenshot before clicking the Hashtags tab\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click_hashtags.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click_hashtags.png'));\n\n    // Click on the \"Hashtags\" tab\n    await page.click(hashtagsTabXPath);\n\n    // Wait for the tab to become active (by checking it has .active class)\n    // We'll use an XPath that checks for the button with both tab-btn and active, and text Hashtags\n    const hashtagsTabActiveXPath = \"//button[contains(@class,'tab-btn') and contains(@class,'active') and normalize-space(text())='Hashtags']\";\n    await page.waitForSelector(hashtagsTabActiveXPath, { timeout: 4000 });\n\n    // Wait for the search results section or list to update (if it exists)\n    // We'll try to find a container that would be updated for hashtags, but as a fallback we'll just wait a bit\n    await page.waitForTimeout(500);\n\n    // Take a screenshot after switching to Hashtags tab\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click_hashtags.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click_hashtags.png'));\n\n    // Extract which tab is active (for verification)\n    // We'll get all tab-btns and their text/active status\n    const tabStatuses = await page.$$eval('button.tab-btn', btns =>\n      btns.map(btn => ({\n        text: btn.innerText.trim(),\n        isActive: btn.classList.contains('active')\n      }))\n    );\n    const activeTab = tabStatuses.find(t => t.isActive);\n\n    return {\n      success: true,\n      action: \"In the search view, switched to the 'Hashtags' tab by clicking it and verified it became active.\",\n      extractedData: {\n        tabs: tabStatuses,\n        activeTab\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20052,
+      "timestamp": "2025-09-15T11:10:41.965Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Ensure we are in the search view: Click sidebar nav item with data-view=\"search\"\n    const searchNavSelector = 'li.nav-item[data-view=\"search\"]';\n    await page.waitForSelector(searchNavSelector, { timeout: 5000 });\n    const searchNav = await page.$(searchNavSelector);\n\n    // Only click if not already active\n    const isActive = await searchNav.evaluate(el => el.classList.contains('active'));\n    if (!isActive) {\n      await searchNav.click();\n      // Wait for the search view to become visible\n      await page.waitForSelector('#search-view.view.active', { timeout: 5000 });\n    } else {\n      // Already in search view, just ensure it's visible\n      await page.waitForSelector('#search-view.view.active', { timeout: 5000 });\n    }\n\n    // Screenshot after switching to search view\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_view.png'));\n\n    // Wait for the 'Hashtags' tab to appear\n    // Use multiple selector strategies for robustness:\n    // - Button with .tab-btn and data-tab='hashtags'\n    // - Or by visible text\n    let hashtagsTabBtn = await page.$(\"button.tab-btn[data-tab='hashtags']\");\n    if (!hashtagsTabBtn) {\n      // Try by button text\n      hashtagsTabBtn = await page.$(\"//button[contains(@class, 'tab-btn') and normalize-space(text())='Hashtags']\");\n    }\n    if (!hashtagsTabBtn) {\n      throw new Error(\"Hashtags tab button not found\");\n    }\n\n    // Click the 'Hashtags' tab button\n    await hashtagsTabBtn.click();\n\n    // Wait for the 'Hashtags' tab to become active\n    // There might be a class like 'active' or aria-selected, try both\n    await page.waitForFunction(() => {\n      const tab = document.querySelector(\"button.tab-btn[data-tab='hashtags']\");\n      return tab && (tab.classList.contains('active') || tab.getAttribute('aria-selected') === 'true');\n    }, { timeout: 4000 });\n\n    // Screenshot after switching to 'Hashtags' tab\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_hashtags_tab_selected.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_hashtags_tab_selected.png'));\n\n    // Extract confirmation: check which tab is now active and extract its text\n    const activeTabText = await page.evaluate(() => {\n      const tabs = Array.from(document.querySelectorAll('button.tab-btn'));\n      const active = tabs.find(btn => btn.classList.contains('active') || btn.getAttribute('aria-selected') === 'true');\n      return active ? active.textContent.trim() : null;\n    });\n\n    // Optionally, extract all tab names and their active status for verification\n    const tabStates = await page.evaluate(() => {\n      return Array.from(document.querySelectorAll('button.tab-btn')).map(btn => ({\n        text: btn.textContent.trim(),\n        active: btn.classList.contains('active') || btn.getAttribute('aria-selected') === 'true'\n      }));\n    });\n\n    return {\n      success: activeTabText === 'Hashtags',\n      action: \"Switched to 'Hashtags' tab in search view by clicking the correct tab button.\",\n      extractedData: {\n        activeTabText,\n        tabStates\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 28205,
+      "timestamp": "2025-09-15T11:11:02.017Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 60695,
+  "timestamp": "2025-09-15T11:10:29.527Z",
+  "savedAt": "2025-09-15T11:11:30.222Z",
+  "version": "1.0"
+}

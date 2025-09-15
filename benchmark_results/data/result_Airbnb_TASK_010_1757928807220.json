@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_010_1757928807220",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_010",
+    "description": "General",
+    "objective": "Price Sorting Verification",
+    "expectedResult": "모든 숙소의 가격을 추출하여 배열로 저장하고 가격 순서가 올바른지 검증하기",
+    "difficulty": "Medium",
+    "category": ".listing-price .amount",
+    "tags": [
+      "Data extraction",
+      "array manipulation"
+    ],
+    "notes": "가격 배열 (예: [65, 95, 110, 120, 140, 160, 180, 185, 220, 280, 350, 380, 420, 450, 750])"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for listings to be rendered\n    // Try to find at least one price element (by .listing-price .amount)\n    await page.waitForSelector('.listing-price .amount', { timeout: 5000 });\n\n    // Take screenshot after listings load\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_listings_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_listings_loaded.png'));\n\n    // Extract all price elements\n    const prices = await page.$$eval('.listing-price .amount', nodes =>\n      nodes.map(node => node.innerText.trim())\n    );\n\n    // Parse prices to numbers (remove currency symbols, commas, etc.)\n    const priceNumbers = prices.map(text => {\n      // Remove non-digit, non-dot, non-comma, non-minus (handle possible currency formats)\n      let cleaned = text.replace(/[^\\d.,\\-]/g, '').replace(/,/g, '');\n      // If there's both dot and comma, assume comma is decimal\n      if (cleaned.includes('.') && cleaned.includes(',')) {\n        cleaned = cleaned.replace(/\\./g, '').replace(',', '.');\n      }\n      // If only comma, treat as decimal\n      else if (!cleaned.includes('.') && cleaned.includes(',')) {\n        cleaned = cleaned.replace(',', '.');\n      }\n      // If only dot, leave as is\n      // If neither, leave as is\n      const num = parseFloat(cleaned);\n      return isNaN(num) ? null : num;\n    }).filter(v => v !== null);\n\n    // Take screenshot of the price elements (highlight them)\n    await page.evaluate(() => {\n      document.querySelectorAll('.listing-price .amount').forEach(el => {\n        el.style.outline = '2px solid #ff5a5f';\n        el.style.background = 'rgba(255,90,95,0.08)';\n      });\n    });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_prices_highlighted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_prices_highlighted.png'));\n\n    // Check if prices are sorted in ascending order\n    let isSorted = true;\n    for (let i = 1; i < priceNumbers.length; i++) {\n      if (priceNumbers[i - 1] > priceNumbers[i]) {\n        isSorted = false;\n        break;\n      }\n    }\n\n    return {\n      success: true,\n      action: \"모든 숙소의 가격을 추출하여 배열로 저장하고 가격 순서가 올바른지(오름차순) 검증함\",\n      extractedData: {\n        pricesRaw: prices,\n        pricesParsed: priceNumbers,\n        priceCount: priceNumbers.length,\n        isSortedAscending: isSorted\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16228,
+      "timestamp": "2025-09-15T09:33:27.220Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for at least one listing price element to appear (try several strategies)\n    // Try the .amount class inside .listing-price, but also try text-based and XPath selectors\n    let priceElements = await page.$$('.listing-price .amount');\n    if (priceElements.length === 0) {\n      // Fallback: try using just .amount\n      priceElements = await page.$$('.amount');\n    }\n    if (priceElements.length === 0) {\n      // Fallback: try XPath for any element containing a currency symbol and numbers\n      priceElements = await page.$$('xpath=//*[contains(text(), \"$\") or contains(text(), \"₩\") or contains(text(), \"€\")]');\n    }\n    // Wait up to 5 seconds if no prices are present yet\n    let retries = 0;\n    while (priceElements.length === 0 && retries < 5) {\n      await page.waitForTimeout(1000);\n      priceElements = await page.$$('.listing-price .amount');\n      if (priceElements.length === 0) {\n        priceElements = await page.$$('.amount');\n      }\n      if (priceElements.length === 0) {\n        priceElements = await page.$$('xpath=//*[contains(text(), \"$\") or contains(text(), \"₩\") or contains(text(), \"€\")]');\n      }\n      retries += 1;\n    }\n\n    // Take a screenshot after prices are loaded/found\n    const step2 = path.join(screenshotsDir, 'step_2_prices_loaded.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Extract prices as numbers (handle currency symbols, commas, spaces, etc)\n    const prices = [];\n    for (const el of priceElements) {\n      let priceText = await el.textContent();\n      if (priceText) {\n        // Remove currency symbols (₩, $, €, ₩, etc.), commas, spaces, and any non-numeric except dot/decimal\n        let num = priceText.replace(/[^0-9.]/g, '');\n        if (num) {\n          let parsed = parseFloat(num);\n          if (!isNaN(parsed)) {\n            prices.push(parsed);\n          }\n        }\n      }\n    }\n\n    // Take a screenshot after extracting prices (optional)\n    const step3 = path.join(screenshotsDir, 'step_3_prices_extracted.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Check if prices are in ascending order (sorted)\n    let pricesSorted = true;\n    for (let i = 1; i < prices.length; i++) {\n      if (prices[i] < prices[i - 1]) {\n        pricesSorted = false;\n        break;\n      }\n    }\n\n    return {\n      success: true,\n      action: \"Extracted all listing prices into an array and checked if they are in ascending order.\",\n      extractedData: {\n        prices,\n        arePricesSorted: pricesSorted,\n        priceCount: prices.length\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14702,
+      "timestamp": "2025-09-15T09:33:43.448Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for main listings container using a broad selector (section or div with listings)\n    let listingsSelector = 'section.listings, div.listings, [class*=listing]';\n    await page.waitForSelector(listingsSelector, { timeout: 5000 }).catch(() => {}); // ignore error if not found\n\n    // Try several selector strategies to find price elements:\n    // 1. '.listing-price .amount'\n    // 2. Use XPath to find elements with \"₩\", \"$\", \"€\", or numbers usually used in prices\n    // 3. Fallback: elements with class including 'price' and containing a number\n\n    // Wait for at least one price to appear by common currency symbols or numbers\n    let priceHandles = await page.$$('.listing-price .amount');\n    if (!priceHandles || priceHandles.length === 0) {\n      // Try XPath for currency symbols (₩, $, €, £)\n      priceHandles = await page.$x('//*[contains(text(),\"₩\") or contains(text(),\"$\") or contains(text(),\"€\") or contains(text(),\"£\")]');\n    }\n    if (!priceHandles || priceHandles.length === 0) {\n      // Fallback: get all spans/divs with class containing \"price\" and numbers inside\n      priceHandles = await page.$$('[class*=\"price\"]');\n    }\n\n    // Extract text from each price node, filter out non-numbers, and parse as numbers\n    let pricesRaw = [];\n    for (const handle of priceHandles) {\n      const text = await handle.evaluate(node => node.innerText || node.textContent || '');\n      pricesRaw.push(text);\n    }\n\n    // Clean up prices: remove non-numeric chars except . and ,\n    let prices = pricesRaw\n      .map(str => {\n        // Remove everything except numbers, dots, and commas\n        const clean = str.replace(/[^0-9.,]/g, '').replace(/,/g, '');\n        return clean.length ? parseFloat(clean) : null;\n      })\n      .filter(val => typeof val === 'number' && !isNaN(val));\n\n    // Remove duplicates (sometimes price appears twice per listing, e.g. per night, per total)\n    prices = Array.from(new Set(prices));\n\n    // Take screenshot after extraction\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_prices_extracted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_prices_extracted.png'));\n\n    // Verify if prices are sorted in any direction (ascending or descending)\n    function isSortedAsc(arr) {\n      for (let i = 1; i < arr.length; i++) if (arr[i-1] > arr[i]) return false;\n      return true;\n    }\n    function isSortedDesc(arr) {\n      for (let i = 1; i < arr.length; i++) if (arr[i-1] < arr[i]) return false;\n      return true;\n    }\n\n    let order = 'unsorted';\n    if (isSortedAsc(prices)) order = 'ascending';\n    else if (isSortedDesc(prices)) order = 'descending';\n\n    // Take screenshot showing the ordering result (try to highlight a price if possible)\n    await page.evaluate(() => {\n      // Try to highlight the first price element\n      const price = document.querySelector('.listing-price .amount') ||\n                    document.evaluate('//*[contains(text(),\"₩\") or contains(text(),\"$\") or contains(text(),\"€\") or contains(text(),\"£\")]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue ||\n                    document.querySelector('[class*=\"price\"]');\n      if (price) price.style.background = 'yellow';\n    });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_price_highlighted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_price_highlighted.png'));\n\n    return {\n      success: true,\n      action: \"Extracted all visible listing prices into an array and checked if they are sorted. Used multiple selector strategies for robustness.\",\n      extractedData: {\n        prices,\n        order\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 22418,
+      "timestamp": "2025-09-15T09:33:58.150Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 53348,
+  "timestamp": "2025-09-15T09:33:27.220Z",
+  "savedAt": "2025-09-15T09:34:20.568Z",
+  "version": "1.0"
+}

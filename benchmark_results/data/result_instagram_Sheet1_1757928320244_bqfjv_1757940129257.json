@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928320244_bqfjv_1757940129257",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928320244_bqfjv",
+    "description": "IG_REG_008",
+    "objective": "Regular",
+    "expectedResult": "Click profile button and then click \"Edit profile\" button to verify profile editing interface",
+    "difficulty": "Medium",
+    "category": ".profile-btn, #profileModal, .edit-profile-btn",
+    "tags": [
+      "Profile editing interface or modal becomes visible"
+    ],
+    "notes": "1. Click .profile-btn 2. Wait for #profileModal 3. Click .edit-profile-btn 4. Verify editing interface appears"
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Step 1: Click the profile button (assume .profile-btn in nav/header)\n    // Try several strategies to locate the profile button\n    let profileBtn = null;\n    try {\n      profileBtn = await page.waitForSelector('.profile-btn', { timeout: 3000 });\n    } catch {\n      // Try by alt text or by profile image if .profile-btn not found\n      const profileImg = await page.$('img.profile-img');\n      if (profileImg) profileBtn = profileImg;\n    }\n    if (!profileBtn) {\n      throw new Error('Profile button not found');\n    }\n    await profileBtn.click();\n\n    // Wait for the profile modal to appear\n    await page.waitForSelector('#profileModal', { state: 'visible', timeout: 5000 });\n\n    // Screenshot after opening profile modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_profile_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_profile_modal_open.png'));\n\n    // Step 2: Click the \"Edit profile\" button inside the modal\n    // Try several strategies for robustness\n    let editProfileBtn = null;\n    try {\n      editProfileBtn = await page.waitForSelector('#profileModal .edit-profile-btn', { timeout: 3000 });\n    } catch {\n      // Try by text content as fallback\n      const btns = await page.$$('#profileModal button');\n      for (const btn of btns) {\n        const text = (await btn.innerText()).trim().toLowerCase();\n        if (text.includes('edit profile')) {\n          editProfileBtn = btn;\n          break;\n        }\n      }\n    }\n    if (!editProfileBtn) {\n      throw new Error('\"Edit profile\" button not found in profile modal');\n    }\n    await editProfileBtn.click();\n\n    // Wait for the profile editing interface to appear\n    // This could be a form, or a new modal, or inputs becoming enabled\n    // We'll wait for a common pattern: input fields inside #profileModal become visible/enabled\n    await page.waitForTimeout(500); // brief pause for UI transition\n\n    // Try to detect profile editing interface\n    const editInputs = await page.$$('#profileModal input, #profileModal textarea, #profileModal [contenteditable=\"true\"]');\n    let editingInterfaceVisible = false;\n    for (const input of editInputs) {\n      if (await input.isVisible()) {\n        editingInterfaceVisible = true;\n        break;\n      }\n    }\n\n    // Screenshot after opening edit profile interface\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_edit_profile_interface.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_edit_profile_interface.png'));\n\n    // Extract data: number of editable fields and their placeholders (if any)\n    const extractedData = {};\n    extractedData.editingInterfaceVisible = editingInterfaceVisible;\n    extractedData.editFields = [];\n    for (const input of editInputs) {\n      const type = await input.getAttribute('type');\n      const placeholder = await input.getAttribute('placeholder');\n      const name = await input.getAttribute('name');\n      extractedData.editFields.push({ type, placeholder, name });\n    }\n\n    return {\n      success: editingInterfaceVisible,\n      action: 'Clicked profile button, then \"Edit profile\" button, and verified profile editing interface is visible',\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 27945,
+      "timestamp": "2025-09-15T12:42:09.257Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1path = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1path });\n    screenshots.push(step1path);\n\n    // STEP 2: Click the profile button (try using img[alt=\"Profile\"] in header as a robust selector)\n    // The profile button likely has .profile-img and is inside .header\n    await page.waitForSelector('.header .profile-img', { timeout: 4000 });\n    const profileImg = await page.$('.header .profile-img');\n    if (!profileImg) throw new Error('Profile button not found');\n    await profileImg.click();\n\n    // Wait for the Profile Modal to appear (using #profileModal and visible check)\n    await page.waitForSelector('#profileModal', { state: 'visible', timeout: 4000 });\n\n    // Take screenshot after profile modal appears\n    const step2path = path.join(screenshotsDir, 'step_2_profile_modal.png');\n    await page.screenshot({ path: step2path });\n    screenshots.push(step2path);\n\n    // STEP 3: Click the \"Edit profile\" button inside the Profile Modal\n    // Try with button:has-text(\"Edit profile\"), fallback to .edit-profile-btn in #profileModal\n    let editProfileBtn = await page.$('#profileModal button:has-text(\"Edit profile\")');\n    if (!editProfileBtn) {\n      // Fallback to .edit-profile-btn inside #profileModal\n      editProfileBtn = await page.$('#profileModal .edit-profile-btn');\n    }\n    if (!editProfileBtn) throw new Error('Edit profile button not found in profile modal');\n    await editProfileBtn.click();\n\n    // Wait for the profile editing interface to appear\n    // Strategy: look for common fields in the edit modal, e.g. input[name=\"username\"], or header/title\n    // Let's wait for an input field inside #profileModal, assuming edit stays in same modal\n    await page.waitForSelector('#profileModal input, #profileModal textarea, #profileModal select', { timeout: 4000 });\n\n    // Take screenshot of the edit profile interface\n    const step3path = path.join(screenshotsDir, 'step_3_edit_profile.png');\n    await page.screenshot({ path: step3path });\n    screenshots.push(step3path);\n\n    // Extract data: check if an input for username or email is present\n    const editInputs = await page.$$eval('#profileModal input', nodes =>\n      nodes.map(n => ({ name: n.getAttribute('name'), placeholder: n.getAttribute('placeholder') }))\n    );\n    const foundInput = editInputs.length > 0;\n\n    return {\n      success: true,\n      action: 'Clicked profile button, opened profile modal, clicked \"Edit profile\", and verified edit interface is shown',\n      extractedData: {\n        editProfileInputs: editInputs,\n        editInterfaceDetected: foundInput\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14217,
+      "timestamp": "2025-09-15T12:42:37.202Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // STEP 1: Click the profile button (try multiple strategies)\n    // First, try by class \".profile-btn\"\n    let profileBtn = await page.$('.profile-btn');\n    if (!profileBtn) {\n      // Try by alt attribute on profile image in header (fallback)\n      profileBtn = await page.$('header .profile-img');\n    }\n    if (!profileBtn) {\n      // Try finding by XPath for nav image (last nav-item, usually profile)\n      const navProfileImg = await page.$('//nav//img[contains(@class, \"profile-img\")]');\n      if (navProfileImg) profileBtn = navProfileImg;\n    }\n    if (!profileBtn) {\n      throw new Error('Profile button not found using any known selectors');\n    }\n    await profileBtn.click();\n\n    // Wait for the profile modal to appear\n    await page.waitForSelector('#profileModal', { state: 'visible', timeout: 5000 });\n\n    // Take screenshot after profile modal appears\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_profile_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_profile_modal.png'));\n\n    // STEP 2: Click the \"Edit profile\" button inside the profile modal\n    // Try by class\n    let editBtn = await page.$('#profileModal .edit-profile-btn');\n    if (!editBtn) {\n      // Try by text content (case-insensitive, fallback)\n      editBtn = await page.$('#profileModal button:has-text(\"Edit profile\")');\n    }\n    if (!editBtn) {\n      // Try XPath as last fallback\n      const btnByXpath = await page.$('//div[@id=\"profileModal\"]//button[contains(translate(.,\"ABCDEFGHIJKLMNOPQRSTUVWXYZ\",\"abcdefghijklmnopqrstuvwxyz\"), \"edit profile\")]');\n      if (btnByXpath) editBtn = btnByXpath;\n    }\n    if (!editBtn) {\n      throw new Error('Edit profile button not found in profile modal');\n    }\n    await editBtn.click();\n\n    // Wait for the profile editing interface to appear\n    // We'll wait for a distinctive element that only appears in editing mode, e.g., an input or a save button\n    // Try to find an input field inside the profile modal (often present in edit mode)\n    const editInputSelector = '#profileModal input[type=\"text\"], #profileModal input, #profileModal textarea';\n    await page.waitForSelector(editInputSelector, { timeout: 5000 });\n\n    // Take screenshot after edit profile interface appears\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_edit_profile.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_edit_profile.png'));\n\n    // Extract some data: check whether the edit interface is present\n    const editInputsCount = await page.$$eval(editInputSelector, els => els.length);\n\n    return {\n      success: true,\n      action: 'Clicked profile button, opened profile modal, clicked \"Edit profile\", and verified edit profile interface appeared.',\n      extractedData: {\n        editProfileInputsFound: editInputsCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 26091,
+      "timestamp": "2025-09-15T12:42:51.419Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 68253,
+  "timestamp": "2025-09-15T12:42:09.257Z",
+  "savedAt": "2025-09-15T12:43:17.510Z",
+  "version": "1.0"
+}

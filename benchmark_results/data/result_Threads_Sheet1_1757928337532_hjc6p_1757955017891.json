@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337532_hjc6p_1757955017891",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337532_hjc6p",
+    "description": "M001",
+    "objective": "Extract All Visible Usernames",
+    "expectedResult": "Collect all usernames visible in the current thread feed and store them in an array",
+    "difficulty": ".thread-username",
+    "category": 3,
+    "tags": [
+      "30 seconds"
+    ],
+    "notes": "Yes"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for thread feed to load\n    await page.waitForSelector('.threads-feed', { timeout: 5000 });\n    \n    // Wait for username elements to be present\n    await page.waitForSelector('.thread-username', { timeout: 5000 });\n\n    // Extract all visible usernames from thread feed\n    const usernames = await page.$$eval('.thread-username', elements => \n      elements.map(el => el.textContent.trim())\n    );\n\n    // Filter out any empty or duplicate usernames\n    const uniqueUsernames = [...new Set(usernames.filter(name => name))];\n\n    // Take screenshot of thread feed with highlighted usernames\n    await page.evaluate(() => {\n      document.querySelectorAll('.thread-username').forEach(el => {\n        el.style.backgroundColor = 'yellow';\n        el.style.color = 'black';\n      });\n    });\n    \n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_usernames_highlighted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_usernames_highlighted.png'));\n\n    return {\n      success: true,\n      action: \"Collected all visible usernames from thread feed\",\n      extractedData: {\n        usernames: uniqueUsernames,\n        count: uniqueUsernames.length\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to collect usernames from thread feed\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 44897,
+      "timestamp": "2025-09-15T16:50:17.892Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for thread feed to load and ensure we're on home view\n    await page.waitForSelector('#home-view.active', { state: 'visible' });\n    await page.waitForSelector('#threads-feed', { state: 'visible' });\n\n    // Wait for thread items to load\n    await page.waitForSelector('.thread-item', { state: 'visible' });\n\n    // Extract all visible usernames from thread feed\n    const usernames = await page.$$eval('.thread-username', \n      elements => elements.map(el => el.textContent.trim())\n    );\n\n    // Take screenshot after extraction\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_usernames_extracted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_usernames_extracted.png'));\n\n    return {\n      success: true,\n      action: \"Collected all visible usernames from thread feed\",\n      extractedData: { usernames },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 92299,
+      "timestamp": "2025-09-15T16:51:02.789Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for thread feed to load and ensure we're on home view\n    await page.waitForSelector('.threads-feed', { timeout: 5000 });\n    \n    // Wait for username elements to be present\n    await page.waitForSelector('.thread-username', { timeout: 10000 });\n\n    // Extract all visible usernames from thread feed\n    const usernames = await page.evaluate(() => {\n      const usernameElements = document.querySelectorAll('.thread-username');\n      return Array.from(usernameElements).map(el => el.textContent.trim());\n    });\n\n    // Take screenshot after extraction\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_usernames_extracted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_usernames_extracted.png'));\n\n    return {\n      success: true,\n      action: \"Collected all visible usernames from thread feed\",\n      extractedData: { usernames },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take screenshot on error\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    \n    return {\n      success: false,\n      action: \"Failed to collect usernames from thread feed\",\n      extractedData: {},\n      screenshots: [...screenshots, path.join(screenshotsDir, 'error.png')],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 76805,
+      "timestamp": "2025-09-15T16:52:35.088Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 214002,
+  "timestamp": "2025-09-15T16:50:17.891Z",
+  "savedAt": "2025-09-15T16:53:51.893Z",
+  "version": "1.0"
+}

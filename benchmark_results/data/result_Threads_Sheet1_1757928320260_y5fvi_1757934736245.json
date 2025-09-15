@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928320260_y5fvi_1757934736245",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928320260_y5fvi",
+    "description": "G015",
+    "objective": "Navigate to Bookmarks",
+    "expectedResult": "Click Bookmarks navigation item to view bookmarked threads",
+    "difficulty": ".nav-item[data-view='bookmarks']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar navigation to be visible\n    await page.waitForSelector('.sidebar', { timeout: 5000 });\n\n    // Wait for the Bookmarks nav item to be present\n    const bookmarksSelector = \".nav-item[data-view='bookmarks']\";\n    await page.waitForSelector(bookmarksSelector, { timeout: 5000 });\n\n    // Scroll into view in case sidebar is scrollable\n    const bookmarksElement = await page.$(bookmarksSelector);\n    await bookmarksElement.scrollIntoViewIfNeeded();\n\n    // Take screenshot before clicking Bookmarks\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_bookmarks_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_bookmarks_click.png'));\n\n    // Click the Bookmarks navigation item\n    await bookmarksElement.click();\n\n    // Wait for the Bookmarks view to load by checking for a header or unique element\n    // Try to find a header with text \"Bookmarks\" in the main content area\n    let bookmarksHeaderSelector = \"//div[contains(@class,'content-header')]//h2[normalize-space()='Bookmarks']\";\n    await page.waitForSelector(bookmarksHeaderSelector, { timeout: 5000, state: 'visible' });\n\n    // Take screenshot after clicking Bookmarks\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_bookmarks_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_bookmarks_view.png'));\n\n    // Extract confirmation data: check that the Bookmarks nav item is now active and header is present\n    const isBookmarksActive = await page.$eval(\n      \".nav-item[data-view='bookmarks']\",\n      el => el.classList.contains('active')\n    );\n    const bookmarksHeaderText = await page.$eval(\n      \"//div[contains(@class,'content-header')]//h2\",\n      el => el.textContent.trim()\n    );\n\n    return {\n      success: true,\n      action: \"Clicked the Bookmarks navigation item to view bookmarked threads.\",\n      extractedData: {\n        bookmarksNavActive: isBookmarksActive,\n        bookmarksHeader: bookmarksHeaderText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12784,
+      "timestamp": "2025-09-15T11:12:16.245Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for sidebar to be visible - using class-based selector as alternative\n    await page.waitForSelector('nav.sidebar', { timeout: 5000 });\n\n    // Wait for the Bookmarks nav item using multiple strategies:\n    // First, try XPath as a different strategy from previous attempts\n    const bookmarkNavXPath = \"//li[contains(@class, 'nav-item') and .//*[contains(text(), 'Bookmarks')]]\";\n    const bookmarkNavEl = await page.waitForSelector(bookmarkNavXPath, { timeout: 5000 });\n\n    // Highlight for clarity (optional in automation, but useful in debugging)\n    await page.evaluate(el => el.style.boxShadow = '0 0 0 2px #00f inset', bookmarkNavEl);\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_bookmark_nav_found.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_bookmark_nav_found.png'));\n\n    // Click the Bookmarks nav item\n    await bookmarkNavEl.click();\n\n    // Wait for the view to switch: look for a header or content unique to Bookmarks view\n    // Try to wait for a view whose id contains \"bookmarks\" or whose header says \"Bookmarks\"\n    // Use a relaxed approach: wait for h2 with text \"Bookmarks\" to appear in the main content\n    const bookmarksHeaderXPath = \"//main[contains(@class, 'main-content')]//h2[contains(translate(text(), 'BOOKMARKS', 'bookmarks'), 'bookmarks')]\";\n    await page.waitForSelector(bookmarksHeaderXPath, { timeout: 4000 });\n\n    // Take screenshot after switching to Bookmarks view\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_bookmarks_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_bookmarks_view.png'));\n\n    // Extract confirmation: header text and check nav active\n    const headerText = await page.$eval(bookmarksHeaderXPath, el => el.textContent.trim());\n    // Check if the bookmarks nav item is now marked active\n    const isActive = await page.evaluate(() => {\n      const el = Array.from(document.querySelectorAll('.nav-item')).find(li => \n        li.textContent.trim().toLowerCase().includes('bookmarks')\n      );\n      return el && el.classList.contains('active');\n    });\n\n    return {\n      success: true,\n      action: \"Clicked Bookmarks navigation item and verified Bookmarks view is displayed.\",\n      extractedData: {\n        bookmarksHeader: headerText,\n        bookmarksNavIsActive: isActive\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14820,
+      "timestamp": "2025-09-15T11:12:29.029Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('domcontentloaded');\n\n    // Take an initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar nav menu to be visible by role and text\n    await page.waitForSelector(\"nav.sidebar ul.nav-menu\", { timeout: 5000 });\n\n    // Find the Bookmarks nav item using alternative selector strategies:\n    // - Use XPath to match the <span> text \"Bookmarks\" within the nav sidebar\n    const [bookmarkNavItem] = await page.$x(\n      \"//nav[contains(@class, 'sidebar')]//li[contains(@class, 'nav-item') and .//span[text()='Bookmarks']]\"\n    );\n\n    if (!bookmarkNavItem) {\n      throw new Error(\"Bookmarks navigation item not found (XPath strategy)\");\n    }\n\n    // Scroll into view in case it's not visible\n    await bookmarkNavItem.evaluate(el => el.scrollIntoView({ block: 'center' }));\n\n    // Add a short delay before click to ensure UI is ready\n    await page.waitForTimeout(200);\n\n    // Click the Bookmarks nav item\n    await bookmarkNavItem.click();\n\n    // Wait for Bookmarks view to appear.\n    // Assume the main content area will show a header or content change.\n    // Try to wait for a header with text \"Bookmarks\" in .content-header h2\n    await page.waitForSelector('.main-content .content-header h2', { timeout: 3000 });\n\n    // Confirm the header text is \"Bookmarks\"\n    const headerText = await page.$eval('.main-content .content-header h2', el => el.textContent.trim());\n\n    // Take screenshot after clicking Bookmarks\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_bookmarks_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_bookmarks_clicked.png'));\n\n    // Extract information to verify that Bookmarks view is active\n    // Find the nav-item for bookmarks and see if it now has the 'active' class\n    const isBookmarksActive = await page.evaluate(() => {\n      const bookmarksNav = Array.from(document.querySelectorAll('.nav-item[data-view=\"bookmarks\"]'))[0];\n      return bookmarksNav && bookmarksNav.classList.contains('active');\n    });\n\n    // Optionally, extract a list of thread titles or a message if no bookmarks\n    let bookmarksContent = \"\";\n    try {\n      bookmarksContent = await page.$eval('.main-content .threads-feed', el => el.textContent.trim());\n    } catch (e) {\n      bookmarksContent = \"(No threads-feed found)\";\n    }\n\n    return {\n      success: isBookmarksActive && headerText.toLowerCase().includes(\"bookmarks\"),\n      action: \"Clicked the Bookmarks navigation item and loaded the Bookmarks view\",\n      extractedData: {\n        headerText,\n        isBookmarksActive,\n        bookmarksContent: bookmarksContent.slice(0, 200)\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 24396,
+      "timestamp": "2025-09-15T11:12:43.849Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 52000,
+  "timestamp": "2025-09-15T11:12:16.245Z",
+  "savedAt": "2025-09-15T11:13:08.245Z",
+  "version": "1.0"
+}

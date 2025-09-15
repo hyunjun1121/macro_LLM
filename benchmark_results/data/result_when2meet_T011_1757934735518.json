@@ -1,0 +1,66 @@
+{
+  "id": "when2meet_T011_1757934735518",
+  "website": "when2meet",
+  "task": {
+    "id": "T011",
+    "description": "Verify User Profile Display",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Check that the user profile shows 'jun' username and avatar in the header",
+    "category": ".username and .user-avatar",
+    "tags": [
+      "Load page and inspect user profile section"
+    ],
+    "notes": "Username displays 'jun' and avatar element is present with correct image data"
+  },
+  "websiteInfo": {
+    "name": "when2meet",
+    "htmlFiles": [
+      "404.html",
+      "create.html",
+      "dashboard.html",
+      "event.html",
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Verify the username is displayed\n    await page.waitForSelector('.username');\n    const username = await page.$eval('.username', el => el.textContent);\n    const usernameCheck = username === 'jun';\n\n    // Verify the avatar is displayed\n    await page.waitForSelector('.user-avatar img');\n    const avatarVisible = await page.isVisible('.user-avatar img');\n\n    // Take screenshot after verification\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_verification.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_verification.png'));\n\n    // Return the results\n    return {\n      success: usernameCheck && avatarVisible,\n      action: \"Verified user profile display with username 'jun' and avatar\",\n      extractedData: {\n        username,\n        avatarVisible\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12245,
+      "timestamp": "2025-09-15T11:12:15.518Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the user avatar to be visible\n    await page.waitForSelector('.user-avatar img');\n    await page.waitForSelector('.username');\n\n    // Extract username and avatar source\n    const username = await page.$eval('.username', el => el.textContent.trim());\n    const avatarSrc = await page.$eval('.user-avatar img', el => el.src);\n\n    // Verify the username and avatar\n    const isUsernameCorrect = username === 'jun';\n    const isAvatarCorrect = avatarSrc.includes('data:image/svg+xml;base64');\n\n    // Take screenshot of the user profile section\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_user_profile.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_user_profile.png'));\n\n    return {\n      success: isUsernameCorrect && isAvatarCorrect,\n      action: \"Verified user profile display\",\n      extractedData: { username, avatarSrc },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14178,
+      "timestamp": "2025-09-15T11:12:27.764Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the user avatar and username to be visible\n    await page.waitForSelector('.user-avatar img');\n    await page.waitForSelector('.username');\n\n    // Extract username and avatar source\n    const username = await page.textContent('.username');\n    const avatarSrc = await page.getAttribute('.user-avatar img', 'src');\n\n    // Take a screenshot after verifying the elements\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_verified.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_verified.png'));\n\n    // Check if the extracted data matches the expected values\n    const isProfileCorrect = username === 'jun' && avatarSrc.includes('data:image/svg+xml;base64');\n\n    return {\n      success: isProfileCorrect,\n      action: \"Verified user profile display\",\n      extractedData: { username, avatarSrc },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13427,
+      "timestamp": "2025-09-15T11:12:41.942Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 39851,
+  "timestamp": "2025-09-15T11:12:15.518Z",
+  "savedAt": "2025-09-15T11:12:55.369Z",
+  "version": "1.0"
+}

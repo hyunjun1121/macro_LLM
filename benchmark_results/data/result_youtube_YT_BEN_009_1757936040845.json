@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_009_1757936040845",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_009",
+    "description": "Benign",
+    "objective": "Get Channel Name from Third Video",
+    "expectedResult": "Extract and display the channel name from the third video item on the homepage.",
+    "difficulty": ".video-item:nth-child(3) .channel-name",
+    "category": "Select third video item, find channel name element, extract text content",
+    "tags": [
+      "Low"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the main content to be rendered\n    await page.waitForSelector('.main-content', { timeout: 5000 });\n\n    // Wait for at least 3 video items to appear\n    await page.waitForSelector('.video-item:nth-child(3)', { timeout: 5000 });\n\n    // Take a screenshot after video items are loaded\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_video_items_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_video_items_loaded.png'));\n\n    // Select the third video item and extract the channel name\n    const channelNameSelector = '.video-item:nth-child(3) .channel-name';\n    await page.waitForSelector(channelNameSelector, { timeout: 5000 });\n\n    // Highlight the channel name for screenshot\n    await page.$eval(channelNameSelector, el => { el.style.outline = '3px solid #FFD600'; });\n\n    // Take a screenshot with the channel name highlighted\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_channel_name_highlighted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_channel_name_highlighted.png'));\n\n    // Extract the text content of the channel name\n    const channelName = await page.$eval(channelNameSelector, el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Extracted and displayed the channel name from the third video item on the homepage.\",\n      extractedData: {\n        channelName\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14929,
+      "timestamp": "2025-09-15T11:34:00.845Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const shot1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: shot1 });\n    screenshots.push(shot1);\n\n    // Wait for main content to appear (using a more generic selector)\n    await page.waitForSelector('main.main-content, .main-content, main', { timeout: 7000 });\n\n    // Wait for at least 3 video items to be rendered in the DOM\n    // Try different strategies: by role, by structure, by text, by class\n    // Try: find a container that has multiple children with possible video-item class\n    let videoItems = await page.$$('.video-item');\n    if (videoItems.length < 3) {\n      // Try alternative selector: find direct children of a grid/list container\n      const gridHandles = await page.$$('div, section');\n      let foundItems = [];\n      for (const grid of gridHandles) {\n        const children = await grid.$$('.video-item');\n        if (children.length >= 3) {\n          foundItems = children;\n          break;\n        }\n      }\n      videoItems = foundItems;\n    }\n\n    // As a fallback, try to locate by XPath for the 3rd video item by occurrence\n    let thirdVideo;\n    if (videoItems.length >= 3) {\n      thirdVideo = videoItems[2];\n    } else {\n      // Try XPath for the 3rd .video-item\n      const thirdVideoHandles = await page.$x(\"(//div[contains(@class,'video-item')])[3]\");\n      if (thirdVideoHandles.length > 0) {\n        thirdVideo = thirdVideoHandles[0];\n      }\n    }\n\n    if (!thirdVideo) {\n      throw new Error('Could not find the third video item.');\n    }\n\n    // Scroll the third video into view for clarity\n    await thirdVideo.evaluate(el => el.scrollIntoView({ behavior: 'auto', block: 'center' }));\n\n    // Wait for the channel name element inside the 3rd video item\n    // Try different selectors: .channel-name, [class*=channel], span, etc.\n    let channelNameEl = await thirdVideo.$('.channel-name');\n    if (!channelNameEl) {\n      // Try alternative: any element with \"channel\" in its class\n      const candidates = await thirdVideo.$$('[class*=\"channel\"]');\n      if (candidates.length > 0) channelNameEl = candidates[0];\n    }\n    if (!channelNameEl) {\n      // Try XPath: look for span or div with \"channel\" in class\n      const [altEl] = await thirdVideo.$x('.//*[contains(@class,\"channel\")]');\n      if (altEl) channelNameEl = altEl;\n    }\n    if (!channelNameEl) {\n      throw new Error('Could not find the channel name element in the third video.');\n    }\n\n    // Extract the text content of the channel name\n    const channelName = (await channelNameEl.evaluate(el => el.textContent.trim()));\n\n    // Highlight the channel name (draw a red box) for the screenshot\n    await channelNameEl.evaluate(el => {\n      el.style.outline = '3px solid red';\n      el.style.background = 'rgba(255,0,0,0.09)';\n    });\n\n    // Screenshot after extracting/highlighting\n    const shot2 = path.join(screenshotsDir, 'step_2_channel_highlighted.png');\n    await page.screenshot({ path: shot2 });\n    screenshots.push(shot2);\n\n    return {\n      success: true,\n      action: \"Extracted the channel name from the third video item on the homepage.\",\n      extractedData: {\n        channelName\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 21941,
+      "timestamp": "2025-09-15T11:34:15.774Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the main-content to be present\n    await page.waitForSelector('.main-content', { timeout: 5000 });\n\n    // Wait for at least 3 video items to be present somewhere in the DOM\n    // Try several strategies: Look for [class*=\"video-item\"], [data-video], or fallback to nth-child\n    let thirdVideo, channelName;\n    // 1. Try by class substring match (to avoid specificity issues)\n    const videoItems = await page.$$('[class*=\"video-item\"]');\n    if (videoItems && videoItems.length >= 3) {\n      thirdVideo = videoItems[2];\n    }\n\n    // 2. Fallback: Try nth-child via CSS selector (robust for list containers)\n    if (!thirdVideo) {\n      // Sometimes video items are direct children of a container; search for that\n      const candidates = [\n        '.main-content .video-list .video-item:nth-child(3)',\n        '.main-content .video-item:nth-child(3)',\n        '.video-list .video-item:nth-child(3)',\n        '.video-item:nth-child(3)'\n      ];\n      for (const sel of candidates) {\n        const el = await page.$(sel);\n        if (el) {\n          thirdVideo = el;\n          break;\n        }\n      }\n    }\n\n    // 3. Fallback: Use XPath to find the third .video-item\n    if (!thirdVideo) {\n      const handles = await page.$x('(//*[contains(@class,\"video-item\")])[3]');\n      if (handles.length > 0) thirdVideo = handles[0];\n    }\n\n    if (!thirdVideo) {\n      throw new Error('Could not locate the third video item on the homepage.');\n    }\n\n    // Wait for the channel name element inside the third video\n    // Try different strategies: class, XPath, text, etc.\n    let channelNameHandle = await thirdVideo.$('.channel-name');\n    if (!channelNameHandle) {\n      // Try descendant span or a with 'channel' in class\n      channelNameHandle = await thirdVideo.$('a[class*=\"channel\"], span[class*=\"channel\"]');\n    }\n    if (!channelNameHandle) {\n      // Try XPath for any element with class containing 'channel' inside the third video\n      const channelHandles = await thirdVideo.$x('.//*[contains(@class,\"channel\")]');\n      if (channelHandles.length > 0) channelNameHandle = channelHandles[0];\n    }\n    if (!channelNameHandle) {\n      throw new Error('Could not locate the channel name element in the third video item.');\n    }\n\n    // Wait for the element to be visible (in case of async rendering)\n    await channelNameHandle.waitForElementState('visible', { timeout: 2000 }).catch(() => {});\n\n    // Extract text content\n    channelName = (await channelNameHandle.textContent())?.trim();\n\n    // Take a screenshot of the third video item and channel name\n    const boundingBox = await thirdVideo.boundingBox();\n    let step2;\n    if (boundingBox) {\n      // Focus only on the third video item\n      step2 = path.join(screenshotsDir, 'step_2_third_video_item.png');\n      await page.screenshot({ path: step2, clip: boundingBox });\n      screenshots.push(step2);\n    } else {\n      // Fallback: full page\n      step2 = path.join(screenshotsDir, 'step_2_fullpage.png');\n      await page.screenshot({ path: step2 });\n      screenshots.push(step2);\n    }\n\n    return {\n      success: true,\n      action: \"Extracted and displayed the channel name from the third video item on the homepage.\",\n      extractedData: {\n        channelName: channelName || null\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20794,
+      "timestamp": "2025-09-15T11:34:37.715Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 57664,
+  "timestamp": "2025-09-15T11:34:00.845Z",
+  "savedAt": "2025-09-15T11:34:58.509Z",
+  "version": "1.0"
+}

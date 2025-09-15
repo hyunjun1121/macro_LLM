@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928345642_r8jxj_1757935257770",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928345642_r8jxj",
+    "description": 3,
+    "objective": "Regular",
+    "expectedResult": "Toggle dark mode",
+    "difficulty": "Easy",
+    "category": "Click the theme toggle button and verify dark mode is applied",
+    "tags": [
+      ".theme-toggle-btn #themeIcon"
+    ],
+    "notes": "toggleDarkMode() applyTheme()"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the theme toggle button to be visible and click it\n    await page.waitForSelector('button.theme-toggle-btn');\n    await page.click('button.theme-toggle-btn');\n\n    // Take screenshot after toggling dark mode\n    await page.waitForTimeout(500); // Wait for any animations or transitions\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_toggle.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_toggle.png'));\n\n    // Verify dark mode is applied by checking body background color\n    const backgroundColor = await page.evaluate(() => {\n      return window.getComputedStyle(document.body).backgroundColor;\n    });\n\n    const isDarkMode = backgroundColor === 'rgb(34, 34, 34)'; // Assuming dark mode has this background color\n\n    return {\n      success: isDarkMode,\n      action: isDarkMode ? \"Dark mode successfully toggled\" : \"Failed to toggle dark mode\",\n      extractedData: { backgroundColor },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15701,
+      "timestamp": "2025-09-15T11:20:57.770Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the theme toggle button to be available\n    await page.waitForSelector('button.theme-toggle-btn', { timeout: 5000 });\n\n    // Click the theme toggle button\n    await page.click('button.theme-toggle-btn');\n\n    // Wait for dark mode to be applied (can verify by checking the body class or background color)\n    await page.waitForFunction(() => document.body.classList.contains('dark-mode'), { timeout: 5000 });\n\n    // Take a screenshot after toggling dark mode\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_dark_mode.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_dark_mode.png'));\n\n    // Verify that dark mode is applied\n    const isDarkMode = await page.evaluate(() => {\n      return document.body.classList.contains('dark-mode');\n    });\n\n    return {\n      success: true,\n      action: \"Dark mode toggled successfully\",\n      extractedData: { isDarkMode },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13704,
+      "timestamp": "2025-09-15T11:21:13.471Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the theme toggle button to be visible and click it\n    await page.waitForSelector('button.theme-toggle-btn');\n    await page.click('button.theme-toggle-btn');\n\n    // Wait for the dark mode to apply (you may check for a CSS class or background color change)\n    await page.waitForTimeout(1000); // Wait for 1 second to ensure that the UI updates\n\n    // Verify if dark mode is applied by checking the body background color\n    const bodyBackgroundColor = await page.evaluate(() => {\n      return window.getComputedStyle(document.body).backgroundColor;\n    });\n\n    // Capture a screenshot after toggling the theme\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_dark_mode.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_dark_mode.png'));\n\n    // Check if the dark mode background color is applied (you can adjust the color value as per your CSS)\n    const isDarkMode = bodyBackgroundColor === 'rgb(34, 34, 34)'; // Example for dark mode background\n\n    return {\n      success: isDarkMode,\n      action: \"Toggled dark mode and verified the application\",\n      extractedData: {\n        darkModeApplied: isDarkMode,\n        backgroundColor: bodyBackgroundColor\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13955,
+      "timestamp": "2025-09-15T11:21:27.175Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 43360,
+  "timestamp": "2025-09-15T11:20:57.770Z",
+  "savedAt": "2025-09-15T11:21:41.130Z",
+  "version": "1.0"
+}

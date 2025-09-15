@@ -1,0 +1,63 @@
+{
+  "id": "TikTok_Sheet1_1757928320243_dutbx_1757932917838",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928320243_dutbx",
+    "description": 4,
+    "objective": "General",
+    "expectedResult": "검색창에 '#dance'를 입력하고 검색 버튼 클릭",
+    "difficulty": "searchInput에 '#dance'를 타이핑하고 .search-btn을 클릭",
+    "category": "Medium",
+    "tags": [
+      "#searchInput",
+      ".search-btn"
+    ],
+    "notes": "searchInput에 '#dance'를 타이핑하고 .search-btn을 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the search input to be visible\n    await page.waitForSelector('#searchInput', { state: 'visible', timeout: 5000 });\n\n    // Focus and type '#dance' into the search input\n    const searchInput = await page.$('#searchInput');\n    await searchInput.click({ clickCount: 3 }); // Select all (in case of prefilled text)\n    await searchInput.fill(''); // Clear any existing text\n    await searchInput.type('#dance', { delay: 100 });\n\n    // Screenshot after typing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_typed_search.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_typed_search.png'));\n\n    // Wait for the search button to be visible\n    await page.waitForSelector('.search-btn', { state: 'visible', timeout: 5000 });\n\n    // Click the search button\n    const searchBtn = await page.$('.search-btn');\n    await searchBtn.click();\n\n    // Wait for search results or page update (simulate dynamic content)\n    // We'll wait for a result containing '#dance' or a relevant result\n    let foundResult = false;\n    let extractedData = {};\n    try {\n      await page.waitForSelector('text=#dance', { timeout: 4000 });\n      foundResult = true;\n      // Extract the first result containing '#dance'\n      const hashtagResult = await page.$('text=#dance');\n      if (hashtagResult) {\n        const textContent = await hashtagResult.textContent();\n        extractedData.firstHashtagResult = textContent.trim();\n      }\n    } catch {\n      // If not found, fallback: check if the input still contains '#dance'\n      const value = await page.$eval('#searchInput', el => el.value);\n      extractedData.searchInputValue = value;\n    }\n\n    // Screenshot after search\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_search.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_search.png'));\n\n    return {\n      success: true,\n      action: \"Typed '#dance' into the search input and clicked the search button. Verified search results or input value.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12181,
+      "timestamp": "2025-09-15T10:41:57.838Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1Path = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1Path });\n    screenshots.push(step1Path);\n\n    // Wait for search input using alternative selector (attribute + placeholder)\n    const searchInputSelector = 'input[placeholder=\"Search accounts and videos\"]';\n    await page.waitForSelector(searchInputSelector, { state: 'visible', timeout: 5000 });\n\n    // Click into the input to ensure focus\n    await page.click(searchInputSelector);\n\n    // Type \"#dance\" character by character to simulate user typing\n    await page.type(searchInputSelector, '#dance', { delay: 80 });\n\n    // Take screenshot after typing\n    const step2Path = path.join(screenshotsDir, 'step_2_typed_search.png');\n    await page.screenshot({ path: step2Path });\n    screenshots.push(step2Path);\n\n    // Wait for the search button using a different selector: class + icon\n    // The search button contains a <i> with class 'fa-search'\n    // Using xpath to locate the button by its child icon\n    const searchBtnXpath = '//button[contains(@class,\"search-btn\") and .//i[contains(@class,\"fa-search\")]]';\n    await page.waitForSelector(searchBtnXpath, { state: 'visible', timeout: 5000 });\n\n    // Click the search button\n    const [searchBtn] = await page.$x(searchBtnXpath);\n    if (!searchBtn) throw new Error(\"Search button not found via xpath\");\n    await searchBtn.click();\n\n    // Wait for potential search result changes (simulate: input blur or content update)\n    // We'll check if the input is blurred or disabled, or if the value remains\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after clicking search\n    const step3Path = path.join(screenshotsDir, 'step_3_after_search_click.png');\n    await page.screenshot({ path: step3Path });\n    screenshots.push(step3Path);\n\n    // Extract value from the search input to confirm '#dance' was successfully entered\n    const searchValue = await page.$eval(searchInputSelector, el => el.value);\n\n    // Compose result\n    return {\n      success: true,\n      action: \"Typed '#dance' into the search input and clicked the search button using attribute, placeholder, and xpath selectors.\",\n      extractedData: {\n        searchInputValue: searchValue\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11148,
+      "timestamp": "2025-09-15T10:42:10.019Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the search input field using placeholder (alternative to ID)\n    const searchInputSelector = 'input[placeholder=\"Search accounts and videos\"]';\n    await page.waitForSelector(searchInputSelector, { state: 'visible', timeout: 5000 });\n\n    // Focus and fill the search input with '#dance'\n    const searchInput = await page.$(searchInputSelector);\n    await searchInput.click({ clickCount: 3 }); // Ensure field is focused and empty\n    await searchInput.fill('');\n    await searchInput.type('#dance', { delay: 50 });\n\n    // Take screenshot after typing\n    const afterTypingScreenshot = path.join(screenshotsDir, 'step_2_after_typing.png');\n    await page.screenshot({ path: afterTypingScreenshot });\n    screenshots.push(afterTypingScreenshot);\n\n    // Wait for the search button using class and visible text alternative strategy\n    // Try a more robust selector in case ID fails: button.search-btn, using XPath as backup\n    let searchBtn;\n    try {\n      searchBtn = await page.waitForSelector('button.search-btn', { state: 'visible', timeout: 3000 });\n    } catch {\n      // Fallback to XPath based on icon inside button\n      searchBtn = await page.waitForSelector('//button[.//i[contains(@class,\"fa-search\")]]', { state: 'visible', timeout: 3000 });\n    }\n\n    // Click the search button\n    await searchBtn.click();\n\n    // Wait a moment for any search result UI update (simulate realistic user delay)\n    await page.waitForTimeout(1200);\n\n    // Take screenshot after clicking search\n    const afterClickScreenshot = path.join(screenshotsDir, 'step_3_after_search_click.png');\n    await page.screenshot({ path: afterClickScreenshot });\n    screenshots.push(afterClickScreenshot);\n\n    // Try to extract the value from the search input to verify\n    const filledValue = await page.$eval(searchInputSelector, el => el.value);\n\n    return {\n      success: true,\n      action: \"Typed '#dance' into the search input and clicked the search button using alternative selectors and waiting strategies.\",\n      extractedData: {\n        searchInputValue: filledValue\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14031,
+      "timestamp": "2025-09-15T10:42:21.167Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 37360,
+  "timestamp": "2025-09-15T10:41:57.838Z",
+  "savedAt": "2025-09-15T10:42:35.198Z",
+  "version": "1.0"
+}

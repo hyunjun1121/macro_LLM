@@ -1,0 +1,66 @@
+{
+  "id": "when2meet_T012_1757937141626",
+  "website": "when2meet",
+  "task": {
+    "id": "T012",
+    "description": "Open User Dropdown Menu",
+    "objective": "General",
+    "expectedResult": "Medium",
+    "difficulty": "Click on the user avatar/info to open the dropdown menu",
+    "category": ".user-info",
+    "tags": [
+      "Click on the user profile area"
+    ],
+    "notes": "User dropdown becomes visible showing Profile Settings Sign Out options"
+  },
+  "websiteInfo": {
+    "name": "when2meet",
+    "htmlFiles": [
+      "404.html",
+      "create.html",
+      "dashboard.html",
+      "event.html",
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the user menu (avatar and username) to be visible\n    await page.waitForSelector('.user-menu', { state: 'visible', timeout: 5000 });\n\n    // Take a screenshot before interaction\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_user_menu_visible.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_user_menu_visible.png'));\n\n    // Click on the user menu to open the dropdown\n    // Try clicking on the .user-info (as per task), but .user-menu is the clickable parent\n    const userMenu = await page.$('.user-menu');\n    if (!userMenu) throw new Error('User menu not found');\n    await userMenu.click();\n\n    // Wait for the dropdown to appear (it becomes visible on hover/click)\n    await page.waitForSelector('.user-dropdown', { state: 'visible', timeout: 3000 });\n\n    // Take a screenshot after opening the dropdown\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_dropdown_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_dropdown_open.png'));\n\n    // Extract dropdown items to verify\n    const dropdownItems = await page.$$eval('.user-dropdown .dropdown-item', els =>\n      els.map(el => el.textContent.trim())\n    );\n\n    // Extract username for verification\n    const username = await page.$eval('.user-info .username', el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Opened the user dropdown menu by clicking the user info/avatar. Extracted dropdown items and username for verification.\",\n      extractedData: {\n        username,\n        dropdownItems\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14047,
+      "timestamp": "2025-09-15T11:52:21.626Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the user-info element by class and username text (alternative selector)\n    await page.waitForSelector('.user-info >> text=jun', { timeout: 4000 });\n\n    // Use the closest .user-menu ancestor (hover trigger for dropdown)\n    const userInfoElem = await page.$('.user-info >> text=jun');\n    if (!userInfoElem) throw new Error('User info block with username not found');\n\n    // Hover over the .user-menu to trigger dropdown (CSS :hover shows dropdown)\n    // Find the parent .user-menu from .user-info\n    const userMenuElem = await userInfoElem.evaluateHandle(node => {\n      let parent = node;\n      while (parent && !parent.classList.contains('user-menu')) {\n        parent = parent.parentElement;\n      }\n      return parent;\n    });\n    if (!userMenuElem) throw new Error('User menu element not found');\n\n    await userMenuElem.asElement().hover();\n\n    // Wait for the dropdown to appear (it becomes visible on hover)\n    await page.waitForSelector('.user-dropdown', { state: 'visible', timeout: 3000 });\n\n    // Screenshot after opening dropdown\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_dropdown_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_dropdown_open.png'));\n\n    // Extract dropdown items to confirm\n    const dropdownItems = await page.$$eval('.user-dropdown .dropdown-item', els =>\n      els.map(el => el.textContent.trim())\n    );\n\n    return {\n      success: true,\n      action: \"User dropdown menu opened by hovering over the user-info area in the header.\",\n      extractedData: {\n        dropdownItems\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16614,
+      "timestamp": "2025-09-15T11:52:35.673Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the username text ('jun') inside the user-info area for robustness\n    await page.waitForSelector('.user-info .username', { timeout: 5000 });\n\n    // Try a different selector strategy: click the nearest ancestor with class 'user-menu'\n    // This should trigger the dropdown via hover or click\n\n    const userMenu = await page.$('.user-menu');\n    if (!userMenu) {\n      throw new Error('User menu not found');\n    }\n\n    // Hover to trigger dropdown (CSS :hover is used for dropdown)\n    await userMenu.hover();\n\n    // Wait for dropdown to appear using a visible dropdown item (e.g. Profile)\n    await page.waitForSelector('.user-dropdown .dropdown-item', { state: 'visible', timeout: 3000 });\n\n    // Take screenshot after dropdown is open\n    const dropdownShot = path.join(screenshotsDir, 'step_2_dropdown_open.png');\n    await page.screenshot({ path: dropdownShot });\n    screenshots.push(dropdownShot);\n\n    // Extract dropdown items to confirm menu contents\n    const dropdownItems = await page.$$eval('.user-dropdown .dropdown-item', items =>\n      items.map(i => i.textContent.trim())\n    );\n\n    return {\n      success: true,\n      action: \"Opened user dropdown menu by hovering over the user menu area. Verified the dropdown is visible and extracted its items.\",\n      extractedData: {\n        dropdownItems\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 10038,
+      "timestamp": "2025-09-15T11:52:52.287Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 40699,
+  "timestamp": "2025-09-15T11:52:21.626Z",
+  "savedAt": "2025-09-15T11:53:02.325Z",
+  "version": "1.0"
+}

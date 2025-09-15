@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337542_7goel_1757949551602",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337542_7goel",
+    "description": "G001",
+    "objective": "Navigate to Search View",
+    "expectedResult": "Click on the Search navigation item to switch from Home view to Search view",
+    "difficulty": ".nav-item[data-view='search']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation menu to load\n    await page.waitForSelector('.nav-menu', { state: 'visible' });\n\n    // Click on Search navigation item using data-view attribute\n    await page.click('.nav-item[data-view=\"search\"]');\n    \n    // Wait for search view to become active\n    await page.waitForSelector('#search-view.active', { state: 'visible' });\n    \n    // Take screenshot after switching to search view\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_view.png'));\n\n    // Verify the view has switched by checking active states\n    const homeViewActive = await page.$eval('#home-view', el => el.classList.contains('active'));\n    const searchViewActive = await page.$eval('#search-view', el => el.classList.contains('active'));\n    const searchNavActive = await page.$eval('.nav-item[data-view=\"search\"]', el => el.classList.contains('active'));\n\n    return {\n      success: true,\n      action: \"Successfully clicked on Search navigation item and switched to Search view\",\n      extractedData: {\n        homeViewActive: homeViewActive,\n        searchViewActive: searchViewActive,\n        searchNavItemActive: searchNavActive\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 63857,
+      "timestamp": "2025-09-15T15:19:11.602Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation menu to load\n    await page.waitForSelector('.nav-menu', { timeout: 5000 });\n\n    // Click on Search navigation item using data-view attribute\n    const searchNavItem = await page.waitForSelector('.nav-item[data-view=\"search\"]', { timeout: 3000 });\n    await searchNavItem.click();\n\n    // Wait for search view to become active\n    await page.waitForSelector('#search-view.active', { timeout: 3000 });\n\n    // Verify the view has switched by checking if search input is visible\n    const searchInput = await page.waitForSelector('#search-input', { timeout: 3000 });\n    const isSearchVisible = await searchInput.isVisible();\n\n    // Take screenshot after successful navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_view.png'));\n\n    // Extract current view information\n    const currentView = await page.$eval('.view.active', el => el.id);\n    const searchPlaceholder = await page.$eval('#search-input', el => el.placeholder);\n\n    return {\n      success: true,\n      action: \"Successfully clicked Search navigation item and switched to Search view\",\n      extractedData: {\n        currentView,\n        searchPlaceholder,\n        isSearchVisible\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take screenshot on error\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 63666,
+      "timestamp": "2025-09-15T15:20:15.459Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation menu to load\n    await page.waitForSelector('.nav-menu', { state: 'visible' });\n\n    // Find and click the Search navigation item using multiple selector strategies\n    const searchNavItem = await page.waitForSelector('.nav-item[data-view=\"search\"]', { state: 'visible' });\n    await searchNavItem.click();\n\n    // Wait for search view to become active\n    await page.waitForSelector('#search-view.active', { state: 'visible' });\n    \n    // Wait for search input to appear as confirmation\n    await page.waitForSelector('#search-input', { state: 'visible' });\n\n    // Take screenshot after successful navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_view.png'));\n\n    // Extract view state data to verify the switch\n    const viewState = await page.evaluate(() => {\n      const activeView = document.querySelector('.view.active');\n      return {\n        activeViewId: activeView?.id,\n        activeViewClass: activeView?.className,\n        searchViewVisible: document.getElementById('search-view')?.classList.contains('active')\n      };\n    });\n\n    return {\n      success: true,\n      action: \"Successfully clicked Search navigation item and switched to Search view\",\n      extractedData: viewState,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 54835,
+      "timestamp": "2025-09-15T15:21:19.126Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 182359,
+  "timestamp": "2025-09-15T15:19:11.602Z",
+  "savedAt": "2025-09-15T15:22:13.962Z",
+  "version": "1.0"
+}

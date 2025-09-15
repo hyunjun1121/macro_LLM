@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928345693_0zagr_1757936352531",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928345693_0zagr",
+    "description": "IG_REG_003",
+    "objective": "Regular",
+    "expectedResult": "Click follow button on first user in suggestions and verify button text changes to \"Following\"",
+    "difficulty": "Easy",
+    "category": ".suggestion-item:first-child .follow-btn",
+    "tags": [
+      "Button text changes from \"Follow\" to \"Following\""
+    ],
+    "notes": "1. Find first .suggestion-item .follow-btn 2. Click button 3. Verify text content equals \"Following\""
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first suggestion user to be visible\n    await page.waitForSelector('.suggestion-item:first-child .follow-btn');\n\n    // Click the follow button on the first user in suggestions\n    await page.click('.suggestion-item:first-child .follow-btn');\n\n    // Wait for the button text to change to \"Following\"\n    await page.waitForFunction(() => {\n      const button = document.querySelector('.suggestion-item:first-child .follow-btn');\n      return button && button.textContent.includes('Following');\n    });\n\n    // Take a screenshot after clicking follow\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_follow_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_follow_clicked.png'));\n\n    return {\n      success: true,\n      action: \"Clicked follow button on first user in suggestions and verified text change to 'Following'\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13264,
+      "timestamp": "2025-09-15T11:39:12.531Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the suggestion items to load\n    await page.waitForSelector('.suggestion-item:first-child');\n\n    // Click the follow button on the first user in suggestions\n    const followButtonSelector = '.suggestion-item:first-child .follow-btn';\n    await page.waitForSelector(followButtonSelector);\n    await page.click(followButtonSelector);\n\n    // Take a screenshot after clicking the button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_click.png'));\n\n    // Wait for the button text to change to \"Following\"\n    await page.waitForFunction(\n      (selector) => document.querySelector(selector)?.innerText === 'Following',\n      {},\n      followButtonSelector\n    );\n\n    // Verify the button text has changed\n    const buttonText = await page.innerText(followButtonSelector);\n\n    return {\n      success: true,\n      action: \"Clicked follow button and verified text changed to 'Following'\",\n      extractedData: { buttonText },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15744,
+      "timestamp": "2025-09-15T11:39:25.795Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first suggestion button to be visible and click it\n    await page.waitForSelector('.suggestion-item:first-child .follow-btn');\n    await page.click('.suggestion-item:first-child .follow-btn');\n\n    // Wait for the button to update and verify it changes to \"Following\"\n    await page.waitForFunction(() => {\n      const buttonText = document.querySelector('.suggestion-item:first-child .follow-btn').textContent;\n      return buttonText === 'Following';\n    });\n\n    // Take a screenshot after the action\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_following.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_following.png'));\n\n    return {\n      success: true,\n      action: \"Clicked follow button on the first user in suggestions and verified button text changed to 'Following'\",\n      extractedData: {\n        buttonText: await page.evaluate(() => document.querySelector('.suggestion-item:first-child .follow-btn').textContent)\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15142,
+      "timestamp": "2025-09-15T11:39:41.539Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 44150,
+  "timestamp": "2025-09-15T11:39:12.531Z",
+  "savedAt": "2025-09-15T11:39:56.681Z",
+  "version": "1.0"
+}

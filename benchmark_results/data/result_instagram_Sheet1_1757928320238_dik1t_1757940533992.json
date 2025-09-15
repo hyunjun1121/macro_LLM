@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928320238_dik1t_1757940533992",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928320238_dik1t",
+    "description": "IG_REG_014",
+    "objective": "Regular",
+    "expectedResult": "Click on followers count in profile modal and verify user list modal opens",
+    "difficulty": "Medium",
+    "category": ".profile-btn, #profileModal, .stats span:contains(\"followers\"), #userListModal",
+    "tags": [
+      "User list modal opens showing followers"
+    ],
+    "notes": "1. Click .profile-btn 2. Click followers count in .stats 3. Verify #userListModal opens with followers list"
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the profile modal to be visible\n    await page.waitForSelector('#profileModal', { state: 'visible', timeout: 5000 });\n\n    // Wait for the followers count span inside the profile modal\n    // Try multiple selector strategies for robustness\n    let followersSelector = '#profileModal .stats span:text(\"followers\")';\n    let followersElement = await page.$(followersSelector);\n\n    if (!followersElement) {\n      // Fallback: use xpath to find the span containing \"followers\" inside #profileModal\n      const [el] = await page.$x('//*[@id=\"profileModal\"]//span[contains(text(), \"followers\")]');\n      followersElement = el;\n    }\n\n    if (!followersElement) {\n      throw new Error('Followers count element not found in profile modal');\n    }\n\n    // Highlight the followers element for screenshot\n    await page.evaluate(el => { el.style.outline = '2px solid red'; }, followersElement);\n\n    // Take screenshot before clicking followers\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_followers_highlighted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_followers_highlighted.png'));\n\n    // Click on the followers count\n    await followersElement.click();\n\n    // Wait for the user list modal to appear\n    await page.waitForSelector('#userListModal', { state: 'visible', timeout: 5000 });\n\n    // Take screenshot of the user list modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_user_list_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_user_list_modal.png'));\n\n    // Extract some data from the user list modal to verify it opened\n    // For example, get the modal title or count user entries\n    let modalTitle = '';\n    let userCount = 0;\n    try {\n      modalTitle = await page.$eval('#userListModal h2', el => el.textContent.trim());\n    } catch {}\n    try {\n      userCount = await page.$$eval('#userListModal .user-list-item', els => els.length);\n    } catch {}\n\n    return {\n      success: true,\n      action: \"Clicked on followers count in profile modal and verified that the user list modal opened.\",\n      extractedData: {\n        userListModalTitle: modalTitle,\n        userCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14083,
+      "timestamp": "2025-09-15T12:48:53.992Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for Profile Modal to be visible (try modal-content with profile-modal class)\n    await page.waitForSelector('#profileModal', { state: 'visible', timeout: 5000 });\n    await page.waitForSelector('#profileModal .profile-modal', { timeout: 5000 });\n\n    // Wait for the stats container within the profile modal\n    // Use a robust selector: find any visible span inside .stats containing \"followers\"\n    const followersSelector = '#profileModal .stats span';\n    await page.waitForSelector(followersSelector, { timeout: 5000 });\n\n    // Query all candidate stats spans and find the one with text \"followers\"\n    const followerStatHandle = await page.$(`xpath=//div[@id=\"profileModal\"]//span[contains(text(),\"followers\")]`);\n    if (!followerStatHandle) {\n      throw new Error('Followers count element not found in profile modal');\n    }\n\n    // Take screenshot before click\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click_followers.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click_followers.png'));\n\n    // Click on the followers count\n    await followerStatHandle.click();\n\n    // Wait for the user list modal to appear\n    // Try multiple strategies to ensure robustness\n    // First, by ID\n    await page.waitForSelector('#userListModal', { state: 'visible', timeout: 5000 });\n\n    // Also verify modal content is present\n    const userListModalVisible = await page.$eval('#userListModal', el => {\n      return window.getComputedStyle(el).display !== 'none' && el.offsetParent !== null;\n    });\n\n    // Take screenshot after modal opens\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_userlist_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_userlist_modal_opened.png'));\n\n    // Optionally, extract the modal title or a sample username for verification\n    let modalTitle = null;\n    try {\n      modalTitle = await page.$eval('#userListModal h2', el => el.innerText.trim());\n    } catch (e) {\n      // If h2 not found, leave as null\n    }\n\n    // Also, try to extract the count of user entries (if any)\n    let userEntriesCount = null;\n    try {\n      userEntriesCount = await page.$$eval('#userListModal .user-item', els => els.length);\n    } catch (e) {\n      // If structure is different or no users, leave as null\n    }\n\n    return {\n      success: true,\n      action: \"Clicked followers count in profile modal and verified that the user list modal opens.\",\n      extractedData: {\n        userListModalTitle: modalTitle,\n        userEntriesCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 23947,
+      "timestamp": "2025-09-15T12:49:08.075Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the profile modal to be visible (try robust selector strategies)\n    // Try both ID and class with :visible pseudo\n    const profileModalSelector = '#profileModal, .profile-modal';\n    await page.waitForSelector(profileModalSelector, { state: 'visible', timeout: 5000 });\n\n    // Within the profile modal, find the \"followers\" count element\n    // Use text and structure: .stats span:has-text(\"followers\")\n    // Fallback: use xpath for robustness\n    let followersElement = await page.$('#profileModal .stats span:text(\"followers\")');\n\n    if (!followersElement) {\n      // Try alternative: by XPath\n      const followersXPath = `//div[@id=\"profileModal\"]//span[contains(.,'followers')]`;\n      followersElement = await page.$(`xpath=${followersXPath}`);\n    }\n\n    if (!followersElement) {\n      // Try another fallback: find all .stats span and match innerText\n      const statsSpans = await page.$$(`#profileModal .stats span`);\n      for (const span of statsSpans) {\n        const text = await span.textContent();\n        if (text && text.toLowerCase().includes('followers')) {\n          followersElement = span;\n          break;\n        }\n      }\n    }\n\n    if (!followersElement) {\n      throw new Error('Followers count element not found in profile modal');\n    }\n\n    // Take screenshot before clicking followers\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_followers_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_followers_click.png'));\n\n    // Click the followers count\n    await followersElement.click();\n\n    // Wait for the user list modal to appear (by id or class)\n    // Try both #userListModal and class fallback\n    const userListModalSelector = '#userListModal, .user-list-modal';\n    await page.waitForSelector(userListModalSelector, { state: 'visible', timeout: 5000 });\n\n    // Take screenshot of user list modal open\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_user_list_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_user_list_modal_open.png'));\n\n    // Extract some data for verification: check modal header or count user items\n    let modalTitle = '';\n    let userCount = 0;\n\n    const modalHeader = await page.$(`${userListModalSelector} h2`);\n    if (modalHeader) {\n      modalTitle = await modalHeader.textContent();\n    }\n\n    // Attempt to count user items (commonly .user-item or similar)\n    const userItems = await page.$$(`${userListModalSelector} .user-item`);\n    userCount = userItems.length;\n\n    return {\n      success: true,\n      action: 'Clicked followers count in profile modal and verified user list modal opened',\n      extractedData: {\n        userListModalTitle: modalTitle ? modalTitle.trim() : null,\n        userCount,\n        userListModalVisible: true\n      },\n      screenshots,\n      error: null\n    };\n\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18172,
+      "timestamp": "2025-09-15T12:49:32.022Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 56202,
+  "timestamp": "2025-09-15T12:48:53.992Z",
+  "savedAt": "2025-09-15T12:49:50.194Z",
+  "version": "1.0"
+}

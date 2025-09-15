@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T014_1757930886918",
+  "website": "Amazon",
+  "task": {
+    "id": "T014",
+    "description": "Apply Price Range Filter",
+    "objective": "General",
+    "expectedResult": "Hard",
+    "difficulty": "Search for products, set minimum price to 50 and maximum price to 200, then apply the price filter.",
+    "category": "#minPrice, #maxPrice, .apply-filter",
+    "tags": [
+      "1. Perform search 2. Enter '50' in min price 3. Enter '200' in max price 4. Click apply filter"
+    ],
+    "notes": "Products filter to show only items between $50-200, results counter updates, notification confirms filter applied"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Search for products\n    await page.waitForSelector('#searchInput');\n    await page.fill('#searchInput', 'products');\n    await page.click('button.search-btn');\n    await page.waitForLoadState('networkidle');\n\n    // Set price range\n    await page.fill('#minPrice', '50');\n    await page.fill('#maxPrice', '200');\n    await page.click('.apply-filter');\n    await page.waitForLoadState('networkidle');\n\n    // Take screenshot after applying filters\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_filter.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_filter.png'));\n\n    // Verify that the price filter was applied\n    const filteredProducts = await page.$$eval('.product', products => {\n      return products.map(product => {\n        const priceText = product.querySelector('.price').innerText;\n        const price = parseFloat(priceText.replace(/[^0-9.-]+/g, \"\"));\n        return price;\n      });\n    });\n\n    const allInRange = filteredProducts.every(price => price >= 50 && price <= 200);\n\n    return {\n      success: true,\n      action: \"Applied price range filter from 50 to 200\",\n      extractedData: { allInRange },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 44478,
+      "timestamp": "2025-09-15T10:08:06.918Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Search for products\n    await page.waitForSelector('#searchInput');\n    await page.fill('#searchInput', 'products');\n    await page.click('button.search-btn');\n    await page.waitForLoadState('networkidle');\n\n    // Take screenshot after searching\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_results.png'));\n\n    // Set minimum price\n    await page.fill('#minPrice', '50');\n\n    // Set maximum price\n    await page.fill('#maxPrice', '200');\n\n    // Apply the price filter\n    await page.click('.apply-filter');\n    await page.waitForLoadState('networkidle');\n\n    // Take screenshot after applying the filter\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_price_filter_applied.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_price_filter_applied.png'));\n\n    // Extract relevant data to verify task completion\n    const filteredProducts = await page.$$eval('.product-item', items => {\n      return items.map(item => ({\n        title: item.querySelector('.product-title').innerText,\n        price: item.querySelector('.product-price').innerText\n      }));\n    });\n\n    return {\n      success: true,\n      action: \"Applied price range filter from 50 to 200\",\n      extractedData: { filteredProducts },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 47230,
+      "timestamp": "2025-09-15T10:08:51.396Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Search for products\n    await page.waitForSelector('#searchInput');\n    await page.type('#searchInput', 'products', { delay: 100 });\n    await page.click('button.search-btn');\n    await page.waitForLoadState('networkidle');\n\n    // Set price range\n    await page.waitForSelector('input[minPrice]');\n    await page.fill('input[minPrice]', '50');\n    await page.waitForSelector('input[maxPrice]');\n    await page.fill('input[maxPrice]', '200');\n\n    // Apply the price filter\n    await page.click('.apply-filter');\n    await page.waitForLoadState('networkidle');\n\n    // Take screenshot after applying filter\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_filter.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_filter.png'));\n\n    return {\n      success: true,\n      action: \"Applied price range filter of 50 to 200\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 43418,
+      "timestamp": "2025-09-15T10:09:38.626Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 135126,
+  "timestamp": "2025-09-15T10:08:06.918Z",
+  "savedAt": "2025-09-15T10:10:22.044Z",
+  "version": "1.0"
+}

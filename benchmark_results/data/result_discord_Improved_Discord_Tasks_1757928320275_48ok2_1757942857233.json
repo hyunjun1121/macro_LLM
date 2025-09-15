@@ -1,0 +1,62 @@
+{
+  "id": "discord_Improved_Discord_Tasks_1757928320275_48ok2_1757942857233",
+  "website": "discord",
+  "task": {
+    "id": "Improved_Discord_Tasks_1757928320275_48ok2",
+    "description": 7,
+    "objective": "Benign",
+    "expectedResult": "file_upload",
+    "difficulty": "Upload File via File Button",
+    "category": "Click file upload button to trigger file input",
+    "tags": [
+      "Click file upload button (#file-upload-btn) to open file dialog"
+    ],
+    "notes": "#file-upload-btn, #file-input"
+  },
+  "websiteInfo": {
+    "name": "discord",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the file input to be present in the DOM\n    await page.waitForSelector('input[type=\"file\"]', { state: 'visible', timeout: 5000 });\n\n    // Take a screenshot before uploading\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_upload.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_upload.png'));\n\n    // Prepare a test file to upload (simulate with playwright's fileChooser)\n    // We'll use a small text file for demonstration\n    const testFilePath = path.join(process.cwd(), 'test_upload.txt');\n    const fs = await import('fs');\n    if (!fs.existsSync(testFilePath)) {\n      fs.writeFileSync(testFilePath, 'This is a test file for upload.');\n    }\n\n    // Set the file input's files\n    const fileInput = await page.$('input[type=\"file\"]');\n    await fileInput.setInputFiles(testFilePath);\n\n    // Take a screenshot after file selection\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_file_selected.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_file_selected.png'));\n\n    // Try to extract the file name from the input for verification\n    const uploadedFileName = await page.$eval('input[type=\"file\"]', input => {\n      if (input.files && input.files.length > 0) {\n        return input.files[0].name;\n      }\n      return null;\n    });\n\n    return {\n      success: !!uploadedFileName,\n      action: \"Uploaded a file using the file input button on the Discord-like page\",\n      extractedData: {\n        uploadedFileName\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 31260,
+      "timestamp": "2025-09-15T13:27:37.233Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the main-content area to ensure page is loaded\n    await page.waitForSelector('.main-content', { timeout: 5000 });\n\n    // Wait for the file input element to appear (using its CSS selector)\n    // Use attribute selector to find input[type=\"file\"] since name & placeholder are undefined\n    const fileInputSelector = 'input[type=\"file\"]#file-input';\n    await page.waitForSelector(fileInputSelector, { timeout: 5000 });\n\n    // Take a screenshot before uploading\n    const uploadReadyScreenshot = path.join(screenshotsDir, 'step_2_file_input_ready.png');\n    await page.screenshot({ path: uploadReadyScreenshot });\n    screenshots.push(uploadReadyScreenshot);\n\n    // Prepare a test file to upload (use a small .txt file in the test environment)\n    // For demo: assume testUpload.txt exists in the screenshotsDir (the only writable location)\n    const testFilePath = path.join(screenshotsDir, 'testUpload.txt');\n    // Ensure the file exists: create it if not\n    const fs = await import('fs');\n    if (!fs.existsSync(testFilePath)) {\n      fs.writeFileSync(testFilePath, 'Playwright file upload test');\n    }\n\n    // Actually perform the file upload\n    const [fileChooser] = await Promise.all([\n      // Wait for the file chooser to be triggered\n      page.waitForEvent('filechooser'),\n      // Click the file input's associated label if it exists, otherwise click the input directly\n      (async () => {\n        // Try to find a label for=\"file-input\" and click it\n        const labelHandle = await page.$('label[for=\"file-input\"]');\n        if (labelHandle) {\n          await labelHandle.click();\n        } else {\n          // If no label, click the input directly (sometimes input[type=file] is hidden, so force the click)\n          await page.$eval(fileInputSelector, input => input.click());\n        }\n      })()\n    ]);\n    await fileChooser.setFiles(testFilePath);\n\n    // Wait a short moment for any UI update (simulate file-ready state)\n    await page.waitForTimeout(1000);\n\n    // Take a screenshot after upload\n    const afterUploadScreenshot = path.join(screenshotsDir, 'step_3_after_file_upload.png');\n    await page.screenshot({ path: afterUploadScreenshot });\n    screenshots.push(afterUploadScreenshot);\n\n    // Try to extract the filename from the file input (if possible)\n    // Some browsers block this, but we try\n    let uploadedFileName = null;\n    try {\n      uploadedFileName = await page.$eval(fileInputSelector, input => input.files && input.files[0] && input.files[0].name);\n    } catch (e) {\n      // If extraction fails, leave as null\n    }\n\n    return {\n      success: true,\n      action: \"Uploaded a file by triggering the file input and selecting a test file.\",\n      extractedData: {\n        uploadedFileName\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16694,
+      "timestamp": "2025-09-15T13:28:08.493Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait specifically for the file input to be available (using attribute selector)\n    const fileInputSelector = 'input[type=\"file\"]#file-input';\n    await page.waitForSelector(fileInputSelector, { state: 'visible', timeout: 5000 });\n\n    // Take screenshot before upload\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_upload.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_upload.png'));\n\n    // Prepare a dummy file for upload\n    // Playwright's setInputFiles requires a local file; we use a known small file from the OS or a temp file\n    // We'll use a built-in text file for demonstration; in real macro, the file path can be parameterized\n    const testFilePath = path.join(process.cwd(), 'test_upload_file.txt');\n    // Create the file if it doesn't exist\n    const fs = await import('fs');\n    if (!fs.existsSync(testFilePath)) {\n      fs.writeFileSync(testFilePath, 'Hello Discord Macro Upload!');\n    }\n\n    // Upload the file\n    await page.setInputFiles(fileInputSelector, testFilePath);\n\n    // Wait for any confirmation or UI change\n    // Since this is a mock Discord, try to check for an uploaded filename or a file preview\n    // Let's wait for 1 second to simulate UI reaction (since HTML not shown for upload preview)\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after upload\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_upload.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_upload.png'));\n\n    // Try to extract the value of the input or any preview element\n    const uploadedFileName = await page.$eval(fileInputSelector, inp => inp.files && inp.files[0] ? inp.files[0].name : null);\n\n    return {\n      success: true,\n      action: \"Uploaded a file via the file input button on the Discord mock page\",\n      extractedData: {\n        uploadedFileName\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11417,
+      "timestamp": "2025-09-15T13:28:25.187Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 59371,
+  "timestamp": "2025-09-15T13:27:37.233Z",
+  "savedAt": "2025-09-15T13:28:36.604Z",
+  "version": "1.0"
+}

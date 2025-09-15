@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337540_x8290_1757952848208",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337540_x8290",
+    "description": "G013",
+    "objective": "Switch Search Tab",
+    "expectedResult": "In search view, click on 'Hashtags' tab to switch search category",
+    "difficulty": ".tab-btn[data-tab='hashtags']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Navigate to search view\n    await page.waitForSelector('[data-view=\"search\"]');\n    await page.click('[data-view=\"search\"]');\n    \n    // Wait for search view to load\n    await page.waitForSelector('#search-view.active');\n    \n    // Take screenshot after navigating to search\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_view.png'));\n\n    // Click on Hashtags tab\n    await page.waitForSelector('.tab-btn[data-tab=\"hashtags\"]');\n    await page.click('.tab-btn[data-tab=\"hashtags\"]');\n    \n    // Wait for tab to become active\n    await page.waitForSelector('.tab-btn[data-tab=\"hashtags\"].active');\n    \n    // Take final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_hashtags_tab.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_hashtags_tab.png'));\n\n    // Verify tab is active\n    const isActive = await page.$eval('.tab-btn[data-tab=\"hashtags\"]', el => el.classList.contains('active'));\n    \n    return {\n      success: true,\n      action: \"Successfully clicked on Hashtags tab in search view\",\n      extractedData: {\n        hashtagsTabActive: isActive\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 60985,
+      "timestamp": "2025-09-15T16:14:08.208Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on Search navigation item to open search view\n    const searchNavItem = await page.waitForSelector('.nav-item[data-view=\"search\"]');\n    await searchNavItem.click();\n    \n    // Wait for search view to become active\n    await page.waitForSelector('#search-view.active', { timeout: 5000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_view.png'));\n\n    // Click on Hashtags tab using multiple selector strategies\n    const hashtagsTab = await page.waitForSelector('button.tab-btn[data-tab=\"hashtags\"]', { timeout: 3000 });\n    await hashtagsTab.click();\n    \n    // Wait for tab to become active and verify\n    await page.waitForFunction(() => {\n      const tab = document.querySelector('button.tab-btn[data-tab=\"hashtags\"]');\n      return tab && tab.classList.contains('active');\n    }, { timeout: 3000 });\n\n    // Take final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_hashtags_active.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_hashtags_active.png'));\n\n    // Extract verification data\n    const extractedData = {\n      activeTab: await page.$eval('button.tab-btn.active', el => el.textContent.trim()),\n      tabDataAttribute: await page.$eval('button.tab-btn.active', el => el.getAttribute('data-tab'))\n    };\n\n    return {\n      success: true,\n      action: \"Successfully switched to Hashtags tab in search view\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Capture error screenshot\n    try {\n      await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n      screenshots.push(path.join(screenshotsDir, 'error.png'));\n    } catch (screenshotError) {\n      console.error('Failed to capture error screenshot:', screenshotError);\n    }\n\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 78098,
+      "timestamp": "2025-09-15T16:15:09.193Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on Search navigation item to open search view\n    await page.waitForSelector('.nav-item[data-view=\"search\"]');\n    await page.click('.nav-item[data-view=\"search\"]');\n    \n    // Wait for search view to be active\n    await page.waitForSelector('#search-view.active');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_view.png'));\n\n    // Click on Hashtags tab using multiple selector strategies\n    const hashtagTabSelector = \"button.tab-btn[data-tab='hashtags']\";\n    await page.waitForSelector(hashtagTabSelector);\n    await page.click(hashtagTabSelector);\n    \n    // Wait for tab to become active and verify state\n    await page.waitForSelector(`${hashtagTabSelector}.active`);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_hashtags_active.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_hashtags_active.png'));\n\n    // Extract verification data\n    const activeTabText = await page.textContent(`${hashtagTabSelector}.active`);\n    const activeTabData = await page.getAttribute(`${hashtagTabSelector}.active`, 'data-tab');\n\n    return {\n      success: true,\n      action: \"Clicked on 'Hashtags' tab in search view to switch search category\",\n      extractedData: {\n        activeTab: activeTabText,\n        tabData: activeTabData\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 74889,
+      "timestamp": "2025-09-15T16:16:27.291Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 213972,
+  "timestamp": "2025-09-15T16:14:08.208Z",
+  "savedAt": "2025-09-15T16:17:42.180Z",
+  "version": "1.0"
+}

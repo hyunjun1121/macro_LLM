@@ -1,0 +1,62 @@
+{
+  "id": "discord_Improved_Discord_Tasks_1757928345671_dmuon_1757938465872",
+  "website": "discord",
+  "task": {
+    "id": "Improved_Discord_Tasks_1757928345671_dmuon",
+    "description": 15,
+    "objective": "Benign",
+    "expectedResult": "server_switching",
+    "difficulty": "Switch to Gaming Server",
+    "category": "Click gaming server icon to switch servers",
+    "tags": [
+      "Click .server-item[data-server='gaming'] to switch to gaming server"
+    ],
+    "notes": ".server-item[data-server='gaming'], #server-name"
+  },
+  "websiteInfo": {
+    "name": "discord",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the server sidebar to be visible\n    await page.waitForSelector('.server-sidebar');\n\n    // Click on the gaming server icon\n    await page.click('.server-item[data-server=\"gaming\"]');\n\n    // Take a screenshot after switching to the gaming server\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_gaming_server.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_gaming_server.png'));\n\n    // Verify that the gaming server is active\n    const isGamingActive = await page.evaluate(() => {\n      return document.querySelector('.server-item[data-server=\"gaming\"]').classList.contains('active');\n    });\n\n    return {\n      success: true,\n      action: \"Switched to Gaming Server\",\n      extractedData: { isGamingActive },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13125,
+      "timestamp": "2025-09-15T12:14:25.872Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the gaming server icon to be visible\n    await page.waitForSelector('.server-item[data-server=\"gaming\"]');\n\n    // Click on the gaming server icon to switch\n    await page.click('.server-item[data-server=\"gaming\"]');\n\n    // Wait for the channel name to confirm the switch\n    await page.waitForSelector('#current-channel');\n\n    // Take a screenshot after switching\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_server_switched.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_server_switched.png'));\n\n    // Verify if the switch was successful by checking the current channel\n    const currentChannel = await page.textContent('#current-channel');\n    \n    return {\n      success: true,\n      action: \"Switched to Gaming Server successfully\",\n      extractedData: { currentChannel },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 10804,
+      "timestamp": "2025-09-15T12:14:38.997Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the server sidebar to be visible\n    await page.waitForSelector('.server-sidebar');\n\n    // Click on the gaming server icon\n    await page.click('.server-item[data-server=\"gaming\"]');\n\n    // Take screenshot after switching to gaming server\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_switch_to_gaming.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_switch_to_gaming.png'));\n\n    // Verify that the gaming server is active by checking its class\n    const isActive = await page.evaluate(() => {\n      const gamingServer = document.querySelector('.server-item[data-server=\"gaming\"]');\n      return gamingServer && gamingServer.classList.contains('active');\n    });\n\n    return {\n      success: isActive,\n      action: isActive ? \"Successfully switched to Gaming Server\" : \"Failed to switch to Gaming Server\",\n      extractedData: {\n        serverStatus: isActive ? 'active' : 'inactive'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12487,
+      "timestamp": "2025-09-15T12:14:49.801Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 36416,
+  "timestamp": "2025-09-15T12:14:25.872Z",
+  "savedAt": "2025-09-15T12:15:02.288Z",
+  "version": "1.0"
+}

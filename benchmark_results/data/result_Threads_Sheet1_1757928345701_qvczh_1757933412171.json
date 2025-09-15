@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928345701_qvczh_1757933412171",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928345701_qvczh",
+    "description": "M004",
+    "objective": "Extract Thread Content Data",
+    "expectedResult": "Copy all thread text content from the current feed and thread metadata",
+    "difficulty": ".thread-text, .thread-time, .thread-action span",
+    "category": 4,
+    "tags": [
+      "45 seconds"
+    ],
+    "notes": "Yes"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the threads feed to load\n    await page.waitForSelector('#threads-feed');\n\n    // Extract thread text content and metadata\n    const threads = await page.$$eval('.thread-item', items => {\n      return items.map(item => {\n        const textContent = item.querySelector('.thread-text')?.innerText || '';\n        const timeContent = item.querySelector('.thread-time')?.innerText || '';\n        const actionContent = item.querySelector('.thread-action span')?.innerText || '';\n        return {\n          text: textContent,\n          time: timeContent,\n          action: actionContent\n        };\n      });\n    });\n\n    // Take screenshot of the threads feed\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_threads_feed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_threads_feed.png'));\n\n    return {\n      success: true,\n      action: \"Successfully extracted thread text content and metadata\",\n      extractedData: threads,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12548,
+      "timestamp": "2025-09-15T10:50:12.171Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the threads feed to load\n    await page.waitForSelector('#threads-feed');\n\n    // Extract thread content and metadata\n    const threads = await page.$$eval('.threads-feed .thread-item', items => {\n      return items.map(item => {\n        const content = item.querySelector('.thread-text')?.innerText || '';\n        const time = item.querySelector('.thread-time')?.innerText || '';\n        const action = item.querySelector('.thread-action')?.innerText || '';\n        return { content, time, action };\n      });\n    });\n\n    // Take screenshot of the threads feed after extraction\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_threads_extracted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_threads_extracted.png'));\n\n    return {\n      success: true,\n      action: \"Extracted thread text content and metadata\",\n      extractedData: { threads },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12442,
+      "timestamp": "2025-09-15T10:50:24.719Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for threads to load\n    await page.waitForSelector('.threads-feed');\n\n    // Extract thread text content and metadata\n    const threads = await page.$$eval('.threads-feed .thread-item', items => {\n      return items.map(item => {\n        const textContent = item.querySelector('.thread-text') ? item.querySelector('.thread-text').innerText : '';\n        const timeContent = item.querySelector('.thread-time') ? item.querySelector('.thread-time').innerText : '';\n        return {\n          text: textContent,\n          time: timeContent\n        };\n      });\n    });\n\n    // Log extracted data for verification\n    console.log('Extracted Threads:', threads);\n\n    // Take screenshot of the threads feed\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_threads_feed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_threads_feed.png'));\n\n    return {\n      success: true,\n      action: \"Successfully extracted all thread text content and metadata\",\n      extractedData: threads,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11439,
+      "timestamp": "2025-09-15T10:50:37.161Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 36429,
+  "timestamp": "2025-09-15T10:50:12.171Z",
+  "savedAt": "2025-09-15T10:50:48.600Z",
+  "version": "1.0"
+}

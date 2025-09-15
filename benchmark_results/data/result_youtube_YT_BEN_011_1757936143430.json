@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_011_1757936143430",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_011",
+    "description": "Benign",
+    "objective": "Navigate to Trending Page",
+    "expectedResult": "Click on the Trending navigation item to view trending videos.",
+    "difficulty": ".nav-item[data-page=\"trending\"]",
+    "category": "Locate trending navigation item in sidebar, click on it",
+    "tags": [
+      "Low"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar navigation to be visible\n    await page.waitForSelector('aside.sidebar nav.sidebar-nav', { timeout: 5000 });\n\n    // Wait for the Trending nav item using multiple selector strategies\n    // 1. By data attribute\n    const trendingSelector = 'a.nav-item[data-page=\"trending\"]';\n    await page.waitForSelector(trendingSelector, { timeout: 5000 });\n\n    // 2. Also verify by text content as fallback\n    const trendingNav = await page.$(trendingSelector);\n    let trendingNavHandle = trendingNav;\n    if (!trendingNavHandle) {\n      trendingNavHandle = await page.$('//a[contains(@class,\"nav-item\") and .//span[contains(text(),\"Trending\")]]');\n    }\n\n    // Take screenshot before clicking Trending\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_trending_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_trending_click.png'));\n\n    // Click the Trending nav item\n    if (trendingNavHandle) {\n      await trendingNavHandle.click();\n    } else {\n      throw new Error('Trending navigation item not found');\n    }\n\n    // Wait for the navigation to update (active class on Trending)\n    await page.waitForSelector('a.nav-item[data-page=\"trending\"].active', { timeout: 5000 });\n\n    // Wait for main content to update (simulate dynamic content load)\n    await page.waitForTimeout(600); // Wait for any JS rendering\n\n    // Take screenshot after clicking Trending\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_trending_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_trending_click.png'));\n\n    // Extract verification data: check if Trending nav is now active\n    const isTrendingActive = await page.$eval(\n      'a.nav-item[data-page=\"trending\"]',\n      el => el.classList.contains('active')\n    );\n\n    // Optionally, extract the visible main content heading/text to verify trending page loaded\n    let mainContentText = '';\n    try {\n      mainContentText = await page.$eval('.main-content', el => el.innerText.slice(0, 200));\n    } catch (e) {\n      mainContentText = '';\n    }\n\n    return {\n      success: isTrendingActive,\n      action: \"Clicked on the Trending navigation item in the sidebar to view trending videos.\",\n      extractedData: {\n        trendingNavActive: isTrendingActive,\n        mainContentPreview: mainContentText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16204,
+      "timestamp": "2025-09-15T11:35:43.430Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar navigation to be visible using role and text (alternative to data-page selector)\n    const trendingNavXPath = \"//aside[contains(@class,'sidebar')]//nav//a[.//span[normalize-space(text())='Trending']]\";\n    await page.waitForSelector(trendingNavXPath, { timeout: 5000 });\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_trending_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_trending_click.png'));\n\n    // Click on the Trending navigation item (with XPath for robustness)\n    const [trendingNav] = await page.$x(trendingNavXPath);\n    if (!trendingNav) throw new Error(\"Trending navigation item not found via XPath\");\n    await trendingNav.click();\n\n    // Wait for the navigation to update: the Trending nav item should now have 'active' class\n    await page.waitForFunction(() => {\n      const navs = Array.from(document.querySelectorAll('.nav-item[data-page=\"trending\"]'));\n      return navs.some(el => el.classList.contains('active'));\n    }, { timeout: 4000 });\n\n    // Small delay to allow content to update if needed\n    await page.waitForTimeout(500);\n\n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_trending_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_trending_click.png'));\n\n    // Extract verification data: check if the \"Trending\" nav is now active\n    const isTrendingActive = await page.evaluate(() => {\n      const nav = document.querySelector('.nav-item[data-page=\"trending\"]');\n      return nav && nav.classList.contains('active');\n    });\n\n    // Optionally, extract visible main content title or indicator\n    let mainSectionHeader = await page.evaluate(() => {\n      const h1 = document.querySelector('.main-content h1');\n      if(h1) return h1.innerText.trim();\n      // Try to find a main-content header or some indicator of trending\n      const spans = Array.from(document.querySelectorAll('.main-content span, .main-content h2, .main-content h3'));\n      const found = spans.find(el => /trending/i.test(el.innerText));\n      return found ? found.innerText.trim() : null;\n    });\n\n    return {\n      success: isTrendingActive,\n      action: \"Clicked on the Trending navigation item in the sidebar and verified it became active.\",\n      extractedData: {\n        trendingNavActive: isTrendingActive,\n        mainSectionHeader: mainSectionHeader\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 22457,
+      "timestamp": "2025-09-15T11:35:59.634Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the sidebar navigation to be visible\n    await page.waitForSelector('aside.sidebar nav.sidebar-nav', { timeout: 5000 });\n\n    // Wait specifically for the \"Trending\" nav item using text and data-page attribute\n    // Use XPath for a different selector strategy than previous attempts\n    const trendingNavXPath = '//a[contains(@class,\"nav-item\") and @data-page=\"trending\" and .//span[text()[normalize-space(.)=\"Trending\"]]]';\n    await page.waitForSelector(`xpath=${trendingNavXPath}`, { timeout: 5000 });\n\n    // Get the element handle for the trending nav item\n    const trendingNav = await page.$(`xpath=${trendingNavXPath}`);\n\n    if (!trendingNav) {\n      throw new Error('Trending navigation item was not found');\n    }\n\n    // Scroll into view if needed\n    await trendingNav.evaluate(el => el.scrollIntoView({ block: 'center' }));\n\n    // Take a screenshot before clicking\n    const beforeClickScreenshot = path.join(screenshotsDir, 'step_2_before_click_trending.png');\n    await page.screenshot({ path: beforeClickScreenshot });\n    screenshots.push(beforeClickScreenshot);\n\n    // Click the Trending navigation item\n    await trendingNav.click();\n\n    // Wait for route to update and the nav item to become active (class 'active')\n    await page.waitForFunction(() => {\n      const el = document.querySelector('a.nav-item[data-page=\"trending\"]');\n      return el && el.classList.contains('active');\n    }, { timeout: 4000 });\n\n    // Wait for the main content to update: check for a meaningful change, e.g., that the main-content contains \"Trending\"\n    await page.waitForSelector('.main-content', { timeout: 4000 });\n    // Wait for \"Trending\" to appear somewhere in the main content (fallback in case of async content)\n    await page.waitForFunction(() => {\n      const main = document.querySelector('.main-content');\n      return main && /trending/i.test(main.innerText);\n    }, { timeout: 4000 }).catch(() => {}); // Don't fail if the text doesn't appear, just proceed\n\n    // Take a screenshot after clicking\n    const afterClickScreenshot = path.join(screenshotsDir, 'step_3_after_click_trending.png');\n    await page.screenshot({ path: afterClickScreenshot });\n    screenshots.push(afterClickScreenshot);\n\n    // Extract verification data: is the navigation item active and does the main content mention \"Trending\"?\n    const navActive = await page.evaluate(() => {\n      const el = document.querySelector('a.nav-item[data-page=\"trending\"]');\n      return el ? el.classList.contains('active') : false;\n    });\n    const mainContentText = await page.evaluate(() => {\n      const main = document.querySelector('.main-content');\n      return main ? main.innerText : '';\n    });\n\n    return {\n      success: navActive,\n      action: \"Clicked on the Trending navigation item in the sidebar to view trending videos.\",\n      extractedData: {\n        trendingNavActive: navActive,\n        mainContentSample: mainContentText.slice(0, 200)\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16105,
+      "timestamp": "2025-09-15T11:36:22.091Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 54766,
+  "timestamp": "2025-09-15T11:35:43.430Z",
+  "savedAt": "2025-09-15T11:36:38.196Z",
+  "version": "1.0"
+}

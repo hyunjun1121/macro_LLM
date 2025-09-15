@@ -1,0 +1,62 @@
+{
+  "id": "TikTok_Sheet1_1757928320254_61y5h_1757932793824",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928320254_61y5h",
+    "description": 1,
+    "objective": "General",
+    "expectedResult": "첫 번째 비디오의 재생/일시정지 버튼을 클릭",
+    "difficulty": "data-video-id='1'인 컨테이너의 .play-pause-btn을 클릭",
+    "category": "Easy",
+    "tags": [
+      ".video-container[data-video-id='1'] .play-pause-btn"
+    ],
+    "notes": "data-video-id='1'인 컨테이너의 .play-pause-btn을 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the first video container with data-video-id=\"1\"\n    const videoContainerSelector = 'div.video-container[data-video-id=\"1\"]';\n    await page.waitForSelector(videoContainerSelector, { timeout: 5000 });\n\n    // Wait for the play/pause button inside that container\n    const playPauseBtnSelector = `${videoContainerSelector} button.play-pause-btn`;\n    await page.waitForSelector(playPauseBtnSelector, { timeout: 5000 });\n\n    // Take screenshot before clicking\n    const beforeClickScreenshot = path.join(screenshotsDir, 'step_2_before_click_playpause.png');\n    await page.screenshot({ path: beforeClickScreenshot });\n    screenshots.push(beforeClickScreenshot);\n\n    // Click the play/pause button\n    await page.click(playPauseBtnSelector);\n\n    // Wait a short moment for UI to update (icon may change)\n    await page.waitForTimeout(700);\n\n    // Take screenshot after clicking\n    const afterClickScreenshot = path.join(screenshotsDir, 'step_3_after_click_playpause.png');\n    await page.screenshot({ path: afterClickScreenshot });\n    screenshots.push(afterClickScreenshot);\n\n    // Extract the icon class to verify state (play or pause)\n    const iconClass = await page.$eval(\n      `${playPauseBtnSelector} i`,\n      el => el.className\n    );\n\n    // Extract aria-label or title if present for further verification\n    let btnAriaLabel = null;\n    try {\n      btnAriaLabel = await page.$eval(playPauseBtnSelector, el => el.getAttribute('aria-label'));\n    } catch (e) {\n      btnAriaLabel = null;\n    }\n\n    return {\n      success: true,\n      action: \"Clicked the play/pause button of the first video (data-video-id='1')\",\n      extractedData: {\n        playPauseBtnIconClass: iconClass,\n        playPauseBtnAriaLabel: btnAriaLabel\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13537,
+      "timestamp": "2025-09-15T10:39:53.824Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first video container with data-video-id=\"1\"\n    const videoContainerSelector = 'div.video-container[data-video-id=\"1\"]';\n    await page.waitForSelector(videoContainerSelector, { state: 'visible', timeout: 5000 });\n\n    // Use a more robust selector for the play/pause button inside this container\n    // Try selecting by icon as well, to ensure uniqueness\n    const playPauseBtnSelector = `${videoContainerSelector} button.play-pause-btn, ${videoContainerSelector} button:has(i.fa-pause), ${videoContainerSelector} button:has(i.fa-play)`;\n\n    // Wait for the button to be attached/visible\n    await page.waitForSelector(playPauseBtnSelector, { state: 'visible', timeout: 3000 });\n\n    // Get the button element\n    const playPauseBtn = await page.$(playPauseBtnSelector);\n\n    if (!playPauseBtn) {\n      throw new Error('Play/Pause button not found for the first video');\n    }\n\n    // Get the current icon class before clicking (to verify toggle)\n    const iconClassBefore = await playPauseBtn.$eval('i', node => node.className);\n\n    // Click the play/pause button\n    await playPauseBtn.click();\n\n    // Wait a short moment for UI to update\n    await page.waitForTimeout(500);\n\n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_click.png'));\n\n    // Get the icon class after clicking to verify state changed\n    const iconClassAfter = await playPauseBtn.$eval('i', node => node.className);\n\n    // Extract data for verification\n    const isIconToggled = iconClassBefore !== iconClassAfter;\n\n    return {\n      success: true,\n      action: \"Clicked the play/pause button of the first video (data-video-id='1'), toggling its state.\",\n      extractedData: {\n        iconClassBefore,\n        iconClassAfter,\n        isIconToggled\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13506,
+      "timestamp": "2025-09-15T10:40:07.361Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the first video container with data-video-id=\"1\"\n    const containerSelector = '[data-video-id=\"1\"]';\n    await page.waitForSelector(containerSelector, { timeout: 5000 });\n\n    // Use a more specific selector: find the .play-pause-btn inside this container using :scope\n    const playPauseSelector = `${containerSelector} .play-pause-btn`;\n\n    // Wait for the play/pause button to be visible and enabled\n    await page.waitForSelector(playPauseSelector, { state: 'visible', timeout: 5000 });\n\n    // Scroll the play/pause button into view (in case it's off-screen)\n    await page.$eval(playPauseSelector, el => el.scrollIntoView({ behavior: \"instant\", block: \"center\" }));\n\n    // Take screenshot before clicking the play/pause button\n    const beforeClickShot = path.join(screenshotsDir, 'step_2_before_play_pause_click.png');\n    await page.screenshot({ path: beforeClickShot });\n    screenshots.push(beforeClickShot);\n\n    // Click the play/pause button using JavaScript in case there are overlay issues\n    await page.$eval(playPauseSelector, el => el.click());\n\n    // Wait for a short time to allow UI to update (e.g., button icon change)\n    await page.waitForTimeout(700);\n\n    // Take screenshot after clicking the play/pause button\n    const afterClickShot = path.join(screenshotsDir, 'step_3_after_play_pause_click.png');\n    await page.screenshot({ path: afterClickShot });\n    screenshots.push(afterClickShot);\n\n    // Extract data to verify: Is the video paused?\n    // We'll check the video element's paused property\n    const videoPaused = await page.$eval(`${containerSelector} video`, vid => vid.paused);\n\n    // Also, try to extract the aria-label or icon class for the play/pause button (helpful for verification)\n    const playPauseBtnIconClass = await page.$eval(\n      `${playPauseSelector} i`,\n      el => el.className\n    ).catch(() => null);\n\n    return {\n      success: true,\n      action: \"Clicked the play/pause button of the first video (data-video-id='1')\",\n      extractedData: {\n        videoPaused,\n        playPauseBtnIconClass\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12993,
+      "timestamp": "2025-09-15T10:40:20.867Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 40036,
+  "timestamp": "2025-09-15T10:39:53.824Z",
+  "savedAt": "2025-09-15T10:40:33.860Z",
+  "version": "1.0"
+}

@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_008_1757929747976",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_008",
+    "description": "General",
+    "objective": "Profile Menu Navigation",
+    "expectedResult": "프로필 버튼을 클릭하여 드롭다운 메뉴를 열고 'Profile' 링크가 올바른 href 속성을 가지는지 확인하기",
+    "difficulty": "Easy",
+    "category": ".profile-btn, #profileDropdown, [href='profile.html']",
+    "tags": [
+      "Dropdown menu interaction",
+      "attribute inspection"
+    ],
+    "notes": "Profile 링크의 href 속성값 ('profile.html')"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for profile button and click to open dropdown\n    await page.waitForSelector('button.profile-btn');\n    await page.click('button.profile-btn');\n    \n    // Wait for dropdown to appear and take screenshot\n    await page.waitForSelector('#profileDropdown', { state: 'visible' });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_dropdown_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_dropdown_open.png'));\n\n    // Extract Profile link href attribute\n    const profileHref = await page.$eval('a[href=\"profile.html\"]', el => el.getAttribute('href'));\n    \n    // Verify the href attribute\n    const isCorrectHref = profileHref === 'profile.html';\n\n    return {\n      success: isCorrectHref,\n      action: \"Opened profile dropdown and verified Profile link href\",\n      extractedData: {\n        profileLinkHref: profileHref,\n        isCorrect: isCorrectHref\n      },\n      screenshots,\n      error: isCorrectHref ? null : `Expected href='profile.html' but got '${profileHref}'`\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 35398,
+      "timestamp": "2025-09-15T09:49:07.976Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for profile button and click it\n    await page.waitForSelector('button.profile-btn', { state: 'visible' });\n    await page.click('button.profile-btn');\n    \n    // Wait for dropdown to appear and take screenshot\n    await page.waitForSelector('#profileDropdown', { state: 'visible' });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_dropdown_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_dropdown_open.png'));\n\n    // Verify Profile link exists with correct href\n    const profileLink = await page.$eval('#profileDropdown a[href=\"profile.html\"]', \n      el => ({\n        text: el.textContent.trim(),\n        href: el.getAttribute('href')\n      })\n    );\n\n    // Take final verification screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_verification.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_verification.png'));\n\n    return {\n      success: true,\n      action: \"Clicked profile button, opened dropdown menu, and verified Profile link href\",\n      extractedData: {\n        profileLinkText: profileLink.text,\n        profileLinkHref: profileLink.href,\n        verification: profileLink.href === 'profile.html' ? 'PASSED' : 'FAILED'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 52899,
+      "timestamp": "2025-09-15T09:49:43.374Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the profile button using CSS selector\n    await page.waitForSelector('button.profile-btn', { state: 'visible' });\n    await page.click('button.profile-btn');\n    \n    // Wait for dropdown to appear using ID selector\n    await page.waitForSelector('#profileDropdown', { state: 'visible' });\n    \n    // Take screenshot after opening dropdown\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_dropdown_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_dropdown_open.png'));\n\n    // Find Profile link using XPath and verify href attribute\n    const profileLink = await page.waitForSelector('xpath=//div[@id=\"profileDropdown\"]//a[contains(text(), \"Profile\")]');\n    const hrefValue = await profileLink.getAttribute('href');\n    \n    // Take screenshot after verification\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_profile_link.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_profile_link.png'));\n\n    return {\n      success: true,\n      action: \"Clicked profile button, opened dropdown menu, and verified Profile link href attribute\",\n      extractedData: {\n        profileHref: hrefValue,\n        isValid: hrefValue === 'profile.html'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 42775,
+      "timestamp": "2025-09-15T09:50:36.273Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 131072,
+  "timestamp": "2025-09-15T09:49:07.976Z",
+  "savedAt": "2025-09-15T09:51:19.049Z",
+  "version": "1.0"
+}

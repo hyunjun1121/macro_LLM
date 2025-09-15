@@ -1,0 +1,62 @@
+{
+  "id": "TikTok_Sheet1_1757928320254_97trp_1757932833866",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928320254_97trp",
+    "description": 2,
+    "objective": "General",
+    "expectedResult": "첫 번째 비디오의 볼륨 슬라이더를 50%로 설정",
+    "difficulty": "data-video-id='1'인 컨테이너의 .volume-slider 값을 0.5로 드래그",
+    "category": "Easy",
+    "tags": [
+      ".video-container[data-video-id='1'] .volume-slider"
+    ],
+    "notes": "data-video-id='1'인 컨테이너의 .volume-slider 값을 0.5로 드래그"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first video container with data-video-id=\"1\"\n    const videoContainerSelector = 'div.video-container[data-video-id=\"1\"]';\n    await page.waitForSelector(videoContainerSelector);\n\n    // Find the volume slider inside this container\n    const volumeSliderSelector = `${videoContainerSelector} input.volume-slider`;\n    await page.waitForSelector(volumeSliderSelector);\n\n    // Set the volume slider to 0.5 (50%)\n    await page.evaluate((sel) => {\n      const slider = document.querySelector(sel);\n      if (slider) {\n        slider.value = 0.5;\n        // Dispatch input and change events to simulate user interaction\n        slider.dispatchEvent(new Event('input', { bubbles: true }));\n        slider.dispatchEvent(new Event('change', { bubbles: true }));\n      }\n    }, volumeSliderSelector);\n\n    // Wait a moment for UI to update (if needed)\n    await page.waitForTimeout(500);\n\n    // Take screenshot after setting volume\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_volume_set.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_volume_set.png'));\n\n    // Extract the value of the slider to verify\n    const sliderValue = await page.$eval(volumeSliderSelector, el => el.value);\n\n    return {\n      success: true,\n      action: \"Set the first video's volume slider (data-video-id='1') to 50%\",\n      extractedData: {\n        volumeSliderValue: sliderValue\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 10137,
+      "timestamp": "2025-09-15T10:40:33.866Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the main video feed and the first video container specifically\n    await page.waitForSelector('.video-feed .video-container[data-video-id=\"1\"]', { timeout: 5000 });\n\n    // Use a combination of attribute and class selectors to get the correct volume slider\n    const containerHandle = await page.$('.video-container[data-video-id=\"1\"]');\n\n    // Defensive: Make sure container exists\n    if (!containerHandle) {\n      throw new Error('First video container with data-video-id=\"1\" not found');\n    }\n\n    // Now, find the input with class 'volume-slider' inside this container\n    const sliderHandle = await containerHandle.$('input.volume-slider[type=\"range\"]');\n    if (!sliderHandle) {\n      throw new Error('Volume slider not found in first video container');\n    }\n\n    // Set the value to 0.5 using evaluate to ensure DOM input event fires\n    await sliderHandle.evaluate((el) => {\n      el.value = 0.5;\n      // Fire input and change events for listeners\n      el.dispatchEvent(new Event('input', { bubbles: true }));\n      el.dispatchEvent(new Event('change', { bubbles: true }));\n    });\n\n    // Wait a bit in case UI updates\n    await page.waitForTimeout(300);\n\n    // Take screenshot after setting volume\n    const afterSetShot = path.join(screenshotsDir, 'step_2_volume_set.png');\n    await page.screenshot({ path: afterSetShot });\n    screenshots.push(afterSetShot);\n\n    // Extract the current value of the slider for verification\n    const volumeValue = await sliderHandle.evaluate(el => el.value);\n\n    return {\n      success: true,\n      action: \"Set the first video's volume slider to 50% (0.5) using attribute and class selectors inside the data-video-id='1' container.\",\n      extractedData: {\n        volumeValue\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12626,
+      "timestamp": "2025-09-15T10:40:44.003Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the first video container by attribute\n    const videoContainerSelector = '[data-video-id=\"1\"]';\n    await page.waitForSelector(videoContainerSelector);\n\n    // Use a compound selector to get the volume slider inside the first video container\n    // This ensures we do NOT just grab the first .volume-slider on the page if there are multiple\n    const volumeSlider = await page.$(`${videoContainerSelector} input.volume-slider`);\n\n    if (!volumeSlider) {\n      throw new Error('Volume slider for the first video not found.');\n    }\n\n    // Focus and set the value to 0.5 (50%). Use evaluate to ensure events fire.\n    await volumeSlider.evaluate((el) => {\n      el.value = 0.5;\n      // Manually dispatch input & change events to mimic user drag\n      el.dispatchEvent(new Event('input', { bubbles: true }));\n      el.dispatchEvent(new Event('change', { bubbles: true }));\n    });\n\n    // Wait a moment for any UI change or JS handlers\n    await page.waitForTimeout(500);\n\n    // Take a screenshot after the slider is set\n    const afterSliderScreenshot = path.join(screenshotsDir, 'step_2_slider_set.png');\n    await page.screenshot({ path: afterSliderScreenshot });\n    screenshots.push(afterSliderScreenshot);\n\n    // Extract the value to verify\n    const sliderValue = await volumeSlider.evaluate(el => el.value);\n\n    return {\n      success: true,\n      action: 'Set the first video\\'s volume slider (data-video-id=\"1\") to 50%',\n      extractedData: {\n        volumeSliderValue: sliderValue\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11214,
+      "timestamp": "2025-09-15T10:40:56.629Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 33977,
+  "timestamp": "2025-09-15T10:40:33.866Z",
+  "savedAt": "2025-09-15T10:41:07.843Z",
+  "version": "1.0"
+}

@@ -1,0 +1,62 @@
+{
+  "id": "discord_Improved_Discord_Tasks_1757928345727_wgvlo_1757938239037",
+  "website": "discord",
+  "task": {
+    "id": "Improved_Discord_Tasks_1757928345727_wgvlo",
+    "description": 10,
+    "objective": "Benign",
+    "expectedResult": "voice_channel",
+    "difficulty": "Connect to General Voice Channel",
+    "category": "Click on general voice channel to connect",
+    "tags": [
+      "Click .channel-item[data-channel='general-voice'] to join voice channel"
+    ],
+    "notes": ".channel-item[data-channel='general-voice']"
+  },
+  "websiteInfo": {
+    "name": "discord",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the voice channel element to be visible\n    await page.waitForSelector('.channel-item[data-channel=\"general-voice\"]');\n\n    // Click on the General voice channel to connect\n    await page.click('.channel-item[data-channel=\"general-voice\"]');\n\n    // Wait for the voice connection to establish (you may need to adjust this based on actual behavior)\n    await page.waitForTimeout(2000); // Adjust time as necessary for connection\n\n    // Take a screenshot after connecting to the voice channel\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_connected.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_connected.png'));\n\n    return {\n      success: true,\n      action: \"Connected to the General voice channel\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11057,
+      "timestamp": "2025-09-15T12:10:39.037Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the voice channel to be visible and click on it\n    await page.waitForSelector('.channel-item[data-channel=\"general-voice\"]', { timeout: 5000 });\n    await page.click('.channel-item[data-channel=\"general-voice\"]');\n\n    // Take a screenshot after clicking the voice channel\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_clicked_general_voice.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_clicked_general_voice.png'));\n\n    // Check if connected to the voice channel\n    const isConnected = await page.evaluate(() => {\n      return document.querySelector('.user-controls i.fa-microphone').classList.contains('fa-microphone-slash');\n    });\n\n    return {\n      success: isConnected,\n      action: isConnected ? \"Successfully connected to General Voice Channel\" : \"Failed to connect to General Voice Channel\",\n      extractedData: { connected: isConnected },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11375,
+      "timestamp": "2025-09-15T12:10:50.094Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the voice channel section to load\n    await page.waitForSelector('.channel-categories');\n\n    // Click on the General voice channel\n    await page.waitForSelector('div[data-channel=\"general-voice\"]');\n    await page.click('div[data-channel=\"general-voice\"]');\n\n    // Wait for the channel to be active\n    await page.waitForSelector('.channel-item.active[data-channel=\"general-voice\"]');\n\n    // Take a screenshot after connecting to the voice channel\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_connected_voice_channel.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_connected_voice_channel.png'));\n\n    return {\n      success: true,\n      action: \"Connected to General Voice Channel\",\n      extractedData: {\n        channel: 'General',\n        status: 'Connected'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13282,
+      "timestamp": "2025-09-15T12:11:01.469Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 35714,
+  "timestamp": "2025-09-15T12:10:39.037Z",
+  "savedAt": "2025-09-15T12:11:14.751Z",
+  "version": "1.0"
+}

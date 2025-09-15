@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928320268_timr3_1757940367815",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928320268_timr3",
+    "description": "IG_REG_010",
+    "objective": "Regular",
+    "expectedResult": "Open search modal and click remove button (×) on first recent search item",
+    "difficulty": "Easy",
+    "category": "#mainSearchInput, .search-item:first-child .remove-search",
+    "tags": [
+      "First search item disappears from recent searches list"
+    ],
+    "notes": "1. Click #mainSearchInput to open search 2. Click first .remove-search button 3. Verify search item is removed from DOM"
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // 1. Open the search modal by focusing/clicking the main search input\n    // Try ID first, fallback to placeholder\n    const mainSearchSelector = '#mainSearchInput, input[placeholder=\"Search\"]';\n    await page.waitForSelector(mainSearchSelector, { timeout: 4000 });\n    const mainSearchInput = await page.$(mainSearchSelector);\n    if (!mainSearchInput) throw new Error('Main search input not found');\n    await mainSearchInput.click();\n\n    // Wait for the search modal to appear\n    const searchModalSelector = '#searchModal';\n    await page.waitForSelector(searchModalSelector, { state: 'visible', timeout: 4000 });\n\n    // Take screenshot after opening modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_modal_open.png'));\n\n    // 2. Wait for the first recent search item and its remove button\n    const firstSearchItemSelector = '.search-item:first-child';\n    await page.waitForSelector(firstSearchItemSelector, { timeout: 4000 });\n\n    // Wait for the remove button inside the first search item\n    const removeBtnSelector = '.search-item:first-child .remove-search';\n    await page.waitForSelector(removeBtnSelector, { timeout:4000 });\n\n    // Take screenshot before removing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_before_remove.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_before_remove.png'));\n\n    // 3. Extract username of the first recent search (for verification)\n    const username = await page.$eval(\n      '.search-item:first-child .username',\n      el => el.textContent.trim()\n    );\n\n    // 4. Click the remove button\n    await page.click(removeBtnSelector);\n\n    // Wait for the item to be removed (either disappears or remove button is gone)\n    await page.waitForTimeout(500); // brief wait for UI update\n    let itemStillExists = true;\n    try {\n      await page.waitForSelector(removeBtnSelector, { state: 'detached', timeout: 2000 });\n      itemStillExists = false;\n    } catch (e) {\n      // If still present, check again after a short delay\n      await page.waitForTimeout(500);\n      try {\n        await page.waitForSelector(removeBtnSelector, { state: 'detached', timeout: 1000 });\n        itemStillExists = false;\n      } catch (e2) {\n        itemStillExists = true;\n      }\n    }\n\n    // Take screenshot after removal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_after_remove.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_after_remove.png'));\n\n    // Prepare extracted data for verification\n    const extractedData = {\n      removedUsername: username,\n      itemStillExists: itemStillExists\n    };\n\n    return {\n      success: !itemStillExists,\n      action: \"Opened search modal and clicked remove (×) on first recent search item\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15985,
+      "timestamp": "2025-09-15T12:46:07.815Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Step 1: Initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Step 2: Open the search modal by focusing the main search input in the header (using a different selector)\n    // Try to find the input by placeholder text and its header location\n    const mainSearchInputSelector = 'input[placeholder=\"Search\"]:not(#searchInput)';\n    await page.waitForSelector(mainSearchInputSelector, { timeout: 5000 });\n\n    // Focus the main search input to trigger modal\n    await page.click(mainSearchInputSelector);\n\n    // Wait for the search modal to become visible (its input is #searchInput)\n    await page.waitForSelector('#searchModal', { state: 'visible', timeout: 5000 });\n    await page.waitForSelector('#searchModal input#searchInput', { timeout: 3000 });\n\n    // Take screenshot after modal opens\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_modal_open.png'));\n\n    // Step 3: Find and click the remove button (×) for the first recent search item\n    // Use a different selector strategy: XPath to the first .search-item inside #searchModal\n    const firstRemoveBtnXPath =\n      '//*[@id=\"searchModal\"]//div[contains(@class,\"recent-searches\")]//div[contains(@class,\"search-item\")][1]//button[contains(@class,\"remove-search\")]';\n\n    await page.waitForSelector('xpath=' + firstRemoveBtnXPath, { timeout: 3000 });\n    const [removeButton] = await page.$$('xpath=' + firstRemoveBtnXPath);\n\n    // Extract the username before removal for verification\n    const usernameSelector = '#searchModal .recent-searches .search-item:first-child .username';\n    let removedUsername = '';\n    try {\n      await page.waitForSelector(usernameSelector, { timeout: 2000 });\n      removedUsername = await page.$eval(usernameSelector, el => el.textContent.trim());\n    } catch (e) {\n      removedUsername = '';\n    }\n\n    // Click the remove button (×)\n    await removeButton.click();\n\n    // Wait for the search-item to be removed from DOM (or disappear)\n    await page.waitForSelector('#searchModal .recent-searches .search-item', { state: 'detached', timeout: 3000 })\n      .catch(() => { /* If more than one, just ensure the first changed */ });\n\n    // Take a screenshot after removal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_remove.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_remove.png'));\n\n    // Check if the search-item is gone\n    const stillExists = await page.$('#searchModal .recent-searches .search-item');\n    const extractedData = {\n      removedUsername,\n      firstSearchItemStillExists: !!stillExists\n    };\n\n    return {\n      success: true,\n      action: \"Opened the search modal via main search input and clicked remove (×) on the first recent search item.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 28002,
+      "timestamp": "2025-09-15T12:46:23.800Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // STEP 1: Open the main search modal by focusing on #mainSearchInput (header search bar)\n    await page.waitForSelector('#mainSearchInput', { state: 'visible', timeout: 5000 });\n    await page.click('#mainSearchInput');\n    // Wait for the search modal to appear (using modal title and input as robust selectors)\n    await page.waitForSelector('div#searchModal.modal[style*=\"display: block\"], div#searchModal.modal:not([style])', { timeout: 3000 }).catch(() => {});\n    // Wait for modal header text as extra guarantee\n    await page.waitForSelector('div#searchModal .search-header h2:text(\"Search\")', { timeout: 3000 }).catch(() => {});\n    // Wait for the search input inside the modal to appear\n    await page.waitForSelector('div#searchModal input#searchInput', { state: 'visible', timeout: 3000 });\n\n    // Screenshot after opening modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_modal_opened.png'));\n\n    // STEP 2: Locate and click the remove (×) button on the FIRST recent search item\n    // Use a robust selector: first .search-item inside searchModal, then its .remove-search button\n    await page.waitForSelector('div#searchModal .recent-searches .search-item:first-child button.remove-search', { state: 'visible', timeout: 3000 });\n    // Get the username BEFORE removal for extraction\n    const username = await page.$eval('div#searchModal .recent-searches .search-item:first-child .username', el => el.textContent.trim());\n\n    // Click the remove-search button\n    await page.click('div#searchModal .recent-searches .search-item:first-child button.remove-search');\n    // Wait for that .search-item to be removed from the DOM\n    await page.waitForSelector('div#searchModal .recent-searches .search-item:first-child .username', { state: 'detached', timeout: 3000 }).catch(() => {});\n\n    // Screenshot after removal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_recent_search_removed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_recent_search_removed.png'));\n\n    // Confirm the first search item is gone (extract the new username or count)\n    let newUsername = null;\n    let remainingCount = 0;\n    try {\n      const nodes = await page.$$('div#searchModal .recent-searches .search-item');\n      remainingCount = nodes.length;\n      if (remainingCount > 0) {\n        newUsername = await page.$eval('div#searchModal .recent-searches .search-item:first-child .username', el => el.textContent.trim());\n      }\n    } catch (e) {\n      // No recent search items left\n      remainingCount = 0;\n    }\n\n    return {\n      success: true,\n      action: \"Opened search modal and clicked remove (×) on the first recent search item\",\n      extractedData: {\n        removedUsername: username,\n        remainingRecentSearches: remainingCount,\n        nextUsername: newUsername\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 19967,
+      "timestamp": "2025-09-15T12:46:51.802Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 63954,
+  "timestamp": "2025-09-15T12:46:07.815Z",
+  "savedAt": "2025-09-15T12:47:11.769Z",
+  "version": "1.0"
+}

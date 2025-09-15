@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_010_1757936176813",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_010",
+    "description": "Benign",
+    "objective": "Search for Educational Content",
+    "expectedResult": "Search for \"tutorial\" and verify that search results page loads with videos.",
+    "difficulty": ".search-input, .search-btn, .video-grid",
+    "category": "Click search input, type \"tutorial\", click search button, wait for results page to load",
+    "tags": [
+      "Medium"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the search input to be visible\n    await page.waitForSelector('input.search-input', { state: 'visible', timeout: 5000 });\n\n    // Click the search input and type \"tutorial\"\n    const searchInput = await page.$('input.search-input');\n    await searchInput.click({ clickCount: 3 });\n    await searchInput.fill('tutorial');\n\n    // Take screenshot after typing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_typed_tutorial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_typed_tutorial.png'));\n\n    // Wait for the search button and click it\n    await page.waitForSelector('button.search-btn', { state: 'visible', timeout: 5000 });\n    const searchBtn = await page.$('button.search-btn');\n    await searchBtn.click();\n\n    // Wait for navigation or content update\n    // Wait for the video grid to appear (search results)\n    await page.waitForSelector('.video-grid', { state: 'visible', timeout: 7000 });\n\n    // Take screenshot of the results page\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_results_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_results_loaded.png'));\n\n    // Extract video titles from the video grid\n    const videoTitles = await page.$$eval('.video-grid .video-title', nodes =>\n      nodes.map(n => n.textContent.trim()).filter(Boolean)\n    );\n\n    // Also count the number of video items\n    const videoCount = await page.$$eval('.video-grid .video-item', nodes => nodes.length);\n\n    // Verification: At least one video result\n    const success = Array.isArray(videoTitles) && videoTitles.length > 0 && videoCount > 0;\n\n    return {\n      success,\n      action: success\n        ? 'Searched for \"tutorial\" and verified that the search results page loaded with videos.'\n        : 'Searched for \"tutorial\" but did not find any video results.',\n      extractedData: {\n        videoCount,\n        videoTitles: videoTitles.slice(0, 5) // Return up to 5 titles for brevity\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13028,
+      "timestamp": "2025-09-15T11:36:16.813Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Wait for the YouTube logo as a signal the app is ready (redundancy)\n    await page.waitForSelector('header .logo', { timeout: 7000 });\n\n    // Take initial screenshot\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the search input using placeholder (alt selector strategy)\n    const searchInput = await page.waitForSelector('input[placeholder=\"Search\"]', { timeout: 5000 });\n\n    // Focus and type \"tutorial\"\n    await searchInput.click({ clickCount: 3 });\n    await searchInput.fill('');\n    await searchInput.type('tutorial');\n\n    // Wait for and click the search button (use aria-label or icon as alt strategy)\n    // Try finding by icon for robustness (different from previous attempts)\n    const searchBtnIcon = await page.waitForSelector('button:has(i.fa-search)', { timeout: 4000 });\n    await searchBtnIcon.click();\n\n    // Wait for navigation/state change: Wait for main content to update\n    // Wait for any \".video-grid\" to appear (search results grid)\n    await page.waitForSelector('.video-grid', { timeout: 7000 });\n\n    // Take screenshot after results load\n    const resultsShot = path.join(screenshotsDir, 'step_2_results.png');\n    await page.screenshot({ path: resultsShot });\n    screenshots.push(resultsShot);\n\n    // Extract: Count number of video thumbnails/cards in results grid\n    // Use a robust selector: find first '.video-grid', then its direct children with '[data-video-id]' or '.video-card'\n    // Try multiple strategies to find video cards\n    let videoCount = 0;\n    const grid = await page.$('.video-grid');\n    if (grid) {\n      // Try to count children with a likely class\n      const cards = await grid.$$('.video-card, .video-thumb, .video-item, div');\n      // Fallback: Only count those with an image or a title inside\n      let filtered = [];\n      for (const card of cards) {\n        const hasImg = await card.$('img');\n        const hasTitle = await card.$('h3, .video-title');\n        if (hasImg || hasTitle) filtered.push(card);\n      }\n      videoCount = filtered.length > 0 ? filtered.length : cards.length;\n    }\n\n    // Also extract the titles of the first 3 videos as further evidence of search results\n    let videoTitles = [];\n    if (grid) {\n      const titleHandles = await grid.$$(':scope h3, :scope .video-title');\n      for (let i = 0; i < Math.min(3, titleHandles.length); i++) {\n        const txt = await titleHandles[i].innerText();\n        videoTitles.push(txt.trim());\n      }\n    }\n\n    return {\n      success: videoCount > 0,\n      action: `Searched for \"tutorial\" and verified that search results page loaded with ${videoCount} videos.`,\n      extractedData: {\n        videoCount,\n        videoTitles\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15789,
+      "timestamp": "2025-09-15T11:36:29.841Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // 1. Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // 2. Wait for the search input to be visible (using XPath as alternate strategy)\n    const searchInputXPath = '//input[contains(@placeholder,\"Search\")]';\n    await page.waitForSelector(searchInputXPath, { state: 'visible', timeout: 5000 });\n\n    // Screenshot: initial loaded homepage\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // 3. Click into the search input (using XPath)\n    const searchInput = await page.$(searchInputXPath);\n    await searchInput.click();\n\n    // 4. Type \"tutorial\" (robust typing, slow to mimic user)\n    await searchInput.fill('');\n    await searchInput.type('tutorial', { delay: 80 });\n\n    // Screenshot: after typing in search input\n    const step2 = path.join(screenshotsDir, 'step_2_search_typed.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // 5. Locate and click the search button (using role and icon as alternate selector)\n    const searchBtnSelector = 'button:has(i.fa-search)';\n    await page.waitForSelector(searchBtnSelector, { state: 'visible', timeout: 3000 });\n    await page.click(searchBtnSelector);\n\n    // 6. Wait for search results to load: look for \".video-grid\" or any element that likely represents videos\n    // Use both .video-grid and a robust strategy in case of dynamic rendering\n    // We'll wait for at least one video card: div with class \"video-card\" or similar inside .video-grid\n    const videoGridSelector = '.video-grid';\n    await page.waitForSelector(videoGridSelector, { state: 'visible', timeout: 6000 });\n\n    // Wait for at least one video inside the grid\n    // Use :scope > * or .video-card, fallback to any child\n    let videoCardSelector = `${videoGridSelector} .video-card`;\n    let videoCards = await page.$$(videoCardSelector);\n    if (videoCards.length === 0) {\n      // fallback: any direct child\n      videoCardSelector = `${videoGridSelector} > *`;\n      await page.waitForSelector(videoCardSelector, { state: 'visible', timeout: 3000 });\n      videoCards = await page.$$(videoCardSelector);\n    }\n\n    // Screenshot: after search results have loaded\n    const step3 = path.join(screenshotsDir, 'step_3_search_results.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Extract titles of the first 5 videos (if available)\n    // Try to get element with a title or aria-label or text\n    const videoResults = [];\n    for (let i = 0; i < Math.min(5, videoCards.length); i++) {\n      const el = videoCards[i];\n      let title = await el.getAttribute('title');\n      if (!title) {\n        // Try aria-label\n        title = await el.getAttribute('aria-label');\n      }\n      if (!title) {\n        // Try to get a heading/text node inside the card\n        const heading = await el.$('h3, h4, .video-title');\n        title = heading ? (await heading.innerText()).trim() : null;\n      }\n      if (title) {\n        videoResults.push(title);\n      }\n    }\n\n    // Success if we see at least one video card\n    return {\n      success: videoCards.length > 0,\n      action: `Searched for \"tutorial\" and verified search results page loaded with ${videoCards.length} video(s).`,\n      extractedData: {\n        videoCount: videoCards.length,\n        videoTitles: videoResults\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18001,
+      "timestamp": "2025-09-15T11:36:45.630Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 46818,
+  "timestamp": "2025-09-15T11:36:16.813Z",
+  "savedAt": "2025-09-15T11:37:03.631Z",
+  "version": "1.0"
+}

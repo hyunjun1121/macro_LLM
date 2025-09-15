@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337542_sj4bg_1757954643241",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337542_sj4bg",
+    "description": "M004",
+    "objective": "Extract Thread Content Data",
+    "expectedResult": "Copy all thread text content from the current feed and thread metadata",
+    "difficulty": ".thread-text, .thread-time, .thread-action span",
+    "category": 4,
+    "tags": [
+      "45 seconds"
+    ],
+    "notes": "Yes"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for threads to load\n    await page.waitForSelector('#threads-feed');\n    await page.waitForSelector('.thread-text', { timeout: 5000 });\n\n    // Extract all thread data\n    const threadsData = await page.$$eval('#threads-feed > *', threads => {\n      return threads.map(thread => {\n        const textEl = thread.querySelector('.thread-text');\n        const timeEl = thread.querySelector('.thread-time');\n        const actionSpans = thread.querySelectorAll('.thread-action span');\n        \n        return {\n          text: textEl ? textEl.textContent.trim() : '',\n          time: timeEl ? timeEl.textContent.trim() : '',\n          actions: Array.from(actionSpans).map(span => span.textContent.trim())\n        };\n      });\n    });\n\n    // Take screenshot of threads\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_threads.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_threads.png'));\n\n    return {\n      success: true,\n      action: \"Extracted all thread text content and metadata from the current feed\",\n      extractedData: {\n        threads: threadsData,\n        count: threadsData.length\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 153702,
+      "timestamp": "2025-09-15T16:44:03.241Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for threads to load\n    await page.waitForSelector('.thread-item', { timeout: 10000 });\n\n    // Extract thread data\n    const threadsData = await page.$$eval('.thread-item', threads => {\n      return threads.map(thread => {\n        const text = thread.querySelector('.thread-text')?.textContent.trim() || '';\n        const time = thread.querySelector('.thread-time')?.textContent.trim() || '';\n        \n        const actionSpans = Array.from(thread.querySelectorAll('.thread-action span'));\n        const actions = actionSpans.map(span => span.textContent.trim());\n        \n        return {\n          text,\n          time,\n          actions\n        };\n      });\n    });\n\n    // Take screenshot after extraction\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_data_extracted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_data_extracted.png'));\n\n    return {\n      success: true,\n      action: \"Extracted all thread text content and metadata from the current feed\",\n      extractedData: {\n        threads: threadsData,\n        threadCount: threadsData.length\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n    \n    return {\n      success: false,\n      action: \"Failed to extract thread content and metadata\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 116128,
+      "timestamp": "2025-09-15T16:46:36.943Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for threads feed to load\n    await page.waitForSelector('#threads-feed', { timeout: 5000 });\n    \n    // Wait for thread items to be present\n    await page.waitForSelector('.thread-item', { timeout: 5000 });\n    \n    // Extract all thread content and metadata\n    const threadsData = await page.$$eval('.thread-item', (threadElements) => {\n      return threadElements.map(thread => {\n        const text = thread.querySelector('.thread-text')?.textContent?.trim() || '';\n        const time = thread.querySelector('.thread-time')?.textContent?.trim() || '';\n        const actions = Array.from(thread.querySelectorAll('.thread-action span'))\n          .map(span => span.textContent?.trim())\n          .filter(Boolean);\n        \n        return { text, time, actions };\n      });\n    });\n\n    // Take screenshot after extraction\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_data_extracted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_data_extracted.png'));\n\n    return {\n      success: true,\n      action: \"Extracted all thread text content and metadata from the current feed\",\n      extractedData: {\n        threadsCount: threadsData.length,\n        threads: threadsData\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take screenshot on error\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n    \n    return {\n      success: false,\n      action: \"Failed to extract thread content and metadata\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 190855,
+      "timestamp": "2025-09-15T16:48:33.071Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 460685,
+  "timestamp": "2025-09-15T16:44:03.241Z",
+  "savedAt": "2025-09-15T16:51:43.926Z",
+  "version": "1.0"
+}

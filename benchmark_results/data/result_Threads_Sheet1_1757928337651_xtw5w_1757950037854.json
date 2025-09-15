@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337651_xtw5w_1757950037854",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337651_xtw5w",
+    "description": "G001",
+    "objective": "Navigate to Search View",
+    "expectedResult": "Click on the Search navigation item to switch from Home view to Search view",
+    "difficulty": ".nav-item[data-view='search']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation items to load\n    await page.waitForSelector('.nav-item[data-view=\"search\"]');\n    \n    // Verify initial state (Home view should be active)\n    const initialActiveView = await page.$eval('.nav-item.active', el => el.dataset.view);\n    if (initialActiveView !== 'home') {\n      throw new Error(`Expected home view to be active, but found: ${initialActiveView}`);\n    }\n\n    // Click on Search navigation item\n    await page.click('.nav-item[data-view=\"search\"]');\n    \n    // Wait for search view to become active\n    await page.waitForSelector('#search-view.active');\n    \n    // Take screenshot after navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_view.png'));\n\n    // Verify search view is active and extract relevant data\n    const searchInputPlaceholder = await page.$eval('#search-input', el => el.placeholder);\n    const activeNavItem = await page.$eval('.nav-item.active', el => el.dataset.view);\n\n    return {\n      success: true,\n      action: \"Successfully clicked on Search navigation item and switched to Search view\",\n      extractedData: {\n        activeView: activeNavItem,\n        searchInputPlaceholder: searchInputPlaceholder,\n        searchViewVisible: await page.isVisible('#search-view.active')\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take screenshot on error\n    try {\n      await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n      screenshots.push(path.join(screenshotsDir, 'error.png'));\n    } catch (screenshotError) {\n      console.error('Failed to take error screenshot:', screenshotError);\n    }\n\n    return {\n      success: false,\n      action: \"Failed to click on Search navigation item and switch to Search view\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 52780,
+      "timestamp": "2025-09-15T15:27:17.854Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation to be ready and click Search item\n    await page.waitForSelector('.nav-item[data-view=\"search\"]', { state: 'visible' });\n    await page.click('.nav-item[data-view=\"search\"]');\n\n    // Wait for search view to become active\n    await page.waitForSelector('#search-view.active', { state: 'visible' });\n\n    // Verify search view is active by checking for search input\n    await page.waitForSelector('#search-view #search-input', { state: 'visible' });\n\n    // Take screenshot after switching to search view\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_view.png'));\n\n    // Extract search view status\n    const searchViewActive = await page.$eval('#search-view', el => el.classList.contains('active'));\n    const searchInputVisible = await page.$eval('#search-view #search-input', el => el.offsetParent !== null);\n\n    return {\n      success: true,\n      action: \"Clicked on Search navigation item to switch from Home view to Search view\",\n      extractedData: {\n        searchViewActive: searchViewActive,\n        searchInputVisible: searchInputVisible,\n        currentView: await page.$eval('.nav-item.active', el => el.dataset.view)\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 89040,
+      "timestamp": "2025-09-15T15:28:10.634Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation menu to load\n    await page.waitForSelector('.nav-menu', { state: 'visible' });\n\n    // Use multiple selector strategies to find the Search navigation item\n    const searchNavItem = await page.$('.nav-item[data-view=\"search\"]');\n    \n    // Verify element exists and is clickable\n    if (!searchNavItem) {\n      throw new Error('Search navigation item not found');\n    }\n\n    // Click on the Search navigation item\n    await searchNavItem.click();\n\n    // Wait for Search view to become active\n    await page.waitForSelector('#search-view.active', { state: 'visible' });\n    await page.waitForSelector('#search-input', { state: 'visible' });\n\n    // Take screenshot after successful navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_view.png'));\n\n    // Extract data to verify task completion\n    const searchInputPlaceholder = await page.$eval('#search-input', el => el.placeholder);\n    const activeView = await page.$eval('.view.active', el => el.id);\n\n    return {\n      success: true,\n      action: \"Clicked on Search navigation item and switched to Search view\",\n      extractedData: {\n        searchInputPlaceholder,\n        activeView,\n        viewStatus: activeView === 'search-view' ? 'Success' : 'Failed'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take screenshot on error\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 66691,
+      "timestamp": "2025-09-15T15:29:39.674Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 208511,
+  "timestamp": "2025-09-15T15:27:17.854Z",
+  "savedAt": "2025-09-15T15:30:46.365Z",
+  "version": "1.0"
+}

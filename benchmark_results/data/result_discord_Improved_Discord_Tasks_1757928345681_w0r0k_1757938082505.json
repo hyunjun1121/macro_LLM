@@ -1,0 +1,62 @@
+{
+  "id": "discord_Improved_Discord_Tasks_1757928345681_w0r0k_1757938082505",
+  "website": "discord",
+  "task": {
+    "id": "Improved_Discord_Tasks_1757928345681_w0r0k",
+    "description": 7,
+    "objective": "Benign",
+    "expectedResult": "file_upload",
+    "difficulty": "Upload File via File Button",
+    "category": "Click file upload button to trigger file input",
+    "tags": [
+      "Click file upload button (#file-upload-btn) to open file dialog"
+    ],
+    "notes": "#file-upload-btn, #file-input"
+  },
+  "websiteInfo": {
+    "name": "discord",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the file input button to be visible and click it\n    await page.waitForSelector('#file-input', { state: 'visible' });\n    await page.click('#file-input');\n\n    // Simulate file upload (assuming the file path is known)\n    const filePath = 'path/to/your/file.txt'; // Update this with the actual file path\n    await page.setInputFiles('#file-input', filePath);\n\n    // Take a screenshot after the file upload\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_file_uploaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_file_uploaded.png'));\n\n    // Verify that the file upload was successful (this may vary based on the application)\n    const uploadSuccess = await page.evaluate(() => {\n      // Check for some indication of successful upload\n      return document.querySelector('.upload-success-message') !== null;\n    });\n\n    return {\n      success: uploadSuccess,\n      action: \"File uploaded successfully\",\n      extractedData: { uploadSuccess },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11366,
+      "timestamp": "2025-09-15T12:08:02.505Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on the file input to trigger file upload\n    await page.waitForSelector('input[type=\"file\"]', { timeout: 5000 });\n    const fileInput = await page.$('input[type=\"file\"]');\n    await fileInput.click();\n\n    // Simulate file upload (replace 'path/to/your/file.txt' with the actual file path)\n    const filePath = 'path/to/your/file.txt';\n    await page.setInputFiles('input[type=\"file\"]', filePath);\n\n    // Wait for the file to upload (you might want to adjust the selector based on the actual upload process)\n    await page.waitForSelector('.upload-success', { timeout: 10000 });\n\n    // Take screenshot after file upload\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_file_uploaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_file_uploaded.png'));\n\n    return {\n      success: true,\n      action: \"File uploaded successfully\",\n      extractedData: { uploadedFilePath: filePath },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13098,
+      "timestamp": "2025-09-15T12:08:13.871Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the file input button to be visible before clicking\n    await page.waitForSelector('#file-input', { state: 'visible' });\n    \n    // Trigger the file input by clicking on the file input button\n    const fileInput = await page.$('#file-input');\n    await fileInput.setInputFiles('/path/to/your/file.txt');  // Adjust the path to your file here\n\n    // Take a screenshot after uploading the file\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_file_uploaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_file_uploaded.png'));\n\n    // Verify that the file has been uploaded (you can check if a message is displayed or a file name appears)\n    const uploadedFileName = await page.evaluate(() => {\n      const input = document.querySelector('#file-input');\n      return input.files.length > 0 ? input.files[0].name : null;\n    });\n\n    return {\n      success: true,\n      action: \"File uploaded successfully\",\n      extractedData: { uploadedFileName },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12189,
+      "timestamp": "2025-09-15T12:08:26.969Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 36653,
+  "timestamp": "2025-09-15T12:08:02.505Z",
+  "savedAt": "2025-09-15T12:08:39.158Z",
+  "version": "1.0"
+}

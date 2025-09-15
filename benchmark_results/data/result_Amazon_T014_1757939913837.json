@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T014_1757939913837",
+  "website": "Amazon",
+  "task": {
+    "id": "T014",
+    "description": "Apply Price Range Filter",
+    "objective": "General",
+    "expectedResult": "Hard",
+    "difficulty": "Search for products, set minimum price to 50 and maximum price to 200, then apply the price filter.",
+    "category": "#minPrice, #maxPrice, .apply-filter",
+    "tags": [
+      "1. Perform search 2. Enter '50' in min price 3. Enter '200' in max price 4. Click apply filter"
+    ],
+    "notes": "Products filter to show only items between $50-200, results counter updates, notification confirms filter applied"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Perform search for products\n    await page.waitForSelector('#searchInput');\n    await page.fill('#searchInput', 'products');\n    await page.click('button.search-btn');\n    \n    await page.waitForTimeout(2000); // Wait for search results\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_results.png'));\n\n    // Set minimum price\n    await page.waitForSelector('#minPrice');\n    await page.fill('#minPrice', '50');\n    \n    // Set maximum price\n    await page.waitForSelector('#maxPrice');\n    await page.fill('#maxPrice', '200');\n    \n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_price_set.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_price_set.png'));\n\n    // Apply the filter\n    await page.waitForSelector('.apply-filter');\n    await page.click('.apply-filter');\n    \n    await page.waitForTimeout(2000); // Wait for filter to apply\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_filter_applied.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_filter_applied.png'));\n\n    // Extract verification data\n    const extractedData = {\n      minPrice: await page.$eval('#minPrice', el => el.value),\n      maxPrice: await page.$eval('#maxPrice', el => el.value),\n      productCount: await page.$$eval('.product-item', items => items.length)\n    };\n\n    return {\n      success: true,\n      action: \"Applied price range filter (50-200) to product search\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to apply price range filter\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 119632,
+      "timestamp": "2025-09-15T12:38:33.837Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Perform search for products\n    await page.fill('#searchInput', 'electronics');\n    await page.click('button.search-btn');\n    await page.waitForLoadState('networkidle');\n    \n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_results.png'));\n\n    // Wait for and apply price filters\n    await page.waitForSelector('#minPrice', { timeout: 5000 });\n    await page.fill('#minPrice', '50');\n    await page.fill('#maxPrice', '200');\n    \n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_price_filters_set.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_price_filters_set.png'));\n\n    // Apply filter using multiple selector strategies\n    await Promise.race([\n      page.click('.apply-filter'),\n      page.click('button:has-text(\"Apply\")'),\n      page.click('input[type=\"submit\"][value*=\"Apply\"]')\n    ]);\n\n    await page.waitForLoadState('networkidle');\n    await page.waitForTimeout(2000); // Wait for results to update\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_filters_applied.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_filters_applied.png'));\n\n    // Extract product data to verify filter application\n    const productPrices = await page.$$eval('.product-price', elements => \n      elements.map(el => parseFloat(el.textContent.replace('$', '')))\n    );\n\n    const filteredProducts = productPrices.filter(price => price >= 50 && price <= 200);\n\n    return {\n      success: true,\n      action: \"Applied price range filter (50-200) to electronics search results\",\n      extractedData: {\n        totalProducts: productPrices.length,\n        filteredProducts: filteredProducts.length,\n        priceRange: {\n          min: Math.min(...productPrices),\n          max: Math.max(...productPrices)\n        }\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to apply price range filter\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 131255,
+      "timestamp": "2025-09-15T12:40:33.469Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Perform search first\n    await page.fill('#searchInput', 'products');\n    await page.click('button.search-btn');\n    await page.waitForLoadState('networkidle');\n\n    // Wait for search results page to load\n    await page.waitForSelector('.product', { timeout: 10000 });\n\n    // Take screenshot after search\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_results.png'));\n\n    // Apply price filter using alternative selector strategies\n    // First try CSS selectors, then fallback to XPath if needed\n    const minPriceInput = await page.$('input[placeholder*=\"Min\"]') || \n                         await page.$('#minPrice') ||\n                         await page.$('input[name=\"minPrice\"]');\n    \n    const maxPriceInput = await page.$('input[placeholder*=\"Max\"]') || \n                         await page.$('#maxPrice') ||\n                         await page.$('input[name=\"maxPrice\"]');\n\n    const applyFilterBtn = await page.$('.apply-filter') || \n                          await page.$('button:has-text(\"Apply\")') ||\n                          await page.$('input[type=\"submit\"][value*=\"Apply\"]');\n\n    if (minPriceInput && maxPriceInput && applyFilterBtn) {\n      await minPriceInput.fill('50');\n      await maxPriceInput.fill('200');\n      await applyFilterBtn.click();\n      \n      // Wait for filter to be applied\n      await page.waitForTimeout(2000);\n      await page.waitForLoadState('networkidle');\n\n      // Take screenshot after applying filter\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_3_filter_applied.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_3_filter_applied.png'));\n\n      // Extract product data to verify filter was applied\n      const products = await page.$$eval('.product', items => \n        items.map(item => ({\n          title: item.querySelector('.product-title')?.textContent || '',\n          price: item.querySelector('.product-price')?.textContent || ''\n        }))\n      );\n\n      return {\n        success: true,\n        action: \"Applied price range filter: min $50, max $200\",\n        extractedData: {\n          filteredProducts: products,\n          productCount: products.length\n        },\n        screenshots,\n        error: null\n      };\n    } else {\n      throw new Error('Could not find price filter elements on the page');\n    }\n  } catch (error) {\n    // Take error screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to apply price range filter\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 280653,
+      "timestamp": "2025-09-15T12:42:44.724Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 531540,
+  "timestamp": "2025-09-15T12:38:33.837Z",
+  "savedAt": "2025-09-15T12:47:25.377Z",
+  "version": "1.0"
+}

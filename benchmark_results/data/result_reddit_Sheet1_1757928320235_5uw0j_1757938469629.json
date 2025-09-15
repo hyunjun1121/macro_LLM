@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928320235_5uw0j_1757938469629",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928320235_5uw0j",
+    "description": 11,
+    "objective": "Regular",
+    "expectedResult": "Open user profile",
+    "difficulty": "Easy",
+    "category": "Click on View Profile button in quick actions",
+    "tags": [
+      ".quick-action-btn[onclick*='goToProfile']"
+    ],
+    "notes": "goToProfile()"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar quick actions to be visible\n    // Try to use the button with text \"View Profile\" and class \"quick-action-btn\"\n    await page.waitForSelector('button.quick-action-btn', { timeout: 5000 });\n\n    // Find the \"View Profile\" button among quick-action-btns\n    const viewProfileBtn = await page.$('//button[contains(@class, \"quick-action-btn\") and contains(normalize-space(), \"View Profile\")]');\n    if (!viewProfileBtn) {\n      throw new Error('View Profile button not found');\n    }\n\n    // Take screenshot before clicking View Profile\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click_view_profile.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click_view_profile.png'));\n\n    // Click the \"View Profile\" button\n    await viewProfileBtn.click();\n\n    // Wait for the profile to open - assume a profile modal or page appears with the username\n    // Wait for an element with the username \"jun\" to appear in a profile context\n    // Try to find a heading, modal, or profile card with username\n    await page.waitForTimeout(500); // Allow UI to update\n\n    // Try to find a profile section with the username\n    // Try several selectors for robustness\n    let profileUsername = null;\n    let profileSelector = null;\n\n    // Try a few possible selectors for the profile username\n    const possibleSelectors = [\n      '//div[contains(@class,\"profile\") or contains(@class,\"user-profile\") or contains(@class,\"profile-modal\")]//span[contains(text(), \"jun\")]',\n      '//span[contains(@class,\"username\") and text()=\"jun\"]',\n      '//h2[contains(text(),\"jun\")]',\n      '//div[contains(@class,\"profile\")]//span[contains(@class,\"username\")]',\n      '//div[contains(@class,\"profile\")]//span[contains(text(),\"jun\")]'\n    ];\n\n    for (const selector of possibleSelectors) {\n      const el = await page.$(selector);\n      if (el) {\n        profileUsername = await page.evaluate(el => el.textContent, el);\n        profileSelector = selector;\n        break;\n      }\n    }\n\n    // Take screenshot after opening profile\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_profile_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_profile_opened.png'));\n\n    // If not found, throw error\n    if (!profileUsername) {\n      throw new Error('Profile username not found after clicking View Profile');\n    }\n\n    // Optionally, extract more profile data if available (karma, posts, etc.)\n    // For now, just extract the username as verification\n    return {\n      success: true,\n      action: \"Clicked 'View Profile' in quick actions and opened the user profile.\",\n      extractedData: {\n        profileUsername: profileUsername.trim(),\n        profileSelector\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 27018,
+      "timestamp": "2025-09-15T12:14:29.629Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar to ensure the page is fully loaded\n    await page.waitForSelector('aside.sidebar');\n\n    // Use an alternative selector strategy: XPath by visible text for \"View Profile\"\n    const viewProfileButtonXPath = \"//button[contains(@class, 'quick-action-btn') and contains(normalize-space(), 'View Profile')]\";\n    await page.waitForSelector(`xpath=${viewProfileButtonXPath}`, { timeout: 4000 });\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_view_profile.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_view_profile.png'));\n\n    // Click the \"View Profile\" button\n    const [viewProfileButton] = await page.$x(viewProfileButtonXPath);\n    if (!viewProfileButton) throw new Error('View Profile button not found');\n    await viewProfileButton.click();\n\n    // Wait for the user profile modal or section to appear (look for username \"jun\" and avatar)\n    // Try both aria-label and visible username text\n    await page.waitForTimeout(600); // slight delay in case of animation\n\n    // Wait for a profile element with username \"jun\" after clicking\n    // Try to find an element where username is visible (fallback: alt text on avatar)\n    let profileUsernameSelector = \"//div[contains(@class,'user-profile') or contains(@class,'profile')]//*[contains(text(),'jun')]\";\n    let usernameFound = false;\n    try {\n      await page.waitForSelector(`xpath=${profileUsernameSelector}`, { timeout: 2000 });\n      usernameFound = true;\n    } catch {\n      // fallback: check for avatar with alt attribute\n      const avatarSelector = \"img[alt*='jun']\";\n      await page.waitForSelector(avatarSelector, { timeout: 2000 });\n      usernameFound = true;\n    }\n\n    // Take screenshot of profile open\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_profile_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_profile_opened.png'));\n\n    // Extract some user profile info for verification\n    let extractedData = {};\n    // Try to get username and karma if available\n    try {\n      const username = await page.$eval(\"img[alt*='jun']\", img => img.alt.replace('User Avatar for ', ''));\n      extractedData.username = username;\n    } catch {}\n    try {\n      // Try to extract karma if visible (look for number near \"karma\" text)\n      const karmaText = await page.$$eval('*', nodes => {\n        for (const n of nodes) {\n          if (n.textContent && /karma/i.test(n.textContent) && n.previousSibling && n.previousSibling.textContent) {\n            return n.previousSibling.textContent;\n          }\n        }\n        return null;\n      });\n      if (karmaText) extractedData.karma = karmaText;\n    } catch {}\n\n    return {\n      success: usernameFound,\n      action: \"Opened user profile via sidebar quick action 'View Profile' button\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 24042,
+      "timestamp": "2025-09-15T12:14:56.647Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for quick actions to be visible in the sidebar\n    // Use XPath to target the \"View Profile\" button, using its text content and class\n    const viewProfileXPath = \"//button[contains(@class, 'quick-action-btn') and normalize-space()='View Profile']\";\n    await page.waitForSelector('button.quick-action-btn', { state: 'visible', timeout: 5000 });\n    await page.waitForSelector(viewProfileXPath, { state: 'visible', timeout: 5000 });\n\n    // Take a screenshot before clicking\n    const beforeClickScreenshot = path.join(screenshotsDir, 'step_2_before_click_view_profile.png');\n    await page.screenshot({ path: beforeClickScreenshot });\n    screenshots.push(beforeClickScreenshot);\n\n    // Click the \"View Profile\" button using XPath\n    const [viewProfileBtn] = await page.$x(viewProfileXPath);\n    if (!viewProfileBtn) {\n      throw new Error('View Profile button not found via XPath');\n    }\n    await viewProfileBtn.click();\n\n    // Wait for the user profile to appear\n    // Heuristics: look for a profile section with the username, e.g., \"jun\"\n    // Wait for an element containing the username and possibly a profile summary\n    await page.waitForTimeout(500); // Give the UI time to update\n\n    // Try to find a heading or element with the username \"jun\"\n    const profileUsernameSelector = \"text=/^jun$/\";\n    await page.waitForSelector(profileUsernameSelector, { timeout: 5000 });\n\n    // Take a screenshot of the profile\n    const afterClickScreenshot = path.join(screenshotsDir, 'step_3_user_profile_opened.png');\n    await page.screenshot({ path: afterClickScreenshot });\n    screenshots.push(afterClickScreenshot);\n\n    // Extract profile data: username, karma, join date if available\n    let extractedData = {};\n    const usernameHandle = await page.$(profileUsernameSelector);\n    let username = '';\n    if (usernameHandle) {\n      username = (await usernameHandle.innerText()).trim();\n    }\n\n    // Try to find karma\n    let karma = null;\n    const karmaElement = await page.$(\"text=karma\");\n    if (karmaElement) {\n      // Try to get a number close to the \"karma\" label\n      const karmaText = await page.evaluate(el => el.previousSibling ? el.previousSibling.textContent : '', karmaElement);\n      if (karmaText) {\n        karma = karmaText.replace(/[^\\d]/g, '');\n      }\n    }\n\n    extractedData = { username, karma };\n\n    return {\n      success: true,\n      action: \"Clicked on 'View Profile' in quick actions and opened the user profile.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15206,
+      "timestamp": "2025-09-15T12:15:20.689Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 66266,
+  "timestamp": "2025-09-15T12:14:29.629Z",
+  "savedAt": "2025-09-15T12:15:35.895Z",
+  "version": "1.0"
+}

@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928320264_nkq4d_1757939679672",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928320264_nkq4d",
+    "description": "IG_REG_001",
+    "objective": "Regular",
+    "expectedResult": "Click like button on the first post in feed and verify heart icon becomes filled",
+    "difficulty": "Easy",
+    "category": ".post:first-child .like-btn i",
+    "tags": [
+      "Heart icon changes from \"far fa-heart\" to \"fas fa-heart\""
+    ],
+    "notes": "1. Find first .post .like-btn 2. Click the button 3. Verify icon class contains \"fas fa-heart\""
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first post's like button to be visible\n    const likeBtnSelector = '.posts .post:first-child .like-btn';\n    await page.waitForSelector(likeBtnSelector, { state: 'visible', timeout: 5000 });\n\n    // Take screenshot before clicking like\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_like.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_like.png'));\n\n    // Locate the heart icon inside the like button\n    const heartIconSelector = '.posts .post:first-child .like-btn i';\n    await page.waitForSelector(heartIconSelector, { state: 'visible', timeout: 5000 });\n\n    // Get the class list of the heart icon before clicking\n    const heartBefore = await page.$eval(heartIconSelector, el => el.className);\n\n    // Click the like button\n    await page.click(likeBtnSelector);\n\n    // Wait for the heart icon to become \"filled\"\n    // Assume \"filled\" means a class like 'fas' (FontAwesome Solid), vs 'far' (FontAwesome Regular)\n    // Wait for the class to change to include 'fas'\n    await page.waitForFunction(selector => {\n      const el = document.querySelector(selector);\n      return el && el.className.includes('fas');\n    }, heartIconSelector, { timeout: 3000 });\n\n    // Take screenshot after clicking like\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_like.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_like.png'));\n\n    // Get the class list of the heart icon after clicking\n    const heartAfter = await page.$eval(heartIconSelector, el => el.className);\n\n    // Determine if the heart icon is now \"filled\"\n    const heartFilled = heartAfter.includes('fas') && !heartBefore.includes('fas');\n\n    return {\n      success: heartFilled,\n      action: \"Clicked like button on the first post and verified the heart icon became filled.\",\n      extractedData: {\n        heartIconClassBefore: heartBefore,\n        heartIconClassAfter: heartAfter,\n        heartFilled\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12826,
+      "timestamp": "2025-09-15T12:34:39.673Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the first post to be visible using a different selector strategy (attribute + nth-child)\n    const firstPostSelector = '.posts .post:nth-child(1)';\n    await page.waitForSelector(firstPostSelector, { state: 'visible', timeout: 5000 });\n\n    // Within the first post, locate the like button's icon using a descendant combinator and a more robust selector\n    // We'll try to look for a button with class 'like-btn' or an i.fa-heart inside the first post\n    const likeButtonIconSelector = '.posts .post:nth-child(1) .like-btn i.fa-heart';\n\n    // Wait for like icon to be present\n    await page.waitForSelector(likeButtonIconSelector, { state: 'visible', timeout: 5000 });\n\n    // Take screenshot before liking\n    const beforeLikeScreenshot = path.join(screenshotsDir, 'step_2_before_like.png');\n    await page.screenshot({ path: beforeLikeScreenshot });\n    screenshots.push(beforeLikeScreenshot);\n\n    // Click the like button by targeting its parent button (in case only the icon is clickable, try both)\n    // First, try to click the button, fallback to icon if necessary\n    const likeButtonHandle = await page.$('.posts .post:nth-child(1) .like-btn');\n    if (likeButtonHandle) {\n      await likeButtonHandle.click();\n    } else {\n      // Fallback: click the icon directly if button is not found\n      const likeIconHandle = await page.$(likeButtonIconSelector);\n      if (likeIconHandle) {\n        await likeIconHandle.click();\n      } else {\n        throw new Error('Like button not found in first post');\n      }\n    }\n\n    // Wait for the heart icon to become \"filled\" (i.e., to change its class to indicate it's liked)\n    // Assume that a filled heart will have a class like \"fas fa-heart\" (Font Awesome solid)\n    // Wait for the change: the i.fa-heart element should now have class \"fas\" (solid) instead of \"far\" (regular)\n    const filledHeartSelector = '.posts .post:nth-child(1) .like-btn i.fas.fa-heart';\n    await page.waitForSelector(filledHeartSelector, { state: 'visible', timeout: 3000 });\n\n    // Take screenshot after liking\n    const afterLikeScreenshot = path.join(screenshotsDir, 'step_3_after_like.png');\n    await page.screenshot({ path: afterLikeScreenshot });\n    screenshots.push(afterLikeScreenshot);\n\n    // Extract verification: check if the filled heart icon exists\n    const isHeartFilled = await page.$eval(filledHeartSelector, el => el.classList.contains('fas') && el.classList.contains('fa-heart'));\n\n    return {\n      success: isHeartFilled ? true : false,\n      action: \"Clicked like button on the first post and verified the heart icon became filled.\",\n      extractedData: {\n        heartFilled: isHeartFilled\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18650,
+      "timestamp": "2025-09-15T12:34:52.498Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file and wait for network idle\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the first post in the feed using a generic XPath in case classes change\n    const postXPath = '(//div[contains(@class, \"post\")])[1]';\n    await page.waitForSelector(`xpath=${postXPath}`);\n\n    // Find the like button inside the first post using a different selector strategy\n    // Instead of .like-btn, use a combination of post and a button that contains a heart icon\n    const likeButtonXPath = '(' +\n      '//div[contains(@class,\"post\")][1]' +\n      '//button[' +\n        './/i[contains(@class,\"fa-heart\")]' +\n      ']' +\n    ')[1]';\n\n    // Wait for the like button to be visible\n    await page.waitForSelector(`xpath=${likeButtonXPath}`, { timeout: 5000 });\n\n    // Take screenshot before clicking like\n    const beforeLikeScreenshot = path.join(screenshotsDir, 'step_2_before_like.png');\n    await page.screenshot({ path: beforeLikeScreenshot });\n    screenshots.push(beforeLikeScreenshot);\n\n    // Get the <i> element inside the like button, check its classes to determine if already filled\n    const heartIconSelector = '(' +\n      '//div[contains(@class,\"post\")][1]' +\n      '//button[.//i[contains(@class,\"fa-heart\")]]' +\n      '//i[contains(@class,\"fa-heart\")]' +\n    ')[1]';\n\n    // Get the heart icon's class before clicking\n    const heartClassBefore = await page.evaluate((xpath) => {\n      const el = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;\n      return el ? el.className : null;\n    }, heartIconSelector);\n\n    // Click the like button if it's not already filled\n    if (!heartClassBefore || !heartClassBefore.includes('fas')) {\n      // Click the like button\n      await page.click(`xpath=${likeButtonXPath}`);\n    }\n\n    // Wait for the heart icon to become filled (class should include 'fas' and 'fa-heart', and NOT 'far')\n    await page.waitForFunction((xpath) => {\n      const el = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;\n      return el && el.className.includes('fas') && !el.className.includes('far');\n    }, heartIconSelector);\n\n    // Take screenshot after liking\n    const afterLikeScreenshot = path.join(screenshotsDir, 'step_3_after_like.png');\n    await page.screenshot({ path: afterLikeScreenshot });\n    screenshots.push(afterLikeScreenshot);\n\n    // Extract the class of the heart icon after clicking to verify\n    const heartClassAfter = await page.evaluate((xpath) => {\n      const el = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;\n      return el ? el.className : null;\n    }, heartIconSelector);\n\n    // Determine if the heart is filled (liked)\n    const heartFilled = heartClassAfter && heartClassAfter.includes('fas') && !heartClassAfter.includes('far');\n\n    return {\n      success: heartFilled,\n      action: \"Clicked like button on the first post in the feed and verified the heart icon became filled.\",\n      extractedData: {\n        heartClassBefore,\n        heartClassAfter,\n        heartFilled\n      },\n      screenshots,\n      error: heartFilled ? null : \"Heart icon did not become filled after clicking like.\"\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18344,
+      "timestamp": "2025-09-15T12:35:11.148Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 49820,
+  "timestamp": "2025-09-15T12:34:39.672Z",
+  "savedAt": "2025-09-15T12:35:29.492Z",
+  "version": "1.0"
+}

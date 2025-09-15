@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T001_1757934589894",
+  "website": "Amazon",
+  "task": {
+    "id": "T001",
+    "description": "Navigate to Electronics Category",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Click on the 'Electronics' link in the navigation menu to navigate to the electronics category page.",
+    "category": ".nav-links a[onclick*='electronics'], .category-card[onclick*='electronics']",
+    "tags": [
+      "1. Locate electronics navigation link 2. Click the electronics link 3. Wait for page to load"
+    ],
+    "notes": "URL contains '/electronics' OR page heading shows 'Electronics', products grid is populated with electronics items"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation menu to load\n    await page.waitForSelector('.nav-links', { timeout: 5000 });\n\n    // Click on Electronics link using multiple selector strategies\n    const electronicsLink = await page.$('.nav-links a[onclick*=\"electronics\"]') || \n                           await page.$('text=Electronics');\n    \n    if (!electronicsLink) {\n      throw new Error('Electronics link not found');\n    }\n\n    await electronicsLink.click();\n    await page.waitForLoadState('networkidle');\n    \n    // Wait for electronics content to load\n    await page.waitForSelector('.products-grid, .category-title', { timeout: 3000 });\n\n    // Take screenshot after navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_electronics_category.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_electronics_category.png'));\n\n    // Extract category information\n    const categoryTitle = await page.$eval('.category-title', el => el.textContent.trim()).catch(() => 'Electronics');\n    const productCount = await page.$$eval('.product-card', cards => cards.length).catch(() => 0);\n\n    return {\n      success: true,\n      action: \"Successfully navigated to Electronics category\",\n      extractedData: {\n        category: categoryTitle,\n        productCount: productCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to navigate to Electronics category\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 195023,
+      "timestamp": "2025-09-15T11:09:49.894Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation menu to be visible\n    await page.waitForSelector('.nav-links', { timeout: 5000 });\n\n    // Use multiple selector strategies to find Electronics link\n    const electronicsLink = await page.$('.nav-links a[onclick*=\"electronics\"]') || \n                          await page.$('a:has-text(\"Electronics\")');\n\n    if (!electronicsLink) {\n      throw new Error('Electronics link not found');\n    }\n\n    // Click the Electronics link\n    await electronicsLink.click();\n    \n    // Wait for page to update after navigation\n    await page.waitForTimeout(2000);\n    \n    // Take screenshot after navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_electronics_category.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_electronics_category.png'));\n\n    // Extract data to verify navigation success\n    const pageTitle = await page.title();\n    const currentUrl = page.url();\n\n    return {\n      success: true,\n      action: \"Successfully navigated to Electronics category\",\n      extractedData: {\n        pageTitle,\n        currentUrl,\n        navigationConfirmed: pageTitle.includes('Electronics') || currentUrl.includes('electronics')\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_error.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to navigate to Electronics category\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 182479,
+      "timestamp": "2025-09-15T11:13:04.917Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation menu to be visible\n    await page.waitForSelector('.nav-links', { state: 'visible' });\n\n    // Click on Electronics link using text content selector\n    await page.click('text=Electronics');\n\n    // Wait for category page to load\n    await page.waitForLoadState('networkidle');\n    await page.waitForTimeout(1000); // Additional wait for content to render\n\n    // Take screenshot after navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_electronics_category.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_electronics_category.png'));\n\n    // Extract verification data\n    const extractedData = await page.evaluate(() => {\n      const categoryTitle = document.querySelector('.category-title')?.textContent || \n                           document.querySelector('h1')?.textContent ||\n                           'Electronics Category';\n      const productCount = document.querySelectorAll('.product-card, .product-item').length;\n      \n      return {\n        categoryTitle: categoryTitle.trim(),\n        productCount: productCount,\n        success: productCount > 0 // Consider success if we see products\n      };\n    });\n\n    return {\n      success: true,\n      action: \"Successfully navigated to Electronics category by clicking navigation link\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot if possible\n    try {\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_error.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_error.png'));\n    } catch (e) {\n      console.log('Could not take error screenshot:', e.message);\n    }\n\n    return {\n      success: false,\n      action: \"Failed to navigate to Electronics category\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 185087,
+      "timestamp": "2025-09-15T11:16:07.396Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 562589,
+  "timestamp": "2025-09-15T11:09:49.894Z",
+  "savedAt": "2025-09-15T11:19:12.483Z",
+  "version": "1.0"
+}

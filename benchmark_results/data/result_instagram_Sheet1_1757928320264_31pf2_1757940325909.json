@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928320264_31pf2_1757940325909",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928320264_31pf2",
+    "description": "IG_REG_011",
+    "objective": "Regular",
+    "expectedResult": "Click create button in navigation and verify create post modal opens",
+    "difficulty": "Easy",
+    "category": ".create-btn, #createPostModal",
+    "tags": [
+      "Create post modal becomes visible"
+    ],
+    "notes": "1. Click .create-btn 2. Verify #createPostModal is displayed"
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the navigation bar to be visible (using nav-menu class)\n    await page.waitForSelector('.nav-menu', { timeout: 5000 });\n\n    // Try to find the create button in navigation\n    // Try by class '.create-btn', fallback to text or icon\n    let createBtn = await page.$('.create-btn');\n    if (!createBtn) {\n      // Try to find by aria-label or title\n      createBtn = await page.$('button[aria-label=\"Create\"]');\n    }\n    if (!createBtn) {\n      // Try to find by icon (usually a plus icon for create)\n      createBtn = await page.$('button:has(svg[aria-label=\"New Post\"])');\n    }\n    if (!createBtn) {\n      // Try by text content (if any)\n      createBtn = await page.$('button:has-text(\"Create\")');\n    }\n    if (!createBtn) {\n      // Try by XPath: look for a button in nav-menu with a plus icon\n      const btns = await page.$$('.nav-menu button');\n      for (const btn of btns) {\n        const html = await btn.evaluate(el => el.innerHTML);\n        if (html.includes('fa-plus') || html.includes('fa-square-plus')) {\n          createBtn = btn;\n          break;\n        }\n      }\n    }\n    if (!createBtn) {\n      throw new Error('Create button (.create-btn) not found in navigation');\n    }\n\n    // Click the create button\n    await createBtn.click();\n\n    // Wait for the create post modal to appear\n    await page.waitForSelector('#createPostModal', { visible: true, timeout: 5000 });\n\n    // Wait for modal content to be visible (double check)\n    await page.waitForSelector('#createPostModal .modal-content', { visible: true, timeout: 3000 });\n\n    // Take screenshot after modal opens\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_opened.png'));\n\n    // Verify modal header text\n    const modalHeader = await page.$('#createPostModal h2');\n    let modalTitle = '';\n    if (modalHeader) {\n      modalTitle = await modalHeader.evaluate(el => el.textContent.trim());\n    }\n\n    // Check modal is visible and title is correct\n    const modalVisible = await page.$eval('#createPostModal', el => {\n      const style = window.getComputedStyle(el);\n      return (el.offsetParent !== null || style.display !== 'none') && style.visibility !== 'hidden';\n    });\n\n    return {\n      success: modalVisible && modalTitle.toLowerCase().includes('create'),\n      action: \"Clicked create button in navigation and verified create post modal opens\",\n      extractedData: {\n        modalVisible,\n        modalTitle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 23044,
+      "timestamp": "2025-09-15T12:45:25.909Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation/header to be visible (try by role and text as alternative)\n    let createBtn;\n    try {\n      // Try to find by class first\n      createBtn = await page.waitForSelector('.create-btn', { timeout: 2500 });\n    } catch {\n      // If not found, try by text content in navigation (button or span)\n      createBtn = await page.waitForSelector('nav >> text=Create', { timeout: 2500 }).catch(() => null);\n    }\n    if (!createBtn) {\n      // Try a generic button with a plus icon or aria-label\n      createBtn = await page.waitForSelector('button[aria-label=\"Create\"]', { timeout: 2500 }).catch(() => null);\n    }\n    if (!createBtn) {\n      // Try to find by XPath for nav items with plus or \"Create\"\n      createBtn = await page.waitForSelector('xpath=//nav//*[self::button or self::a or self::span][contains(text(), \"Create\") or contains(@aria-label, \"Create\")]');\n    }\n    // Ensure the create button is found\n    if (!createBtn) {\n      throw new Error(\"Create button in navigation not found with any selector strategy.\");\n    }\n\n    // Scroll into view and click\n    await createBtn.scrollIntoViewIfNeeded();\n    await createBtn.click();\n\n    // Wait for the create post modal to appear - try #createPostModal by ID first\n    await page.waitForSelector('#createPostModal', { state: 'visible', timeout: 4000 });\n\n    // Extra: verify modal is displayed (not just present in DOM)\n    const modalVisible = await page.$eval(\n      '#createPostModal',\n      el => window.getComputedStyle(el).display !== 'none' && el.offsetParent !== null\n    );\n\n    // Wait for modal content header with \"Create new post\" (robustness)\n    await page.waitForSelector('#createPostModal h2:text(\"Create new post\")', { timeout: 3000 });\n\n    // Take screenshot of modal open\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_open.png'));\n\n    // Extract some info: modal header text & modal visibility\n    const modalHeader = await page.$eval('#createPostModal h2', el => el.textContent.trim());\n    const modalDisplayStyle = await page.$eval('#createPostModal', el => window.getComputedStyle(el).display);\n\n    return {\n      success: modalVisible && modalHeader === \"Create new post\",\n      action: \"Clicked create button in navigation and verified create post modal opens\",\n      extractedData: {\n        modalHeader,\n        modalVisible,\n        modalDisplayStyle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 26199,
+      "timestamp": "2025-09-15T12:45:48.953Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Try to find the \"create\" button in the navigation using icon (since it's an Instagram clone)\n    // Try different strategies since class \".create-btn\" is not shown in the HTML snippet\n\n    // STRATEGY 1: Use aria-label or title (if present) for accessibility\n    let createBtn = await page.$('button[aria-label=\"Create\"], button[title=\"Create\"]');\n    // STRATEGY 2: Try nav with SVG icon (common for Instagram create button)\n    if (!createBtn) {\n      createBtn = await page.$('nav .nav-item[title=\"New Post\"], nav .nav-item[aria-label=\"New Post\"]');\n    }\n    // STRATEGY 3: Try by CSS selector for generic plus icon in nav\n    if (!createBtn) {\n      createBtn = await page.$('nav .fa-plus-square, nav .fa-plus, nav .fa-pen, nav .fa-regular.fa-square-plus');\n    }\n    // STRATEGY 4: Try by XPath for button or a with plus icon text\n    if (!createBtn) {\n      createBtn = await page.$('//button[contains(.,\"Create\") or contains(.,\"New Post\")] | //a[contains(.,\"Create\") or contains(.,\"New Post\")]');\n    }\n    // STRATEGY 5: Try by order in nav-menu (Instagram style: Home, DM, Create, Explore, etc.)\n    if (!createBtn) {\n      // Get all nav-items and pick the one with an SVG or icon that could be \"create\"\n      const navItems = await page.$$('.nav-menu .nav-item');\n      if (navItems && navItems.length >= 3) {\n        // Often the 3rd icon is the create/post button in Instagram\n        createBtn = navItems[2];\n      }\n    }\n    // STRATEGY 6: As fallback, try for a button with no text but unique in nav\n    if (!createBtn) {\n      createBtn = await page.$('nav .nav-item button:not([aria-label]):not([title])');\n    }\n\n    if (!createBtn) {\n      throw new Error('Could not find the create button in navigation using alternative selectors.');\n    }\n\n    // Scroll create button into view (in case header is fixed)\n    await createBtn.scrollIntoViewIfNeeded();\n\n    // Click the create button and wait for the modal to open\n    await Promise.all([\n      createBtn.click(),\n      page.waitForSelector('#createPostModal', { state: 'visible', timeout: 3000 })\n    ]);\n\n    // Wait for modal content to be visible\n    await page.waitForSelector('#createPostModal .modal-content', { state: 'visible', timeout: 2000 });\n\n    // Take screenshot after modal open\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_create_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_create_modal_opened.png'));\n\n    // Extract modal data for verification\n    const modalVisible = await page.$eval('#createPostModal', el => {\n      const style = window.getComputedStyle(el);\n      return el && (style.display !== 'none') && (el.offsetParent !== null);\n    }).catch(() => false);\n\n    // Extract the modal header text to confirm correctness\n    let modalHeader = '';\n    try {\n      modalHeader = await page.$eval('#createPostModal .create-post-header h2', el => el.textContent.trim());\n    } catch (e) { modalHeader = ''; }\n\n    return {\n      success: modalVisible && /create/i.test(modalHeader),\n      action: \"Clicked the create button in navigation and verified that the create post modal opens\",\n      extractedData: {\n        modalVisible,\n        modalHeader\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 30564,
+      "timestamp": "2025-09-15T12:46:15.152Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 79807,
+  "timestamp": "2025-09-15T12:45:25.909Z",
+  "savedAt": "2025-09-15T12:46:45.716Z",
+  "version": "1.0"
+}

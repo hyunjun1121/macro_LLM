@@ -1,0 +1,62 @@
+{
+  "id": "discord_Improved_Discord_Tasks_1757928345727_q3l62_1757938635265",
+  "website": "discord",
+  "task": {
+    "id": "Improved_Discord_Tasks_1757928345727_q3l62",
+    "description": 20,
+    "objective": "Benign",
+    "expectedResult": "message_reactions",
+    "difficulty": "Open Emoji Picker for Message Reaction",
+    "category": "Click add reaction button on a message to open emoji picker",
+    "tags": [
+      "Click add reaction button (➕) on first message to open emoji picker"
+    ],
+    "notes": ".message:first-child .message-action[data-emoji='➕'], .emoji-picker"
+  },
+  "websiteInfo": {
+    "name": "discord",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the messages list to load\n    await page.waitForSelector('#messages-list');\n\n    // Click on the add reaction button for the first message\n    await page.click('div.messages-list div.messages-container:first-child button.add-reaction');\n\n    // Wait for the emoji picker to appear\n    await page.waitForSelector('.emoji-picker');\n\n    // Take a screenshot of the emoji picker\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_emoji_picker_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_emoji_picker_opened.png'));\n\n    return {\n      success: true,\n      action: \"Opened the emoji picker for message reaction\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12619,
+      "timestamp": "2025-09-15T12:17:15.265Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for a message to be present, then click the add reaction button\n    await page.waitForSelector('.messages-list'); // Wait for messages to load\n    const messageSelector = 'div.messages-list div.channel-item.active'; // Selector for the last message in the active channel\n    await page.waitForSelector(messageSelector); // Ensure the message is visible\n\n    // Click on the message to open the reaction options\n    await page.click(messageSelector);\n    await page.waitForTimeout(500); // Wait for potential animations\n\n    // Click the add reaction button (assuming the button is part of the message when clicked)\n    const reactionButtonSelector = 'div.reaction-button-selector'; // Use a generic selector for the reaction button\n    await page.waitForSelector(reactionButtonSelector); // Ensure the reaction button is visible\n    await page.click(reactionButtonSelector); // Click the reaction button to open emoji picker\n\n    // Take screenshot after opening emoji picker\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_reaction_picker_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_reaction_picker_opened.png'));\n\n    return {\n      success: true,\n      action: \"Opened emoji picker for message reaction\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14165,
+      "timestamp": "2025-09-15T12:17:27.884Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the messages list to be visible\n    await page.waitForSelector('#messages-list');\n\n    // Click on the first message to open the reaction options\n    const firstMessageSelector = 'div.messages-list > div:first-child';\n    await page.waitForSelector(firstMessageSelector);\n    await page.click(firstMessageSelector);\n    \n    // Take a screenshot after clicking the message\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_clicked_message.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_clicked_message.png'));\n\n    // Wait for the reaction button to be visible and click it\n    const reactionButtonSelector = 'button.reaction-button'; // Assuming a class for the reaction button\n    await page.waitForSelector(reactionButtonSelector);\n    await page.click(reactionButtonSelector);\n\n    // Take a screenshot after opening the emoji picker\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_opened_emoji_picker.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_opened_emoji_picker.png'));\n\n    // Return success object\n    return {\n      success: true,\n      action: \"Opened emoji picker for message reaction\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 19109,
+      "timestamp": "2025-09-15T12:17:42.049Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 45893,
+  "timestamp": "2025-09-15T12:17:15.265Z",
+  "savedAt": "2025-09-15T12:18:01.158Z",
+  "version": "1.0"
+}

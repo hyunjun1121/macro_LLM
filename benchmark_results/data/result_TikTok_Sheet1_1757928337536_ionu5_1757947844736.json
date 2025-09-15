@@ -1,0 +1,63 @@
+{
+  "id": "TikTok_Sheet1_1757928337536_ionu5_1757947844736",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928337536_ionu5",
+    "description": 14,
+    "objective": "General",
+    "expectedResult": "첫 번째 비디오의 공유 모달에서 'Copy Link' 클릭",
+    "difficulty": ".share-btn 클릭 후 'Copy Link' 옵션 선택",
+    "category": "Medium",
+    "tags": [
+      ".video-container[data-video-id='1'] .share-btn",
+      ".share-option"
+    ],
+    "notes": ".share-btn 클릭 후 'Copy Link' 옵션 선택"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for first video container to load\n    await page.waitForSelector('.video-container:first-child', { timeout: 10000 });\n\n    // Click the share button on first video\n    await page.waitForSelector('.video-container:first-child button.share-btn', { timeout: 5000 });\n    await page.click('.video-container:first-child button.share-btn');\n    \n    // Wait for share modal to appear and take screenshot\n    await page.waitForSelector('.share-modal', { timeout: 5000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_share_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_share_modal.png'));\n\n    // Click 'Copy Link' option in the modal\n    await page.waitForSelector('text=Copy Link', { timeout: 5000 });\n    await page.click('text=Copy Link');\n\n    // Wait briefly for copy action to complete and take final screenshot\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_copy_link.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_copy_link.png'));\n\n    // Extract video information for verification\n    const videoInfo = await page.evaluate(() => {\n      const videoContainer = document.querySelector('.video-container:first-child');\n      const userHandle = videoContainer.querySelector('.user-details h3')?.textContent;\n      const videoDescription = videoContainer.querySelector('.user-details p')?.textContent;\n      return { userHandle, videoDescription };\n    });\n\n    return {\n      success: true,\n      action: \"Clicked 'Copy Link' in first video's share modal\",\n      extractedData: {\n        userHandle: videoInfo.userHandle,\n        videoDescription: videoInfo.videoDescription,\n        copiedLink: \"Video link copied to clipboard\"\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 96219,
+      "timestamp": "2025-09-15T14:50:44.736Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first video container to be visible\n    await page.waitForSelector('.video-container', { state: 'visible' });\n\n    // Find and click the share button of the first video\n    const shareButton = await page.locator('.video-container:first-child button.share-btn');\n    await shareButton.waitFor({ state: 'visible' });\n    await shareButton.click();\n\n    // Wait for share modal to appear and take screenshot\n    await page.waitForSelector('.share-modal', { state: 'visible' });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_share_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_share_modal.png'));\n\n    // Click 'Copy Link' option using text content selector\n    const copyLinkButton = await page.locator('text=Copy Link').first();\n    await copyLinkButton.waitFor({ state: 'visible' });\n    await copyLinkButton.click();\n\n    // Take final screenshot after clicking Copy Link\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_copy_link_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_copy_link_clicked.png'));\n\n    return {\n      success: true,\n      action: \"Clicked 'Copy Link' in the first video's share modal\",\n      extractedData: {\n        videoTitle: await page.locator('.video-container:first-child .user-details p').textContent(),\n        shareButtonText: await shareButton.textContent()\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take screenshot on error\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [...screenshots, path.join(screenshotsDir, 'error.png')],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 76975,
+      "timestamp": "2025-09-15T14:52:20.955Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first video container and click share button\n    await page.waitForSelector('.video-container[data-video-id=\"1\"]');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_video_visible.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_video_visible.png'));\n\n    // Click the share button using multiple selector strategies\n    const shareBtn = await page.waitForSelector('.video-container[data-video-id=\"1\"] button.share-btn');\n    await shareBtn.click();\n\n    // Wait for share modal to appear\n    await page.waitForTimeout(1000); // Brief pause for animation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_share_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_share_modal.png'));\n\n    // Click Copy Link using text content matching\n    const copyLinkBtn = await page.waitForSelector('text=Copy Link', { timeout: 5000 });\n    await copyLinkBtn.click();\n\n    // Verify success by checking if link was copied\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_link_copied.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_link_copied.png'));\n\n    return {\n      success: true,\n      action: \"Clicked share button on first video and selected 'Copy Link' option\",\n      extractedData: {\n        videoTitle: await page.$eval('.video-container[data-video-id=\"1\"] .user-details p', el => el.textContent),\n        videoLikes: await page.$eval('.video-container[data-video-id=\"1\"] .like-btn', el => el.textContent.trim())\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [...screenshots, path.join(screenshotsDir, 'error.png')],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 78941,
+      "timestamp": "2025-09-15T14:53:37.930Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 252135,
+  "timestamp": "2025-09-15T14:50:44.736Z",
+  "savedAt": "2025-09-15T14:54:56.871Z",
+  "version": "1.0"
+}

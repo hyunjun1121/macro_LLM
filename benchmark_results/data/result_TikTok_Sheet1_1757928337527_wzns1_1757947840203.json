@@ -1,0 +1,64 @@
+{
+  "id": "TikTok_Sheet1_1757928337527_wzns1_1757947840203",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928337527_wzns1",
+    "description": 15,
+    "objective": "General",
+    "expectedResult": "알림 버튼을 클릭하여 알림 모달을 열고 알림 개수 확인",
+    "difficulty": "#notificationsBtn을 클릭하여 모달 열기",
+    "category": "Easy",
+    "tags": [
+      "#notificationsBtn",
+      "#notificationsModal",
+      ".notification"
+    ],
+    "notes": "#notificationsBtn을 클릭하여 모달 열기"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the notifications button\n    await page.waitForSelector('#notificationsBtn');\n    await page.click('#notificationsBtn');\n    \n    // Wait for notification modal to appear\n    await page.waitForSelector('.modal, [class*=\"notification\"]', { timeout: 5000 });\n    \n    // Take screenshot after opening modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_open.png'));\n\n    // Extract notification count using multiple selector strategies\n    let notificationCount = null;\n    \n    // Try to find notification count using badge element\n    const badgeElement = await page.$('.badge, .notification-count, [class*=\"count\"]');\n    if (badgeElement) {\n      notificationCount = await page.evaluate(el => el.textContent.trim(), badgeElement);\n    }\n    \n    // If badge not found, try to count notification items\n    if (!notificationCount) {\n      const notificationItems = await page.$$('.notification-item, [class*=\"notification\"] li');\n      notificationCount = notificationItems.length.toString();\n    }\n\n    return {\n      success: true,\n      action: \"Clicked notifications button and extracted notification count\",\n      extractedData: {\n        notificationCount: notificationCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 166714,
+      "timestamp": "2025-09-15T14:50:40.203Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for notifications button and click it\n    await page.waitForSelector('#notificationsBtn');\n    await page.click('#notificationsBtn');\n    await page.waitForTimeout(1000); // Wait for modal animation\n\n    // Take screenshot after opening notifications\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_notifications_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_notifications_open.png'));\n\n    // Try multiple strategies to find notification count\n    let notificationCount = '0';\n    \n    // Strategy 1: Look for notification count in modal\n    const countElement = await page.$('.notification-count, .badge, [data-count]');\n    if (countElement) {\n      notificationCount = await countElement.textContent();\n    }\n    \n    // Strategy 2: Look for notification items if count not found\n    if (notificationCount === '0') {\n      const notificationItems = await page.$$('.notification-item, .notifications-list li');\n      notificationCount = notificationItems.length.toString();\n    }\n\n    return {\n      success: true,\n      action: \"Clicked notifications button and extracted notification count\",\n      extractedData: {\n        notificationCount: notificationCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 110906,
+      "timestamp": "2025-09-15T14:53:26.917Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click notifications button using multiple selector strategies\n    const notificationsBtn = await page.waitForSelector('#notificationsBtn', { state: 'visible' });\n    await notificationsBtn.click();\n\n    // Wait for notification modal to appear using multiple selector strategies\n    await page.waitForSelector('.modal, [class*=\"notification\"], [class*=\"modal\"]', { state: 'visible' });\n    \n    // Take screenshot after opening modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_open.png'));\n\n    // Extract notification count using multiple strategies\n    let notificationCount = 0;\n    \n    // Try to find notification count from badge or counter element\n    const badgeElement = await page.$('[class*=\"badge\"], [class*=\"count\"], [class*=\"notification-count\"]');\n    if (badgeElement) {\n      const badgeText = await badgeElement.textContent();\n      notificationCount = parseInt(badgeText.match(/\\d+/)?.[0] || '0');\n    }\n\n    // Alternative: Count notification items if individual items are visible\n    if (notificationCount === 0) {\n      const notificationItems = await page.$$('[class*=\"notification-item\"], .notification, li');\n      notificationCount = notificationItems.length;\n    }\n\n    return {\n      success: true,\n      action: \"Clicked notifications button and opened modal\",\n      extractedData: {\n        notificationCount: notificationCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 177496,
+      "timestamp": "2025-09-15T14:55:17.823Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 455116,
+  "timestamp": "2025-09-15T14:50:40.203Z",
+  "savedAt": "2025-09-15T14:58:15.319Z",
+  "version": "1.0"
+}

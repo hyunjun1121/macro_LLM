@@ -1,0 +1,66 @@
+{
+  "id": "when2meet_T008_1757936890686",
+  "website": "when2meet",
+  "task": {
+    "id": "T008",
+    "description": "View Recent Events Grid",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Verify that recent events are displayed in the Recent Events section",
+    "category": "#recentEventsGrid .event-card",
+    "tags": [
+      "Load homepage and count event cards in recent events section"
+    ],
+    "notes": "Recent Events grid contains exactly 6 event cards with titles and metadata"
+  },
+  "websiteInfo": {
+    "name": "when2meet",
+    "htmlFiles": [
+      "404.html",
+      "create.html",
+      "dashboard.html",
+      "event.html",
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the Recent Events grid to appear\n    // Try multiple selector strategies for robustness\n    let recentEventsSection = null;\n    try {\n      recentEventsSection = await page.waitForSelector('#recentEventsGrid', { timeout: 4000 });\n    } catch (e) {\n      // Try alternative: section by text or class\n      const sections = await page.$$('section');\n      for (const section of sections) {\n        const text = await section.textContent();\n        if (text && text.toLowerCase().includes('recent events')) {\n          recentEventsSection = section;\n          break;\n        }\n      }\n    }\n\n    if (!recentEventsSection) {\n      throw new Error('Recent Events section not found');\n    }\n\n    // Wait for at least one event card to appear in the grid\n    await page.waitForSelector('#recentEventsGrid .event-card, .event-card', { timeout: 4000 });\n\n    // Take screenshot of the Recent Events grid\n    const gridHandle = await page.$('#recentEventsGrid') || await page.$('.recent-events, .recent-events-grid');\n    if (gridHandle) {\n      await gridHandle.screenshot({ path: path.join(screenshotsDir, 'step_2_recent_events_grid.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_2_recent_events_grid.png'));\n    } else {\n      // Fallback: full page screenshot\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_2_recent_events_grid_fallback.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_2_recent_events_grid_fallback.png'));\n    }\n\n    // Extract data from the event cards\n    const eventCards = await page.$$('#recentEventsGrid .event-card');\n    let extractedData = { eventCount: 0, events: [] };\n\n    if (eventCards.length > 0) {\n      for (const card of eventCards) {\n        const title = await card.$eval('.event-title', el => el.textContent.trim()).catch(() => null);\n        const creator = await card.$eval('.event-creator', el => el.textContent.trim()).catch(() => null);\n        const date = await card.$eval('.event-date', el => el.textContent.trim()).catch(() => null);\n        extractedData.events.push({ title, creator, date });\n      }\n      extractedData.eventCount = eventCards.length;\n    } else {\n      // Fallback: try any .event-card on the page\n      const fallbackCards = await page.$$('.event-card');\n      for (const card of fallbackCards) {\n        const title = await card.$eval('.event-title', el => el.textContent.trim()).catch(() => null);\n        const creator = await card.$eval('.event-creator', el => el.textContent.trim()).catch(() => null);\n        const date = await card.$eval('.event-date', el => el.textContent.trim()).catch(() => null);\n        extractedData.events.push({ title, creator, date });\n      }\n      extractedData.eventCount = fallbackCards.length;\n    }\n\n    // Take screenshot of the first event card if present\n    if (eventCards.length > 0) {\n      await eventCards[0].screenshot({ path: path.join(screenshotsDir, 'step_3_first_event_card.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_3_first_event_card.png'));\n    }\n\n    return {\n      success: extractedData.eventCount > 0,\n      action: \"Viewed and verified that recent events are displayed in the Recent Events section\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16314,
+      "timestamp": "2025-09-15T11:48:10.686Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Initial screenshot\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the Recent Events section to appear\n    // Try to locate the section by heading text and then search for grid/cards within\n    // Fallback selectors if needed\n    let eventCards = [];\n    let sectionHandle = null;\n    // Try to find by the heading text first\n    sectionHandle = await page.$('//h3[contains(translate(text(), \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\", \"abcdefghijklmnopqrstuvwxyz\"), \"recent events\")]/ancestor::section');\n    if (!sectionHandle) {\n      // Try to find by CSS class \".recentEventsGrid\"\n      sectionHandle = await page.$('.recentEventsGrid');\n    }\n    if (!sectionHandle) {\n      // Try to find by grid container near a \"View All\" link\n      const viewAllLink = await page.$('a.view-all-link');\n      if (viewAllLink) {\n        sectionHandle = await viewAllLink.evaluateHandle(node => node.closest('section'));\n      }\n    }\n\n    if (sectionHandle) {\n      // Now find event cards inside this section\n      eventCards = await sectionHandle.$$(':scope .event-card');\n    } else {\n      // Fallback: Try global selector\n      eventCards = await page.$$('.recentEventsGrid .event-card');\n    }\n\n    // Wait for at least one event card to appear (timeout after 5s)\n    if (eventCards.length === 0) {\n      await page.waitForSelector('.event-card', { timeout: 5000 });\n      eventCards = await page.$$('.event-card');\n    }\n\n    // Take screenshot of the grid/section (crop if possible)\n    let gridShot;\n    if (eventCards.length > 0) {\n      // Screenshot the first event card's parent grid if possible\n      const firstCard = eventCards[0];\n      const gridElement = await firstCard.evaluateHandle(node => {\n        // Try to find parent with class 'recentEventsGrid'\n        let el = node;\n        while (el && !el.classList.contains('recentEventsGrid')) {\n          el = el.parentElement;\n        }\n        return el || node;\n      });\n      gridShot = path.join(screenshotsDir, 'step_2_recent_events_grid.png');\n      await gridElement.screenshot({ path: gridShot });\n      screenshots.push(gridShot);\n      await gridElement.dispose();\n    }\n\n    // Extract event data for verification\n    const extractedEvents = [];\n    for (const card of eventCards) {\n      const title = await card.$eval('.event-title', el => el.innerText).catch(() => null);\n      const time = await card.$eval('.event-time', el => el.innerText).catch(() => null);\n      const creator = await card.$eval('.event-creator', el => el.innerText).catch(() => null);\n      extractedEvents.push({\n        title,\n        time,\n        creator\n      });\n    }\n\n    return {\n      success: eventCards.length > 0,\n      action: `Viewed and verified the Recent Events grid. Found ${eventCards.length} event cards.`,\n      extractedData: {\n        eventCount: eventCards.length,\n        events: extractedEvents\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17617,
+      "timestamp": "2025-09-15T11:48:27.000Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the Recent Events Grid section to appear using multiple strategies\n\n    // Strategy 1: Wait for section heading (text-based, robust to structure changes)\n    // Try to find a heading or label for the recent events grid\n    let recentEventsSection = await page.$('//section[contains(., \"Recent Events\")]');\n    if (!recentEventsSection) {\n      // Try finding by a heading\n      recentEventsSection = await page.$('//h3[contains(text(), \"Recent Events\")]');\n    }\n\n    // If above fails, use a CSS selector fallback for the grid container\n    let recentEventsGrid;\n    if (recentEventsSection) {\n      // Try to find grid within the section\n      recentEventsGrid = await recentEventsSection.$('.recentEventsGrid');\n    }\n    if (!recentEventsGrid) {\n      // Fallback: Use the full class selector for grid\n      recentEventsGrid = await page.$('.recentEventsGrid');\n    }\n    if (!recentEventsGrid) {\n      // As a last fallback, try by id if it exists\n      recentEventsGrid = await page.$('#recentEventsGrid');\n    }\n    // Wait for at least one event card to appear\n    let eventCards = [];\n    if (recentEventsGrid) {\n      await recentEventsGrid.waitForSelector('.event-card', { timeout: 4000 });\n      eventCards = await recentEventsGrid.$$('.event-card');\n    } else {\n      // Try global query as a fallback\n      await page.waitForSelector('.recentEventsGrid .event-card', { timeout: 4000 });\n      eventCards = await page.$$('.recentEventsGrid .event-card');\n    }\n\n    // Take screenshot after grid loads\n    const screenshotGrid = path.join(screenshotsDir, 'step_2_recent_events_grid.png');\n    await page.screenshot({ path: screenshotGrid });\n    screenshots.push(screenshotGrid);\n\n    // Extract information from the first 3 event cards\n    let extractedData = { recentEvents: [] };\n    if (eventCards && eventCards.length > 0) {\n      for (let i = 0; i < Math.min(eventCards.length, 3); i++) {\n        const card = eventCards[i];\n        // Extract event title (try various strategies)\n        let title = await card.$eval('.event-title', el => el.innerText).catch(() => null);\n        if (!title) {\n          title = await card.$eval('h4', el => el.innerText).catch(() => null);\n        }\n        if (!title) {\n          // Try first strong or bold element\n          title = await card.$eval('strong', el => el.innerText).catch(() => null);\n        }\n        // Extract creator or date, fallback to any subtitle\n        let subtitle = await card.$eval('.event-subtitle', el => el.innerText).catch(() => null);\n        if (!subtitle) {\n          subtitle = await card.$eval('p', el => el.innerText).catch(() => null);\n        }\n        extractedData.recentEvents.push({\n          title: title || '[No title found]',\n          subtitle: subtitle || '[No subtitle found]'\n        });\n      }\n    }\n\n    // Return success if at least one event card was found\n    return {\n      success: eventCards.length > 0,\n      action: eventCards.length > 0\n        ? \"Verified that recent events are displayed in the Recent Events grid\"\n        : \"No recent events found in the Recent Events grid\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18063,
+      "timestamp": "2025-09-15T11:48:44.617Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 51994,
+  "timestamp": "2025-09-15T11:48:10.686Z",
+  "savedAt": "2025-09-15T11:49:02.680Z",
+  "version": "1.0"
+}

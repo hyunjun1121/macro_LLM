@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T013_1757939807861",
+  "website": "Amazon",
+  "task": {
+    "id": "T013",
+    "description": "Update Cart Item Quantity",
+    "objective": "General",
+    "expectedResult": "Medium",
+    "difficulty": "Add item to cart, open cart modal, then click the '+' button to increase item quantity.",
+    "category": ".add-to-cart, .cart, .quantity-btn",
+    "tags": [
+      "1. Add item to cart 2. Open cart modal 3. Click '+' button next to quantity"
+    ],
+    "notes": "Item quantity increases by 1, cart total price increases, cart counter updates in header"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Add item to cart\n    await page.waitForSelector('.add-to-cart');\n    await page.click('.add-to-cart');\n    await page.waitForTimeout(1000); // Wait for cart update animation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_item_added.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_item_added.png'));\n\n    // Open cart modal\n    await page.waitForSelector('.cart');\n    await page.click('.cart');\n    await page.waitForSelector('.cart-modal', { timeout: 5000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_cart_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_cart_modal.png'));\n\n    // Increase quantity using '+' button\n    await page.waitForSelector('.quantity-btn');\n    const plusButtons = await page.$$('.quantity-btn');\n    // Assuming the last quantity-btn is the '+' button based on typical cart design\n    await plusButtons[plusButtons.length - 1].click();\n    await page.waitForTimeout(1000); // Wait for quantity update\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_quantity_increased.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_quantity_increased.png'));\n\n    // Extract quantity data to verify success\n    const quantityElement = await page.$('.quantity-display');\n    const quantityText = quantityElement ? await quantityElement.textContent() : 'N/A';\n\n    return {\n      success: true,\n      action: \"Successfully added item to cart, opened cart modal, and increased quantity\",\n      extractedData: {\n        finalQuantity: quantityText.trim()\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 161937,
+      "timestamp": "2025-09-15T12:36:47.861Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click first product's Add to Cart button\n    await page.waitForSelector('.add-to-cart', { timeout: 5000 });\n    await page.click('.add-to-cart:first-of-type');\n    \n    // Wait for cart to update and take screenshot\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_item_added.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_item_added.png'));\n\n    // Open cart modal\n    await page.click('.cart');\n    await page.waitForSelector('.cart-modal', { timeout: 5000 });\n    \n    // Wait for cart to fully load and take screenshot\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_cart_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_cart_opened.png'));\n\n    // Find and click the + button to increase quantity\n    await page.waitForSelector('.quantity-btn.plus', { timeout: 5000 });\n    await page.click('.quantity-btn.plus');\n    \n    // Wait for quantity update and take final screenshot\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_quantity_increased.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_quantity_increased.png'));\n\n    // Extract updated quantity data\n    const quantity = await page.$eval('.quantity-value', el => el.textContent);\n    const cartCount = await page.$eval('#cartCount', el => el.textContent);\n\n    return {\n      success: true,\n      action: \"Successfully added item to cart, opened cart modal, and increased quantity\",\n      extractedData: {\n        updatedQuantity: quantity,\n        cartItemCount: cartCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete cart quantity update task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 120655,
+      "timestamp": "2025-09-15T12:39:29.798Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Add item to cart\n    await page.waitForSelector('.product-card:has-text(\"iPhone\") .add-to-cart');\n    await page.click('.product-card:has-text(\"iPhone\") .add-to-cart');\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_item_added.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_item_added.png'));\n\n    // Open cart modal\n    await page.waitForSelector('.cart');\n    await page.click('.cart');\n    await page.waitForSelector('.cart-modal', { state: 'visible' });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_cart_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_cart_opened.png'));\n\n    // Increase quantity\n    await page.waitForSelector('.cart-item .quantity-btn:has-text(\"+\")');\n    await page.click('.cart-item .quantity-btn:has-text(\"+\")');\n    await page.waitForTimeout(500);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_quantity_increased.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_quantity_increased.png'));\n\n    // Verify quantity update\n    const quantity = await page.textContent('.cart-item .quantity-value');\n    const itemName = await page.textContent('.cart-item .product-title');\n\n    return {\n      success: true,\n      action: \"Added iPhone to cart, opened cart modal, and increased quantity from 1 to 2\",\n      extractedData: {\n        item: itemName?.trim(),\n        quantity: quantity?.trim()\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to update cart item quantity\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 123160,
+      "timestamp": "2025-09-15T12:41:30.454Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 405753,
+  "timestamp": "2025-09-15T12:36:47.861Z",
+  "savedAt": "2025-09-15T12:43:33.614Z",
+  "version": "1.0"
+}

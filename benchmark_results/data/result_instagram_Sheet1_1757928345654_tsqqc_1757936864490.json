@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928345654_tsqqc_1757936864490",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928345654_tsqqc",
+    "description": "IG_REG_014",
+    "objective": "Regular",
+    "expectedResult": "Click on followers count in profile modal and verify user list modal opens",
+    "difficulty": "Medium",
+    "category": ".profile-btn, #profileModal, .stats span:contains(\"followers\"), #userListModal",
+    "tags": [
+      "User list modal opens showing followers"
+    ],
+    "notes": "1. Click .profile-btn 2. Click followers count in .stats 3. Verify #userListModal opens with followers list"
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on the followers count in the profile modal\n    await page.waitForSelector('#profileModal'); // Wait for the profile modal to be visible\n    await page.waitForSelector('.stats span:contains(\"followers\")'); // Wait for the followers count\n    await page.click('.stats span:contains(\"followers\")'); // Click on the followers count\n\n    // Wait for the user list modal to open\n    await page.waitForSelector('#userListModal'); // Wait for the user list modal to be visible\n\n    // Take a screenshot after the user list modal opens\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_user_list_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_user_list_modal.png'));\n\n    // Verify that the user list modal is open\n    const isUserListModalVisible = await page.isVisible('#userListModal');\n\n    return {\n      success: true,\n      action: \"Clicked on followers count and verified user list modal opened\",\n      extractedData: { isUserListModalVisible },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14115,
+      "timestamp": "2025-09-15T11:47:44.490Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n    \n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for profile modal to be visible\n    await page.waitForSelector('#profileModal');\n    \n    // Wait for the followers count element to be visible and click it\n    await page.waitForSelector('.stats span:contains(\"followers\")'); // Using class selector with text content\n    await page.click('.stats span:contains(\"followers\")');\n\n    // Wait for the user list modal to open\n    await page.waitForSelector('#userListModal');\n    \n    // Take a screenshot after clicking followers count\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_followers_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_followers_clicked.png'));\n\n    // Verify that the user list modal is opened by checking its visibility\n    const isUserListModalVisible = await page.isVisible('#userListModal');\n\n    return {\n      success: true,\n      action: \"Clicked on followers count and verified user list modal opened\",\n      extractedData: { userListModalVisible: isUserListModalVisible },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15165,
+      "timestamp": "2025-09-15T11:47:58.605Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the profile modal to be visible\n    await page.waitForSelector('#profileModal', { state: 'visible' });\n\n    // Click on the followers count\n    const followersSelector = '.stats span:contains(\"followers\")';\n    await page.waitForSelector(followersSelector);\n    await page.click(followersSelector);\n\n    // Wait for the user list modal to be visible\n    await page.waitForSelector('#userListModal', { state: 'visible' });\n\n    // Take screenshot of the user list modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_user_list_visible.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_user_list_visible.png'));\n\n    // Check if user list modal is open\n    const userListModalVisible = await page.isVisible('#userListModal');\n\n    return {\n      success: userListModalVisible,\n      action: \"Clicked on followers count and verified user list modal opened\",\n      extractedData: { userListModalVisible },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 10954,
+      "timestamp": "2025-09-15T11:48:13.770Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 40234,
+  "timestamp": "2025-09-15T11:47:44.490Z",
+  "savedAt": "2025-09-15T11:48:24.724Z",
+  "version": "1.0"
+}

@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_007_1757928599891",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_007",
+    "description": "General",
+    "objective": "Listing Modal Open",
+    "expectedResult": "jun_2 숙소 카드를 클릭하여 상세 모달을 열고 모달 제목이 정확히 표시되는지 확인하기",
+    "difficulty": "Medium",
+    "category": "[data-listing-id='jun_2'], .modal-overlay, #modal-title",
+    "tags": [
+      "Modal interaction",
+      "text validation"
+    ],
+    "notes": "모달 제목 텍스트 ('Luxury Apartment in Gangnam')"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the 숙소 카드 with data-listing-id='jun_2' to appear\n    const cardSelector = \"[data-listing-id='jun_2']\";\n    await page.waitForSelector(cardSelector, { timeout: 5000 });\n\n    // Take screenshot before clicking the card\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_card_visible.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_card_visible.png'));\n\n    // Click the 숙소 카드 to open the modal\n    await page.click(cardSelector);\n\n    // Wait for the modal overlay to appear\n    const modalOverlaySelector = '.modal-overlay';\n    await page.waitForSelector(modalOverlaySelector, { state: 'visible', timeout: 5000 });\n\n    // Wait for the modal title to appear\n    const modalTitleSelector = '#modal-title';\n    await page.waitForSelector(modalTitleSelector, { state: 'visible', timeout: 5000 });\n\n    // Take screenshot of the modal open\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_modal_open.png'));\n\n    // Extract the modal title text\n    const modalTitle = await page.$eval(modalTitleSelector, el => el.textContent.trim());\n\n    // Prepare extractedData\n    const extractedData = {\n      modalTitle\n    };\n\n    return {\n      success: true,\n      action: \"Clicked jun_2 숙소 카드, opened the detail modal, and verified the modal title is displayed.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14823,
+      "timestamp": "2025-09-15T09:29:59.891Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for at least one 숙소 카드 to be rendered by waiting for a data-listing-id attribute\n    await page.waitForSelector('[data-listing-id]', { timeout: 8000 });\n\n    // Try multiple selector strategies for the jun_2 card\n    // 1. Attribute selector\n    let cardHandle = await page.$('[data-listing-id=\"jun_2\"]');\n    // 2. Fallback: Try XPath (in case there are multiple with same class)\n    if (!cardHandle) {\n      const cardHandles = await page.$x('//*[@data-listing-id=\"jun_2\"]');\n      if (cardHandles.length > 0) cardHandle = cardHandles[0];\n    }\n    // 3. Fallback: Use text content inside cards (if available)\n    if (!cardHandle) {\n      cardHandle = await page.$(':text(\"jun_2\")');\n    }\n\n    if (!cardHandle) {\n      throw new Error('Cannot find 숙소 카드 for jun_2');\n    }\n\n    // Scroll into view and click the card\n    await cardHandle.scrollIntoViewIfNeeded();\n    await page.waitForTimeout(500); // For smoothness\n\n    // Sometimes cards have an inner clickable element, try to click center\n    await cardHandle.click({ delay: 100 });\n\n    // Wait for modal overlay to appear (using .modal-overlay)\n    await page.waitForSelector('.modal-overlay', { timeout: 6000 });\n\n    // Take screenshot after modal appears\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_opened.png'));\n\n    // Wait for the modal title to appear (using #modal-title)\n    await page.waitForSelector('#modal-title', { timeout: 4000 });\n\n    // Extract the modal title text\n    const modalTitle = await page.$eval('#modal-title', el => el.textContent.trim());\n\n    // Take screenshot of the modal title area\n    const modalTitleElement = await page.$('#modal-title');\n    if (modalTitleElement) {\n      await modalTitleElement.screenshot({ path: path.join(screenshotsDir, 'step_3_modal_title.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_3_modal_title.png'));\n    }\n\n    return {\n      success: true,\n      action: \"Clicked jun_2 숙소 카드, opened detail modal, and verified modal title is present.\",\n      extractedData: {\n        modalTitle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17516,
+      "timestamp": "2025-09-15T09:30:14.714Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // 1. Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // 2. Wait for the listings grid to be visible (look for at least one 숙소 card)\n    // Use different selector than previous attempts: use XPath and attribute matching\n    const cardSelector = \"[data-listing-id='jun_2']\";\n    await page.waitForSelector(cardSelector, { timeout: 7000 });\n\n    // 3. Take a screenshot of the listings/cards area\n    const cardElement = await page.$(cardSelector);\n    if (cardElement) {\n      await cardElement.scrollIntoViewIfNeeded();\n    }\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // 4. Click the 숙소 card for jun_2 (use direct JS click in case of overlay event handlers)\n    await page.evaluate((sel) => {\n      const el = document.querySelector(sel);\n      if (el) el.click();\n    }, cardSelector);\n\n    // 5. Wait for the modal overlay to appear (use class and role-based selector)\n    // Try alternative selector: XPath for element with class containing 'modal-overlay'\n    await page.waitForSelector('.modal-overlay', { timeout: 7000 });\n\n    // 6. Wait for the modal title to appear (ID based)\n    await page.waitForSelector('#modal-title', { timeout: 7000 });\n\n    // 7. Take a screenshot of the open modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_open.png'));\n\n    // 8. Extract the modal title text and compare with expected value\n    // We'll try to extract both the text and check visibility\n    const modalTitleHandle = await page.$('#modal-title');\n    let modalTitle = '';\n    if (modalTitleHandle) {\n      modalTitle = await page.evaluate(el => el.innerText || el.textContent, modalTitleHandle);\n    }\n\n    // 9. Return result object as specified\n    return {\n      success: !!(modalTitle && modalTitle.trim().length > 0),\n      action: \"Clicked 숙소 card with data-listing-id='jun_2', opened modal, and checked that modal title is displayed.\",\n      extractedData: {\n        modalTitle: modalTitle ? modalTitle.trim() : null\n      },\n      screenshots,\n      error: null\n    };\n\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 29717,
+      "timestamp": "2025-09-15T09:30:32.230Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 62057,
+  "timestamp": "2025-09-15T09:29:59.891Z",
+  "savedAt": "2025-09-15T09:31:01.948Z",
+  "version": "1.0"
+}

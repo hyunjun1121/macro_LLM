@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928345698_7ctvs_1757932873052",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928345698_7ctvs",
+    "description": "G006",
+    "objective": "Bookmark First Thread",
+    "expectedResult": "Click the bookmark button on the first thread in the feed",
+    "difficulty": ".thread-item:first-child .thread-action[data-action='bookmark']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first thread item to load\n    await page.waitForSelector('.thread-item:first-child .thread-action[data-action=\"bookmark\"]');\n\n    // Click the bookmark button on the first thread\n    await page.click('.thread-item:first-child .thread-action[data-action=\"bookmark\"]');\n\n    // Take a screenshot after clicking the bookmark button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_bookmark_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_bookmark_clicked.png'));\n\n    // Extract confirmation or state change data\n    const isBookmarked = await page.evaluate(() => {\n      const bookmarkButton = document.querySelector('.thread-item:first-child .thread-action[data-action=\"bookmark\"]');\n      return bookmarkButton.classList.contains('bookmarked'); // Assuming 'bookmarked' class indicates it is bookmarked\n    });\n\n    return {\n      success: true,\n      action: \"Clicked the bookmark button on the first thread\",\n      extractedData: { isBookmarked },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13969,
+      "timestamp": "2025-09-15T10:41:13.052Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first thread item to be visible\n    await page.waitForSelector('.threads-feed .thread-item:first-child');\n\n    // Click the bookmark button on the first thread in the feed\n    await page.click('.threads-feed .thread-item:first-child .thread-action[data-action=\"bookmark\"]');\n\n    // Take screenshot after clicking the bookmark\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_click.png'));\n\n    // Extract confirmation message or state from the UI to verify action\n    const isBookmarked = await page.evaluate(() => {\n      const firstThread = document.querySelector('.threads-feed .thread-item:first-child');\n      return firstThread ? firstThread.querySelector('.thread-action[data-action=\"bookmark\"]').classList.contains('active') : false;\n    });\n\n    return {\n      success: true,\n      action: \"Clicked the bookmark button on the first thread in the feed\",\n      extractedData: { isBookmarked },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12235,
+      "timestamp": "2025-09-15T10:41:27.021Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first thread item to load\n    await page.waitForSelector('.thread-item:first-child');\n\n    // Click on the bookmark button of the first thread\n    const bookmarkButtonSelector = '.thread-item:first-child .thread-action[data-action=\"bookmark\"]';\n    await page.waitForSelector(bookmarkButtonSelector);\n    await page.click(bookmarkButtonSelector);\n\n    // Take screenshot after clicking the bookmark button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_bookmark_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_bookmark_clicked.png'));\n\n    // Extract confirmation message or check if the action was successful\n    const successMessage = await page.evaluate(() => {\n      const toast = document.querySelector('.toast-success');\n      return toast ? toast.innerText : null;\n    });\n\n    return {\n      success: true,\n      action: \"Clicked the bookmark button on the first thread in the feed\",\n      extractedData: { successMessage },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11672,
+      "timestamp": "2025-09-15T10:41:39.256Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 37876,
+  "timestamp": "2025-09-15T10:41:13.052Z",
+  "savedAt": "2025-09-15T10:41:50.928Z",
+  "version": "1.0"
+}

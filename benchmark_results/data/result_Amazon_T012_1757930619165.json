@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T012_1757930619165",
+  "website": "Amazon",
+  "task": {
+    "id": "T012",
+    "description": "Test Search Autocomplete",
+    "objective": "General",
+    "expectedResult": "Medium",
+    "difficulty": "Type 'iP' in the search box and wait for autocomplete suggestions to appear.",
+    "category": "#searchInput, .search-suggestions, .suggestion-item",
+    "tags": [
+      "1. Click search input 2. Type 'iP' 3. Wait 500ms for suggestions"
+    ],
+    "notes": "Search suggestions dropdown appears, contains iPhone-related suggestions, suggestions are clickable"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the search input to be visible and type 'iP'\n    await page.waitForSelector('#searchInput');\n    await page.fill('#searchInput', 'iP');\n\n    // Wait for autocomplete suggestions to appear\n    await page.waitForSelector('.search-suggestions', { state: 'visible' });\n\n    // Take screenshot of the autocomplete suggestions\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_autocomplete.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_autocomplete.png'));\n\n    // Extract suggestions for verification\n    const suggestions = await page.$$eval('.suggestion-item', items => items.map(item => item.textContent));\n    \n    return {\n      success: true,\n      action: \"Typed 'iP' in the search box and verified autocomplete suggestions\",\n      extractedData: { suggestions },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 41385,
+      "timestamp": "2025-09-15T10:03:39.165Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the search input to be visible and type 'iP'\n    await page.waitForSelector('#searchInput');\n    await page.fill('#searchInput', 'iP');\n\n    // Wait for suggestions to appear\n    await page.waitForSelector('.search-suggestions', { state: 'visible' });\n\n    // Take screenshot of the suggestions\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_suggestions.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_suggestions.png'));\n\n    // Extract the suggestions for verification\n    const suggestions = await page.$$eval('.suggestion-item', items => items.map(item => item.textContent));\n\n    return {\n      success: true,\n      action: \"Typed 'iP' in the search box and retrieved autocomplete suggestions.\",\n      extractedData: { suggestions },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 41782,
+      "timestamp": "2025-09-15T10:04:20.550Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Focus on the search input field and type 'iP'\n    const searchInputSelector = '#searchInput';\n    await page.waitForSelector(searchInputSelector);\n    await page.fill(searchInputSelector, 'iP');\n    \n    // Take screenshot after typing in the search input\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_typing.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_typing.png'));\n\n    // Wait for the autocomplete suggestions to appear\n    const suggestionsSelector = '.search-suggestions';\n    await page.waitForSelector(suggestionsSelector, { state: 'visible' });\n\n    // Take screenshot of the suggestions\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_suggestions_visible.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_suggestions_visible.png'));\n\n    // Extract suggestions for verification\n    const suggestions = await page.$$eval(suggestionsSelector + ' .suggestion-item', items => {\n      return items.map(item => item.textContent);\n    });\n\n    return {\n      success: true,\n      action: \"Typed 'iP' in the search box and verified autocomplete suggestions appeared\",\n      extractedData: { suggestions },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 46142,
+      "timestamp": "2025-09-15T10:05:02.332Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 129309,
+  "timestamp": "2025-09-15T10:03:39.165Z",
+  "savedAt": "2025-09-15T10:05:48.474Z",
+  "version": "1.0"
+}

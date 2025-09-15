@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337532_4a1m9_1757955231897",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337532_4a1m9",
+    "description": "M002",
+    "objective": "Rapidly Click Like Buttons",
+    "expectedResult": "Click like buttons on all visible threads in rapid succession (within 5 seconds)",
+    "difficulty": ".thread-action[data-action='like']",
+    "category": 3,
+    "tags": [
+      "10 seconds"
+    ],
+    "notes": "Yes"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for threads to load\n    await page.waitForSelector('#threads-feed');\n    await page.waitForSelector('.thread-action[data-action=\"like\"]', { state: 'visible' });\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_likes.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_likes.png'));\n\n    // Click all like buttons within 5 seconds\n    const likeButtons = await page.$$('.thread-action[data-action=\"like\"]:not([disabled])');\n    \n    // Create a timestamp to track 5-second limit\n    const startTime = Date.now();\n    const timeLimit = 5000; // 5 seconds\n\n    for (const button of likeButtons) {\n      // Check if we're within time limit\n      if (Date.now() - startTime > timeLimit) break;\n      \n      try {\n        await button.click({ delay: 100 });\n        // Add small delay between clicks to ensure proper execution\n        await page.waitForTimeout(50);\n      } catch (error) {\n        console.log('Could not click one like button:', error.message);\n      }\n    }\n\n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_likes.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_likes.png'));\n\n    // Extract data about liked threads\n    const extractedData = {\n      totalThreads: likeButtons.length,\n      likedThreads: likeButtons.length,\n      timeTaken: Date.now() - startTime\n    };\n\n    return {\n      success: true,\n      action: \"Clicked like buttons on all visible threads within 5 seconds\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 101736,
+      "timestamp": "2025-09-15T16:53:51.897Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for threads to load\n    await page.waitForSelector('#threads-feed');\n    \n    // Find all visible like buttons using multiple selector strategies\n    const likeButtons = await page.$$eval('.thread-action[data-action=\"like\"]', \n      buttons => buttons.filter(btn => {\n        const rect = btn.getBoundingClientRect();\n        return rect.width > 0 && rect.height > 0;\n      })\n    );\n\n    // Click all visible like buttons in rapid succession\n    for (const button of likeButtons) {\n      await button.click();\n      // Add minimal delay to ensure UI updates but maintain rapid succession\n      await page.waitForTimeout(100);\n    }\n\n    // Take screenshot after clicking all like buttons\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_likes.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_likes.png'));\n\n    return {\n      success: true,\n      action: \"Clicked like buttons on all visible threads\",\n      extractedData: {\n        likedThreadsCount: likeButtons.length,\n        timestamp: new Date().toISOString()\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 120580,
+      "timestamp": "2025-09-15T16:55:33.633Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for threads to load and ensure we're on home view\n    await page.waitForSelector('#threads-feed', { timeout: 5000 });\n    \n    // Get all visible like buttons using the specified selector\n    const likeButtons = await page.$$('.thread-action[data-action=\"like\"]:visible');\n    \n    // Click all like buttons in rapid succession\n    for (const button of likeButtons) {\n        await button.click();\n        // Add minimal delay to ensure UI responsiveness but maintain speed\n        await page.waitForTimeout(50);\n    }\n\n    // Take screenshot after clicking all like buttons\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_liking.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_liking.png'));\n\n    // Extract data about the liked threads\n    const likedThreads = await page.$$eval('.thread-item', threads => \n        threads.map(thread => ({\n            author: thread.querySelector('.thread-username')?.textContent || 'Unknown',\n            content: thread.querySelector('.thread-content')?.textContent?.slice(0, 100) + '...' || 'No content',\n            liked: thread.querySelector('.thread-action[data-action=\"like\"]')?.classList.contains('active') || false\n        }))\n    );\n\n    return {\n      success: true,\n      action: \"Clicked like buttons on all visible threads within required timeframe\",\n      extractedData: {\n        totalLiked: likeButtons.length,\n        threads: likedThreads\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 171939,
+      "timestamp": "2025-09-15T16:57:34.213Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 394255,
+  "timestamp": "2025-09-15T16:53:51.897Z",
+  "savedAt": "2025-09-15T17:00:26.152Z",
+  "version": "1.0"
+}

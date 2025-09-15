@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T004_1757930124522",
+  "website": "Amazon",
+  "task": {
+    "id": "T004",
+    "description": "Open Shopping Cart Modal",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Click on the shopping cart icon in the header to open the cart modal.",
+    "category": ".cart, #cartModal",
+    "tags": [
+      "1. Click cart icon in header 2. Wait for cart modal to appear"
+    ],
+    "notes": "Cart modal becomes visible, cart modal displays current cart contents, modal overlay is present"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the cart icon in the header to be visible\n    // Try multiple selector strategies for robustness\n    let cartSelector = '.cart';\n    let cartElement = await page.waitForSelector(cartSelector, { state: 'visible', timeout: 5000 });\n\n    // Take screenshot before clicking cart\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_cart_icon_visible.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_cart_icon_visible.png'));\n\n    // Click the cart icon to open the cart modal\n    await cartElement.click();\n\n    // Wait for the cart modal to appear\n    // Try multiple selectors: #cartModal or any modal with class containing 'cart'\n    let modalSelector = '#cartModal, .cart-modal, .modal.cart, [class*=\"cart\"][class*=\"modal\"]';\n    let cartModal = null;\n    try {\n      cartModal = await page.waitForSelector(modalSelector, { state: 'visible', timeout: 4000 });\n    } catch (e) {\n      // Fallback: look for any visible modal containing 'Cart' in its text\n      const modals = await page.$$('div[role=\"dialog\"], .modal, [id*=\"cart\"], [class*=\"cart\"]');\n      for (const modal of modals) {\n        const text = await modal.textContent();\n        if (text && text.toLowerCase().includes('cart')) {\n          cartModal = modal;\n          break;\n        }\n      }\n      if (!cartModal) throw new Error('Cart modal did not appear after clicking cart icon.');\n    }\n\n    // Take screenshot of the cart modal open\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_cart_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_cart_modal_open.png'));\n\n    // Extract some data from the modal to verify it opened\n    let modalText = '';\n    if (cartModal) {\n      modalText = await cartModal.textContent();\n    }\n\n    // Extract cart count from the header as well\n    let cartCount = null;\n    try {\n      const countElem = await page.$('#cartCount');\n      if (countElem) cartCount = (await countElem.textContent()).trim();\n    } catch (e) {\n      cartCount = null;\n    }\n\n    return {\n      success: true,\n      action: \"Clicked the shopping cart icon in the header and verified the cart modal opened.\",\n      extractedData: {\n        cartModalText: modalText ? modalText.trim().slice(0, 200) : null,\n        cartCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 44705,
+      "timestamp": "2025-09-15T09:55:24.522Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the cart icon using multiple selectors (class, icon, text)\n    // Try strict class selector first\n    let cartSelector = '.cart';\n    let cartElement;\n    try {\n      cartElement = await page.waitForSelector(cartSelector, { timeout: 3000 });\n    } catch {\n      // Fallback: Try to find the shopping cart icon by icon class\n      try {\n        cartElement = await page.waitForSelector('i.fa-shopping-cart', { timeout: 2000 });\n      } catch {\n        // As a last resort, try xpath for the word 'Cart' in the header\n        cartElement = await page.waitForSelector('//header//span[contains(text(),\"Cart\")]', { timeout: 2000 });\n      }\n    }\n\n    // Scroll into view and click the cart (try to ensure clickability)\n    if (cartElement) {\n      await cartElement.scrollIntoViewIfNeeded();\n      // Try clicking the closest clickable parent (the cart div)\n      const cartBox = await cartElement.evaluateHandle(el => el.closest('.cart') || el);\n      await cartBox.click({ force: true });\n    } else {\n      throw new Error('Cart icon not found in header');\n    }\n\n    // Wait for cart modal to appear - look for #cartModal or a modal with .cart-modal or visible cart overlay\n    let modalSelector = '#cartModal';\n    let cartModal;\n    try {\n      cartModal = await page.waitForSelector(modalSelector, { timeout: 4000, state: 'visible' });\n    } catch {\n      // Try alternate: visible modal with role/dialog or class containing 'modal'\n      try {\n        cartModal = await page.waitForSelector('[class*=\"modal\"]:visible', { timeout: 2000 });\n      } catch {\n        // As fallback, try for overlay with \"Proceed to Checkout\" button as sign of modal\n        cartModal = await page.waitForSelector('button:has-text(\"Proceed to Checkout\")', { timeout: 2000 });\n      }\n    }\n\n    // Take screenshot after modal appears\n    const step2 = path.join(screenshotsDir, 'step_2_cart_modal.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Extract cart modal info for verification\n    let modalVisible = false;\n    let modalText = '';\n    if (cartModal) {\n      modalVisible = await cartModal.isVisible ? await cartModal.isVisible() : true;\n      modalText = await cartModal.textContent ? await cartModal.textContent() : '';\n    }\n\n    return {\n      success: modalVisible,\n      action: \"Opened the shopping cart modal by clicking the cart icon in the header.\",\n      extractedData: {\n        modalVisible,\n        modalText: modalText ? modalText.trim().slice(0, 120) : \"\"\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 46332,
+      "timestamp": "2025-09-15T09:56:09.227Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the cart icon using multiple selector strategies\n    // Try by class .cart and ensure it contains a shopping cart icon\n    const cartSelector = '.cart';\n    await page.waitForSelector(cartSelector, { timeout: 5000 });\n\n    // Double-check icon presence inside .cart (robustness)\n    const cartIcon = await page.$(`${cartSelector} i.fas.fa-shopping-cart`);\n    if (!cartIcon) {\n      throw new Error('Cart icon not found inside .cart');\n    }\n\n    // Take a screenshot before clicking cart\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_cart_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_cart_click.png'));\n\n    // Click the cart area (simulate user behavior)\n    await page.click(cartSelector);\n\n    // Wait for the cart modal to appear\n    // Try multiple strategies: id, aria, class, and text\n    let cartModal;\n    try {\n      // Try by id\n      await page.waitForSelector('#cartModal, .cart-modal, [role=\"dialog\"]', { timeout: 5000 });\n      cartModal = await page.$('#cartModal') || await page.$('.cart-modal') || await page.$('[role=\"dialog\"]');\n    } catch {\n      // Fallback: Look for a visible modal with 'Cart' or 'Your Cart' text\n      cartModal = await page.$('xpath=//*[contains(@class, \"modal\") and (contains(., \"Cart\") or contains(., \"Your Cart\"))]');\n    }\n\n    if (!cartModal) {\n      throw new Error('Cart modal did not appear after clicking cart icon');\n    }\n\n    // Wait for the modal to be visible\n    await cartModal.waitForElementState('visible', { timeout: 5000 });\n\n    // Take a screenshot of the open cart modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_cart_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_cart_modal_open.png'));\n\n    // Extract a confirmation that the modal is open (e.g., check for Proceed to Checkout button)\n    const checkoutButton = await page.$('button.checkout-btn, text=\"Proceed to Checkout\"');\n    const isCheckoutVisible = !!checkoutButton && await checkoutButton.isVisible();\n\n    return {\n      success: true,\n      action: \"Opened the shopping cart modal by clicking the header cart icon using robust multi-selector strategy\",\n      extractedData: {\n        cartModalFound: !!cartModal,\n        checkoutButtonVisible: isCheckoutVisible\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 63007,
+      "timestamp": "2025-09-15T09:56:55.559Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 154044,
+  "timestamp": "2025-09-15T09:55:24.522Z",
+  "savedAt": "2025-09-15T09:57:58.566Z",
+  "version": "1.0"
+}

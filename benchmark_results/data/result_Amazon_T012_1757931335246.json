@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T012_1757931335246",
+  "website": "Amazon",
+  "task": {
+    "id": "T012",
+    "description": "Test Search Autocomplete",
+    "objective": "General",
+    "expectedResult": "Medium",
+    "difficulty": "Type 'iP' in the search box and wait for autocomplete suggestions to appear.",
+    "category": "#searchInput, .search-suggestions, .suggestion-item",
+    "tags": [
+      "1. Click search input 2. Type 'iP' 3. Wait 500ms for suggestions"
+    ],
+    "notes": "Search suggestions dropdown appears, contains iPhone-related suggestions, suggestions are clickable"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the search input to be visible\n    await page.waitForSelector('#searchInput', { state: 'visible', timeout: 5000 });\n\n    // Focus and type 'iP' into the search input\n    await page.click('#searchInput');\n    await page.type('#searchInput', 'iP', { delay: 100 });\n\n    // Wait for the autocomplete suggestions to appear\n    // The suggestions container has class 'search-suggestions'\n    await page.waitForSelector('.search-suggestions', { state: 'visible', timeout: 5000 });\n\n    // Wait for at least one suggestion-item to appear\n    await page.waitForSelector('.search-suggestions .suggestion-item', { state: 'visible', timeout: 5000 });\n\n    // Take screenshot of the suggestions\n    const step2 = path.join(screenshotsDir, 'step_2_autocomplete.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Extract the suggestion texts\n    const suggestions = await page.$$eval('.search-suggestions .suggestion-item', els =>\n      els.map(el => el.textContent.trim())\n    );\n\n    // Prepare extracted data\n    const extractedData = {\n      suggestions,\n      suggestionCount: suggestions.length,\n      suggestionsVisible: suggestions.length > 0\n    };\n\n    return {\n      success: suggestions.length > 0,\n      action: \"Typed 'iP' in the search box and verified autocomplete suggestions appeared.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 39457,
+      "timestamp": "2025-09-15T10:15:35.246Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const shot1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: shot1 });\n    screenshots.push(shot1);\n\n    // Wait for the search input using input[placeholder] selector (alternative to ID)\n    await page.waitForSelector('input[placeholder=\"Search Amazon\"]', { timeout: 5000 });\n\n    // Focus and type 'iP' into the search input using a more generic selector\n    const searchInput = await page.$('input.search-input');\n    if (!searchInput) {\n      throw new Error('Search input not found using .search-input');\n    }\n    await searchInput.click({ clickCount: 3 }); // Select any existing text\n    await searchInput.fill('');\n    await searchInput.type('iP');\n\n    // Wait for the search suggestions box to appear using CSS class and dynamic ID fallback\n    // Try waiting for either .search-suggestions or #searchSuggestions\n    let suggestionSelectorAppeared = false;\n    try {\n      await page.waitForSelector('.search-suggestions', { timeout: 3000 });\n      suggestionSelectorAppeared = true;\n    } catch {\n      // try fallback\n      await page.waitForSelector('#searchSuggestions', { timeout: 2000 });\n      suggestionSelectorAppeared = true;\n    }\n\n    // Take screenshot after typing and suggestions (should show dropdown)\n    const shot2 = path.join(screenshotsDir, 'step_2_after_typing.png');\n    await page.screenshot({ path: shot2 });\n    screenshots.push(shot2);\n\n    // Extract all autocomplete suggestion items (by .suggestion-item)\n    const suggestions = await page.$$eval('.suggestion-item', nodes =>\n      nodes.map(n => n.textContent.trim()).filter(Boolean)\n    );\n\n    // If not found, try fallback using direct children of #searchSuggestions\n    let suggestionsUsedFallback = false;\n    if (!suggestions || suggestions.length === 0) {\n      suggestionsUsedFallback = true;\n      const exists = await page.$('#searchSuggestions');\n      if (exists) {\n        const altSuggestions = await page.$$eval('#searchSuggestions > div', nodes =>\n          nodes.map(n => n.textContent.trim()).filter(Boolean)\n        );\n        if (altSuggestions && altSuggestions.length > 0) {\n          suggestions.push(...altSuggestions);\n        }\n      }\n    }\n\n    // Ensure at least one suggestion contains 'iP' (case-insensitive)\n    const suggestionsContainIP = suggestions.some(s => /ip/i.test(s));\n\n    // Take screenshot of the suggestions dropdown only (if present)\n    const suggestionsBox = await page.$('.search-suggestions') || await page.$('#searchSuggestions');\n    if (suggestionsBox) {\n      const boxShot = path.join(screenshotsDir, 'step_3_suggestions_box.png');\n      await suggestionsBox.screenshot({ path: boxShot });\n      screenshots.push(boxShot);\n    }\n\n    return {\n      success: suggestionSelectorAppeared && suggestions.length > 0 && suggestionsContainIP,\n      action: `Typed 'iP' in search input and waited for autocomplete suggestions. Found ${suggestions.length} suggestion(s).`,\n      extractedData: {\n        suggestions,\n        suggestionsContainIP,\n        suggestionsUsedFallback\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 45087,
+      "timestamp": "2025-09-15T10:16:14.703Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Wait for the search input using a different selector strategy (class and placeholder)\n    const searchInputSelector = 'input.search-input[placeholder=\"Search Amazon\"]';\n    await page.waitForSelector(searchInputSelector, { timeout: 5000 });\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Focus and type 'iP' into the search input (simulate realistic typing)\n    const searchInput = await page.$(searchInputSelector);\n    await searchInput.click({ clickCount: 3 }); // Ensure input is focused and cleared\n    await searchInput.type('iP', { delay: 100 });\n\n    // Wait for autocomplete suggestions container to appear\n    // Try multiple strategies: by ID, class, and XPath fallback\n    let suggestionsSelector = '.search-suggestions';\n    let suggestionItemSelector = '.suggestion-item';\n\n    // Wait for the suggestions container (max 5s)\n    await page.waitForSelector(suggestionsSelector, { timeout: 5000 });\n\n    // Take a screenshot after suggestions appear\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_suggestions.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_suggestions.png'));\n\n    // Extract the suggestion texts for verification\n    const suggestionItems = await page.$$(suggestionItemSelector);\n    const suggestions = [];\n    for (const item of suggestionItems) {\n      const text = await item.textContent();\n      suggestions.push(text.trim());\n    }\n\n    // Fallback: If no suggestions found, try by XPath (for robustness)\n    if (suggestions.length === 0) {\n      const xpathResults = await page.$x(\"//div[contains(@class,'suggestion-item')]\");\n      for (const item of xpathResults) {\n        const text = await item.textContent();\n        suggestions.push(text.trim());\n      }\n    }\n\n    // Return extracted suggestions and screenshots for verification\n    return {\n      success: suggestions.length > 0,\n      action: \"Typed 'iP' in the search box and waited for autocomplete suggestions to appear\",\n      extractedData: {\n        autocompleteSuggestions: suggestions\n      },\n      screenshots,\n      error: suggestions.length === 0 ? 'No autocomplete suggestions appeared.' : null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 43598,
+      "timestamp": "2025-09-15T10:16:59.791Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 128143,
+  "timestamp": "2025-09-15T10:15:35.246Z",
+  "savedAt": "2025-09-15T10:17:43.389Z",
+  "version": "1.0"
+}

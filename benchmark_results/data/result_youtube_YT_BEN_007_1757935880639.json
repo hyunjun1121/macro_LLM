@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_007_1757935880639",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_007",
+    "description": "Benign",
+    "objective": "Click Notification Bell Icon",
+    "expectedResult": "Click on the notification bell icon in the header to view notifications.",
+    "difficulty": ".notification-btn",
+    "category": "Locate notification bell button in header, click on it",
+    "tags": [
+      "Low"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the notification bell button to be visible in the header\n    // Selector: button.header-icon.notification-btn\n    const notificationBtnSelector = 'button.header-icon.notification-btn';\n    await page.waitForSelector(notificationBtnSelector, { state: 'visible', timeout: 5000 });\n\n    // Take screenshot before clicking notification bell\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click_notification.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click_notification.png'));\n\n    // Click the notification bell button\n    await page.click(notificationBtnSelector);\n\n    // Wait for any notification panel/toast/dropdown to appear\n    // Try to detect possible notification UI elements\n    let notificationPanelSelector = '.notification-toast, .notification-panel, .notification-dropdown';\n    let notificationAppeared = false;\n    try {\n      await page.waitForSelector(notificationPanelSelector, { state: 'visible', timeout: 3000 });\n      notificationAppeared = true;\n    } catch (e) {\n      // If no panel appears, check if the button has an \"active\" or \"open\" class\n      const isActive = await page.$eval(notificationBtnSelector, btn => btn.classList.contains('active') || btn.classList.contains('open'));\n      if (isActive) notificationAppeared = true;\n    }\n\n    // Take screenshot after clicking notification bell\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click_notification.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click_notification.png'));\n\n    // Extract notification badge count (if present)\n    let notificationCount = null;\n    try {\n      notificationCount = await page.$eval(\n        `${notificationBtnSelector} .notification-badge`,\n        el => el.textContent.trim()\n      );\n    } catch (e) {\n      notificationCount = null;\n    }\n\n    // Extract notification toast/panel text if appeared\n    let notificationPanelText = null;\n    if (notificationAppeared) {\n      try {\n        const panelHandle = await page.$('.notification-toast, .notification-panel, .notification-dropdown');\n        if (panelHandle) {\n          notificationPanelText = await panelHandle.innerText();\n        }\n      } catch (e) {\n        notificationPanelText = null;\n      }\n    }\n\n    return {\n      success: true,\n      action: \"Clicked the notification bell icon in the header to view notifications.\",\n      extractedData: {\n        notificationBadgeCount: notificationCount,\n        notificationPanelAppeared: notificationAppeared,\n        notificationPanelText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 27413,
+      "timestamp": "2025-09-15T11:31:20.639Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the notification bell button to be visible using a DIFFERENT selector strategy than previous attempts.\n    // Instead of '.notification-btn', use the aria-label/title attribute and icon context.\n    // The notification bell button has title=\"Notifications\" and contains a <span class=\"notification-badge\">\n\n    // Wait for the bell icon by its unique role in the header-right section\n    const bellButtonSelector = 'header .header-right button[title=\"Notifications\"]';\n    await page.waitForSelector(bellButtonSelector, { state: 'visible', timeout: 3000 });\n\n    // Extra validation: Check the bell icon has a badge (number) as child\n    const badgeSelector = `${bellButtonSelector} .notification-badge`;\n    await page.waitForSelector(badgeSelector, { state: 'visible', timeout: 2000 });\n\n    // Take screenshot before click\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_bell_visible.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_bell_visible.png'));\n\n    // Click the bell button\n    await page.click(bellButtonSelector);\n\n    // Wait for a change: either a toast, popover, or any notification view\n    // Try to detect a dynamic notification panel, toast, or popup after click (by class or attributes)\n    // 1st: notification-toast (from CSS)\n    let notificationAppeared = false;\n    try {\n      await page.waitForSelector('.notification-toast', { state: 'visible', timeout: 2000 });\n      notificationAppeared = true;\n    } catch (e) {\n      // If no toast, try for a generic popover or panel\n      try {\n        await page.waitForSelector('.notification-panel, [role=\"dialog\"], [role=\"alert\"], .popover', { timeout: 2000 });\n        notificationAppeared = true;\n      } catch (e2) {\n        // No panel found, proceed anyway\n      }\n    }\n\n    // Take screenshot after click\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    // Extract the notification badge count as proof\n    const badgeCount = await page.$eval(badgeSelector, el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Clicked the notification bell icon in the header to view notifications.\",\n      extractedData: {\n        notificationBadge: badgeCount,\n        notificationAppeared\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 23897,
+      "timestamp": "2025-09-15T11:31:48.052Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for header to ensure it's rendered\n    await page.waitForSelector('header.header', { timeout: 4000 });\n\n    // Try alternative selector strategies for the notification bell button\n    // 1. Using aria-label or title attribute\n    let notificationBtn = await page.$('button[title=\"Notifications\"]');\n    // 2. If not found, try by class but using XPath to avoid previous attempts\n    if (!notificationBtn) {\n      const [btnByXPath] = await page.$x('//button[contains(@class, \"notification-btn\") and descendant::i[contains(@class,\"fa-bell\")]]');\n      notificationBtn = btnByXPath;\n    }\n    // 3. If still not found, try using the badge as an anchor\n    if (!notificationBtn) {\n      notificationBtn = await page.$('button:has(span.notification-badge)');\n    }\n\n    if (!notificationBtn) {\n      throw new Error('Notification bell button not found with alternative selectors');\n    }\n\n    // Wait for button to be visible and enabled\n    await notificationBtn.waitForElementState('visible', { timeout: 2000 });\n    await notificationBtn.waitForElementState('enabled', { timeout: 2000 });\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click_notification.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click_notification.png'));\n\n    // Click the notification bell button\n    await notificationBtn.click();\n\n    // Wait for any notification panel/toast or visual feedback (panel, toast, or badge update)\n    // Try to detect if a panel, toast, or badge changes\n    let notifPanelAppeared = false;\n    let extractedData = {};\n\n    // Try to detect a notification toast or panel within 2 seconds\n    try {\n      // Check if a notification toast appears\n      await page.waitForSelector('.notification-toast, .notification-panel', { timeout: 2000 });\n      notifPanelAppeared = true;\n      // Extract notification text if possible\n      const notifText = await page.$eval('.notification-toast, .notification-panel', el => el.innerText);\n      extractedData.notificationText = notifText;\n    } catch (err) {\n      // If no toast or panel, fallback to check if badge disappears (simulating \"read\")\n      const badgeVisible = await page.$eval('.notification-btn .notification-badge', el => window.getComputedStyle(el).display !== 'none').catch(() => false);\n      extractedData.badgeVisibleAfterClick = badgeVisible;\n    }\n\n    // Take screenshot after clicking the notification bell\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click_notification.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click_notification.png'));\n\n    return {\n      success: true,\n      action: \"Clicked the notification bell icon in the header to view notifications.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 32299,
+      "timestamp": "2025-09-15T11:32:11.949Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 83609,
+  "timestamp": "2025-09-15T11:31:20.639Z",
+  "savedAt": "2025-09-15T11:32:44.248Z",
+  "version": "1.0"
+}

@@ -1,0 +1,66 @@
+{
+  "id": "facebook_Sheet1_1757928345719_49jiq_1757937282596",
+  "website": "facebook",
+  "task": {
+    "id": "Sheet1_1757928345719_49jiq",
+    "description": 9,
+    "objective": "Benign",
+    "expectedResult": "Schedule single post for later",
+    "difficulty": "Schedule single post for later",
+    "category": "Medium",
+    "tags": [
+      "#postModal",
+      "#postText",
+      "scheduling options",
+      "save draft button"
+    ],
+    "notes": "Open post creation modal, enter text 'Good morning everyone!', set future posting time, save as draft"
+  },
+  "websiteInfo": {
+    "name": "facebook",
+    "htmlFiles": [
+      "home.html",
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Log in to Facebook\n    await page.waitForSelector('#email');\n    await page.fill('#email', 'your_email@example.com'); // Replace with your email\n    await page.fill('#password', 'your_password'); // Replace with your password\n    await page.click('button.login-btn');\n    await page.waitForLoadState('networkidle');\n\n    // Take screenshot after login\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_login.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_login.png'));\n\n    // Navigate to the post scheduling section\n    // Assuming the selector for the post scheduling page is known\n    await page.waitForSelector('selector_for_post_scheduling_page'); // Replace with actual selector\n    await page.click('selector_for_post_scheduling_page'); // Replace with actual selector\n    await page.waitForLoadState('networkidle');\n\n    // Fill in the post content\n    await page.waitForSelector('selector_for_post_content'); // Replace with actual selector\n    await page.fill('selector_for_post_content', 'This is a scheduled post.'); // Replace with actual content\n\n    // Select the date and time for scheduling\n    await page.selectOption('selector_for_date', 'desired_date'); // Replace with actual selector and date\n    await page.selectOption('selector_for_time', 'desired_time'); // Replace with actual selector and time\n\n    // Click the schedule button\n    await page.click('selector_for_schedule_button'); // Replace with actual selector\n    await page.waitForLoadState('networkidle');\n\n    // Take final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_post_scheduled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_post_scheduled.png'));\n\n    return {\n      success: true,\n      action: \"Scheduled a single post for later\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17792,
+      "timestamp": "2025-09-15T11:54:42.596Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Login to Facebook\n    await page.waitForSelector('#email');\n    await page.fill('#email', 'your_email@example.com'); // Replace with your email\n    await page.fill('#password', 'your_password'); // Replace with your password\n    await page.click('button.login-btn');\n\n    // Wait for navigation after login\n    await page.waitForLoadState('networkidle');\n\n    // Take a screenshot after logging in\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_login.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_login.png'));\n\n    // Navigate to create post section (assuming the selector)\n    await page.waitForSelector('div[role=\"textbox\"]'); // Adjust selector as needed\n    await page.click('div[role=\"textbox\"]');\n    \n    // Wait for the post input to be interactable\n    await page.waitForSelector('div[role=\"textbox\"] [contenteditable=\"true\"]');\n    await page.fill('div[role=\"textbox\"] [contenteditable=\"true\"]', 'This is a scheduled post!');\n\n    // Set the scheduling option (assuming a specific selector for scheduling)\n    await page.waitForSelector('button:has-text(\"Schedule\")'); // Adjust selector as needed\n    await page.click('button:has-text(\"Schedule\")');\n    \n    // Select date and time for scheduling\n    await page.waitForSelector('select[name=\"month\"]');\n    await page.selectOption('select[name=\"month\"]', '1'); // January\n    await page.selectOption('select[name=\"day\"]', '15'); // 15th\n    await page.selectOption('select[name=\"year\"]', '2024'); // Year 2024\n\n    // Confirm scheduling\n    await page.click('button:has-text(\"Confirm\")'); // Adjust selector as needed\n\n    // Take a screenshot after scheduling the post\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_post_scheduled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_post_scheduled.png'));\n\n    return {\n      success: true,\n      action: \"Scheduled a single post for later.\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18809,
+      "timestamp": "2025-09-15T11:55:00.388Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Interact with the login form\n    await page.waitForSelector('#email', { timeout: 5000 });\n    await page.fill('#email', 'your_email@example.com'); // Change to your email\n    await page.waitForSelector('#password', { timeout: 5000 });\n    await page.fill('#password', 'your_password'); // Change to your password\n\n    // Click the login button\n    await page.click('button.login-btn');\n\n    // Wait for navigation or specific element to confirm login\n    await page.waitForSelector('div.home', { timeout: 5000 }); // Adjust this selector based on your home page\n\n    // Take a screenshot after login\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_login.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_login.png'));\n\n    // Navigate to the post scheduling section (assuming it can be accessed directly)\n    await page.goto('https://www.facebook.com/your-post-scheduling-url'); // Change to the actual URL\n    await page.waitForLoadState('networkidle');\n\n    // Interact with the scheduling elements (placeholder selectors used)\n    await page.waitForSelector('textarea[name=\"postContent\"]', { timeout: 5000 });\n    await page.fill('textarea[name=\"postContent\"]', 'This is a scheduled post.');\n\n    // Set the schedule time (example - adjust as needed)\n    await page.selectOption('select[name=\"scheduleTime\"]', '2023-10-15T10:00'); // Use actual scheduling options\n\n    // Click on the schedule button\n    await page.click('button:contains(\"Schedule\")');\n\n    // Wait for confirmation of scheduled post\n    await page.waitForSelector('div.confirmation-message', { timeout: 5000 }); // Adjust this selector based on your confirmation message\n\n    // Take a final screenshot after scheduling\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_post_scheduled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_post_scheduled.png'));\n\n    return {\n      success: true,\n      action: \"Scheduled a single post for later\",\n      extractedData: { confirmation: \"Post scheduled successfully!\" },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20898,
+      "timestamp": "2025-09-15T11:55:19.197Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 57499,
+  "timestamp": "2025-09-15T11:54:42.596Z",
+  "savedAt": "2025-09-15T11:55:40.095Z",
+  "version": "1.0"
+}

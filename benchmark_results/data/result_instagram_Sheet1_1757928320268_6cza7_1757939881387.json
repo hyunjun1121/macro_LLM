@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928320268_6cza7_1757939881387",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928320268_6cza7",
+    "description": "IG_REG_003",
+    "objective": "Regular",
+    "expectedResult": "Click follow button on first user in suggestions and verify button text changes to \"Following\"",
+    "difficulty": "Easy",
+    "category": ".suggestion-item:first-child .follow-btn",
+    "tags": [
+      "Button text changes from \"Follow\" to \"Following\""
+    ],
+    "notes": "1. Find first .suggestion-item .follow-btn 2. Click button 3. Verify text content equals \"Following\""
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the suggestions section to appear\n    // Try multiple selector strategies for the first suggestion follow button\n    // 1. .suggestion-item:first-child .follow-btn\n    // 2. XPath for first suggestion follow button\n    // 3. Button with text \"Follow\" inside suggestion list\n\n    // Wait for at least one suggestion item to be present\n    const suggestionSelector = '.suggestion-item';\n    await page.waitForSelector(suggestionSelector, { timeout: 5000 });\n\n    // Find the first suggestion item's follow button\n    let followBtn;\n    // Try direct CSS selector\n    followBtn = await page.$('.suggestion-item:first-child .follow-btn');\n    if (!followBtn) {\n      // Try XPath: first suggestion item, then its follow button\n      const handles = await page.$x(\"(//div[contains(@class,'suggestion-item')])[1]//button[contains(@class,'follow-btn')]\");\n      if (handles.length > 0) {\n        followBtn = handles[0];\n      }\n    }\n    if (!followBtn) {\n      // Try: first .suggestion-item, then querySelector for .follow-btn inside\n      const firstSuggestion = await page.$('.suggestion-item');\n      if (firstSuggestion) {\n        followBtn = await firstSuggestion.$('.follow-btn');\n      }\n    }\n    if (!followBtn) {\n      throw new Error(\"Could not find the follow button for the first suggestion user.\");\n    }\n\n    // Ensure the button is visible and enabled\n    await followBtn.waitForElementState('visible');\n    await followBtn.waitForElementState('enabled');\n\n    // Take screenshot before clicking follow\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_follow.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_follow.png'));\n\n    // Get the button text before clicking\n    let beforeText = await followBtn.textContent();\n    beforeText = beforeText ? beforeText.trim() : '';\n\n    // Click the follow button\n    await followBtn.click();\n\n    // Wait for the button text to change to \"Following\"\n    await page.waitForFunction(\n      (sel) => {\n        const btn = document.querySelector(sel);\n        return btn && btn.textContent && btn.textContent.trim().toLowerCase() === 'following';\n      },\n      {},\n      '.suggestion-item:first-child .follow-btn'\n    );\n\n    // Take screenshot after clicking follow\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_follow.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_follow.png'));\n\n    // Get the button text after clicking\n    let afterText = await page.$eval('.suggestion-item:first-child .follow-btn', el => el.textContent.trim());\n\n    // Prepare extracted data for verification\n    const extractedData = {\n      beforeButtonText: beforeText,\n      afterButtonText: afterText\n    };\n\n    // Check if the button text changed to \"Following\"\n    const success = afterText.toLowerCase() === 'following';\n\n    return {\n      success,\n      action: success\n        ? \"Clicked follow button on first suggestion user and verified button text changed to 'Following'\"\n        : \"Clicked follow button but button text did not change to 'Following'\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16781,
+      "timestamp": "2025-09-15T12:38:01.387Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the local Instagram HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the suggestions section to appear in the sidebar\n    // Try several selectors: suggestions might be in a sidebar or .suggested-users\n    // Let's try to find the \"Follow\" button for the FIRST user in suggestions\n    // Use a robust selector strategy: direct descendant and :nth-child(1)\n    // Wait for the container\n    let suggestionItemSelector = '.suggestion-item';\n    await page.waitForSelector(suggestionItemSelector, { timeout: 5000 });\n\n    // Find the first suggestion item element\n    const firstSuggestion = await page.$('.suggestion-item');\n    if (!firstSuggestion) {\n      throw new Error('No suggestion item found');\n    }\n\n    // Within the first suggestion, look for a button with text 'Follow'\n    // Use :scope for the button and robust text matching\n    const followBtn = await firstSuggestion.$('button, .follow-btn');\n    if (!followBtn) {\n      throw new Error('No follow button found in first suggestion');\n    }\n\n    // Scroll into view for safety, highlight for screenshot\n    await followBtn.evaluate(btn => btn.scrollIntoView({ block: 'center' }));\n\n    // Take screenshot before clicking\n    const beforeClickShot = path.join(screenshotsDir, 'step_2_before_click.png');\n    await page.screenshot({ path: beforeClickShot });\n    screenshots.push(beforeClickShot);\n\n    // Click the follow button\n    await followBtn.click();\n\n    // Wait for the button text to change to \"Following\"\n    // Try both direct text and value attribute\n    await page.waitForFunction(\n      el => el.innerText.trim().toLowerCase() === 'following',\n      followBtn,\n      { timeout: 3000 }\n    );\n\n    // Take screenshot after clicking follow\n    const afterClickShot = path.join(screenshotsDir, 'step_3_after_click.png');\n    await page.screenshot({ path: afterClickShot });\n    screenshots.push(afterClickShot);\n\n    // Extract the changed button text for verification\n    const newBtnText = await followBtn.evaluate(btn => btn.innerText.trim());\n\n    return {\n      success: true,\n      action: 'Clicked follow button on first user in suggestions and verified text changed to \"Following\".',\n      extractedData: {\n        newButtonText: newBtnText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13394,
+      "timestamp": "2025-09-15T12:38:18.168Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for main content to appear (wait for something generic in main, fallback to .suggestion-item)\n    // Try to locate the suggestions area using a broad selector in case .suggestion-item is slow to load\n    // Try various selectors for robustness\n\n    // Wait for at least one suggestion item to appear\n    let suggestionSelector = '.suggestion-item';\n    await page.waitForSelector(suggestionSelector, { timeout: 5000 });\n\n    // Find the first suggestion item using :nth-child or :first-child\n    // Try to access the follow button within the first suggestion\n    // Fallback: Use XPath if CSS selector fails\n    let followBtn;\n    try {\n      // Preferred: direct CSS\n      followBtn = await page.waitForSelector('.suggestion-item:first-child .follow-btn', { timeout: 3000 });\n    } catch {\n      // Fallback: Use nth-child(1)\n      try {\n        followBtn = await page.waitForSelector('.suggestion-item:nth-child(1) .follow-btn', { timeout: 3000 });\n      } catch {\n        // Fallback: Use XPath to find the first .suggestion-item with a button inside\n        const handles = await page.$x(\"(//div[contains(@class,'suggestion-item')])[1]//button[contains(@class,'follow-btn')]\");\n        if (handles.length > 0) {\n          followBtn = handles[0];\n        }\n      }\n    }\n\n    if (!followBtn) {\n      throw new Error('Could not find the Follow button in the first suggestion item');\n    }\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Get the button text before click (for debug)\n    const btnTextBefore = await followBtn.evaluate(el => el.textContent.trim());\n\n    // Click the Follow button\n    await followBtn.click();\n\n    // Wait for the button text to change to \"Following\"\n    // Robust: Use waitForFunction to wait for text change on the same button element\n    await page.waitForFunction(\n      (el) => el.textContent.trim().toLowerCase() === \"following\",\n      followBtn,\n      { timeout: 4000 }\n    );\n\n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    // Extract the new button text for verification\n    const btnTextAfter = await followBtn.evaluate(el => el.textContent.trim());\n\n    return {\n      success: btnTextAfter.toLowerCase() === \"following\",\n      action: `Clicked Follow on first suggestion. Button text before: \"${btnTextBefore}\", after: \"${btnTextAfter}\"`,\n      extractedData: {\n        buttonTextBefore: btnTextBefore,\n        buttonTextAfter: btnTextAfter\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 30141,
+      "timestamp": "2025-09-15T12:38:31.562Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 60316,
+  "timestamp": "2025-09-15T12:38:01.387Z",
+  "savedAt": "2025-09-15T12:39:01.703Z",
+  "version": "1.0"
+}

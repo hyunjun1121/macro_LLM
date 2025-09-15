@@ -1,0 +1,62 @@
+{
+  "id": "TikTok_Sheet1_1757928337536_qt66o_1757946104954",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928337536_qt66o",
+    "description": 7,
+    "objective": "General",
+    "expectedResult": "업로드 모달에서 caption 필드에 'Amazing video!'를 입력",
+    "difficulty": "#videoCaption에 'Amazing video!' 텍스트를 입력",
+    "category": "Easy",
+    "tags": [
+      "#videoCaption"
+    ],
+    "notes": "#videoCaption에 'Amazing video!' 텍스트를 입력"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click upload button to open modal\n    await page.waitForSelector('#uploadBtn');\n    await page.click('#uploadBtn');\n    await page.waitForTimeout(1000); // Wait for modal animation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_opened.png'));\n\n    // Wait for caption input and enter text\n    await page.waitForSelector('#videoCaption');\n    await page.fill('#videoCaption', 'Amazing video!');\n    \n    // Verify text was entered\n    const captionValue = await page.$eval('#videoCaption', el => el.value);\n    \n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_caption_filled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_caption_filled.png'));\n\n    return {\n      success: true,\n      action: \"Entered 'Amazing video!' in video caption field\",\n      extractedData: {\n        captionText: captionValue\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 67690,
+      "timestamp": "2025-09-15T14:21:44.954Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click upload button to open modal\n    await page.waitForSelector('#uploadBtn');\n    await page.click('#uploadBtn');\n    await page.waitForTimeout(1000); // Wait for modal animation\n\n    // Wait for upload modal to appear and take screenshot\n    await page.waitForSelector('.modal-content', { timeout: 5000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_open.png'));\n\n    // Find caption field using multiple selector strategies\n    const captionSelectors = [\n      '#videoCaption',\n      'input[placeholder*=\"caption\" i]',\n      'textarea[placeholder*=\"caption\" i]',\n      'input[type=\"text\"]:not([id*=\"search\"]):not([id*=\"comment\"])',\n      'textarea:not([id*=\"comment\"])'\n    ];\n\n    let captionField = null;\n    for (const selector of captionSelectors) {\n      const element = await page.$(selector);\n      if (element) {\n        captionField = selector;\n        break;\n      }\n    }\n\n    if (!captionField) {\n      throw new Error('Caption field not found in modal');\n    }\n\n    // Type caption into the field\n    await page.waitForSelector(captionField);\n    await page.fill(captionField, 'Amazing video!');\n    \n    // Verify text was entered correctly\n    const enteredText = await page.$eval(captionField, el => el.value);\n    \n    // Take final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_caption_filled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_caption_filled.png'));\n\n    return {\n      success: true,\n      action: \"Entered 'Amazing video!' in caption field of upload modal\",\n      extractedData: {\n        captionText: enteredText,\n        fieldSelector: captionField\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n    \n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 118053,
+      "timestamp": "2025-09-15T14:22:52.644Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click upload button to open modal\n    await page.waitForSelector('#uploadBtn');\n    await page.click('#uploadBtn');\n    \n    // Wait for upload modal to appear and take screenshot\n    await page.waitForSelector('.upload-modal', { state: 'visible' });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_upload_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_upload_modal.png'));\n\n    // Fill caption field using multiple selector strategies\n    const captionField = await page.waitForSelector('#videoCaption', { state: 'visible' });\n    await captionField.fill('Amazing video!');\n    \n    // Verify text was entered and take screenshot\n    const enteredText = await page.$eval('#videoCaption', el => el.value);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_caption_filled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_caption_filled.png'));\n\n    return {\n      success: true,\n      action: \"Successfully entered 'Amazing video!' in caption field\",\n      extractedData: {\n        captionText: enteredText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Fallback strategy: Try alternative selectors if #videoCaption fails\n    try {\n      await page.waitForSelector('input[placeholder*=\"caption\" i]', { state: 'visible' });\n      await page.fill('input[placeholder*=\"caption\" i]', 'Amazing video!');\n      \n      return {\n        success: true,\n        action: \"Successfully entered caption using fallback selector\",\n        extractedData: {},\n        screenshots,\n        error: null\n      };\n    } catch (fallbackError) {\n      return {\n        success: false,\n        action: \"Failed to complete task\",\n        extractedData: {},\n        screenshots: [],\n        error: fallbackError.message\n      };\n    }\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 90483,
+      "timestamp": "2025-09-15T14:24:50.697Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 276226,
+  "timestamp": "2025-09-15T14:21:44.954Z",
+  "savedAt": "2025-09-15T14:26:21.180Z",
+  "version": "1.0"
+}

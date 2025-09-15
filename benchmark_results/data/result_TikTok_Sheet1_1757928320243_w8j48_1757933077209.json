@@ -1,0 +1,62 @@
+{
+  "id": "TikTok_Sheet1_1757928320243_w8j48_1757933077209",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928320243_w8j48",
+    "description": 7,
+    "objective": "General",
+    "expectedResult": "업로드 모달에서 caption 필드에 'Amazing video!'를 입력",
+    "difficulty": "#videoCaption에 'Amazing video!' 텍스트를 입력",
+    "category": "Easy",
+    "tags": [
+      "#videoCaption"
+    ],
+    "notes": "#videoCaption에 'Amazing video!' 텍스트를 입력"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Step 2: Open the upload modal by clicking the upload button\n    // Wait for the upload button to be visible\n    await page.waitForSelector('#uploadBtn', { state: 'visible', timeout: 5000 });\n    await page.click('#uploadBtn');\n    // Wait for the modal to appear (assuming modal appears after clicking upload)\n    // Wait for the caption field to appear (id: #videoCaption)\n    await page.waitForSelector('#videoCaption', { state: 'visible', timeout: 5000 });\n\n    // Take screenshot after modal appears\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_opened.png'));\n\n    // Step 3: Type 'Amazing video!' into the caption field\n    await page.fill('#videoCaption', 'Amazing video!');\n\n    // Take screenshot after filling the caption\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_caption_filled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_caption_filled.png'));\n\n    // Step 4: Extract the value from the caption field to verify\n    const captionValue = await page.$eval('#videoCaption', el => el.value);\n\n    return {\n      success: captionValue === 'Amazing video!',\n      action: \"Entered 'Amazing video!' into the caption field of the upload modal\",\n      extractedData: {\n        captionFieldValue: captionValue\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18365,
+      "timestamp": "2025-09-15T10:44:37.209Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the Upload button (using aria-label or icon as alternative selector)\n    // Button: <button class=\"nav-btn\" id=\"uploadBtn\">\n    const uploadBtn = await page.waitForSelector('button#uploadBtn, button.nav-btn:has(.fa-plus)', { timeout: 5000 });\n\n    // Click the Upload button to open the upload modal\n    await uploadBtn.click();\n\n    // Wait for the modal to appear (look for a unique element in the modal: the caption field)\n    // We don't know the exact caption input selector, so try several:\n    // Try #videoCaption, [placeholder*=\"caption\"], or input[type=\"text\"]:visible inside modal\n\n    // Wait for any input field that could be the caption field\n    let captionInput = null;\n    // Try by ID first (most likely)\n    try {\n      captionInput = await page.waitForSelector('#videoCaption', { timeout: 2000 });\n    } catch {}\n\n    // If not found, try by placeholder (commonly used for caption fields)\n    if (!captionInput) {\n      try {\n        captionInput = await page.waitForSelector('input[placeholder*=\"caption\" i]', { timeout: 2000 });\n      } catch {}\n    }\n\n    // If still not found, try for a visible text input in modal (assume modal is last dialog on page)\n    if (!captionInput) {\n      try {\n        // Look for a visible input[type=\"text\"] in the last modal/dialog\n        const modals = await page.$$('div[role=\"dialog\"], .modal, .upload-modal');\n        if (modals.length > 0) {\n          const modal = modals[modals.length - 1];\n          const inputs = await modal.$$('input[type=\"text\"]:visible');\n          if (inputs.length > 0) {\n            captionInput = inputs[0];\n          }\n        }\n      } catch {}\n    }\n\n    // Fallback: try global visible text input that is not #searchInput, #videoHashtags, or #commentInput\n    if (!captionInput) {\n      const allTextInputs = await page.$$('input[type=\"text\"]:visible');\n      for (let inp of allTextInputs) {\n        const id = await inp.getAttribute('id');\n        if (\n          id !== 'searchInput' &&\n          id !== 'videoHashtags' &&\n          id !== 'commentInput'\n        ) {\n          captionInput = inp;\n          break;\n        }\n      }\n    }\n\n    // As a last resort, try XPath for a visible input near the word 'caption'\n    if (!captionInput) {\n      const xpathHandles = await page.$x(\"//label[contains(translate(., 'CAPTION', 'caption'), 'caption')]/following-sibling::input[1]\");\n      if (xpathHandles.length > 0) captionInput = xpathHandles[0];\n    }\n\n    if (!captionInput) {\n      throw new Error(\"Could not find the caption input field in the upload modal.\");\n    }\n\n    // Focus and fill the caption input field\n    await captionInput.click({ clickCount: 3 });\n    await captionInput.fill('Amazing video!');\n\n    // Take screenshot after input\n    const step2 = path.join(screenshotsDir, 'step_2_caption_filled.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Extract the value from the input to verify\n    const inputValue = await captionInput.inputValue();\n\n    return {\n      success: inputValue === 'Amazing video!',\n      action: \"Entered 'Amazing video!' into the upload modal's caption field\",\n      extractedData: { captionValue: inputValue },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 24515,
+      "timestamp": "2025-09-15T10:44:55.574Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the upload button to appear using alternative selector: icon and button together (xpath)\n    const uploadBtnXPath = \"//button[contains(@class, 'nav-btn') and .//i[contains(@class, 'fa-plus')]]\";\n    await page.waitForSelector(uploadBtnXPath, { timeout: 5000 });\n    const uploadBtn = await page.$(uploadBtnXPath);\n\n    // Click the upload button to open the upload modal\n    await uploadBtn.click();\n\n    // Wait for the upload modal to appear by looking for the caption field\n    // Try alternative: fuzzy selector for input with placeholder containing 'caption', fallback to text input in modal\n    // But from analysis, there is no explicit caption field in the input fields list.\n    // Let's try to wait for an input[type=\"text\"] inside the modal that is not the hashtag or search or comment field\n\n    // Wait for modal transition\n    await page.waitForTimeout(600);\n\n    // Find all visible text inputs after modal opens\n    // We'll exclude known input fields by their IDs: #searchInput, #commentInput, #videoHashtags\n    // Instead, try to find a text input that is not those\n    // Or, fallback to the next input[type=\"text\"] that becomes enabled after clicking upload\n\n    // Get all input[type=\"text\"] visible on the page\n    const textInputs = await page.$$('input[type=\"text\"]:not(#searchInput):not(#commentInput):not(#videoHashtags)');\n    let captionInput = null;\n    for (const input of textInputs) {\n      // Check if visible\n      if (await input.isVisible()) {\n        captionInput = input;\n        break;\n      }\n    }\n    // If not found, try to find a textarea (some platforms use textarea for captions)\n    if (!captionInput) {\n      const textareas = await page.$$('textarea');\n      for (const textarea of textareas) {\n        if (await textarea.isVisible()) {\n          captionInput = textarea;\n          break;\n        }\n      }\n    }\n\n    // If still not found, as a fallback, try to find any text input inside a modal/dialog\n    if (!captionInput) {\n      // Try to find a modal/dialog container and get text inputs inside\n      const modal = await page.$('div[role=\"dialog\"], .modal, .upload-modal');\n      if (modal) {\n        const modalInputs = await modal.$$('input[type=\"text\"]');\n        for (const input of modalInputs) {\n          if (await input.isVisible()) {\n            captionInput = input;\n            break;\n          }\n        }\n      }\n    }\n\n    if (!captionInput) {\n      throw new Error(\"Could not find the caption input field after opening upload modal.\");\n    }\n\n    // Focus and fill with 'Amazing video!'\n    await captionInput.click({ clickCount: 3 });\n    await page.keyboard.press('Backspace');\n    await captionInput.type('Amazing video!');\n\n    // Take screenshot after input\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_caption_filled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_caption_filled.png'));\n\n    // Verify the value is set correctly\n    const value = await page.evaluate(input => input.value, captionInput);\n\n    return {\n      success: value === 'Amazing video!',\n      action: \"Opened upload modal and entered 'Amazing video!' into the caption field using alternative selector strategy.\",\n      extractedData: {\n        captionValue: value\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 28028,
+      "timestamp": "2025-09-15T10:45:20.089Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 70908,
+  "timestamp": "2025-09-15T10:44:37.209Z",
+  "savedAt": "2025-09-15T10:45:48.117Z",
+  "version": "1.0"
+}

@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928320235_a8bqr_1757938535899",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928320235_a8bqr",
+    "description": 12,
+    "objective": "Regular",
+    "expectedResult": "Test keyboard navigation",
+    "difficulty": "Medium",
+    "category": "Use Tab key to navigate through interactive elements and verify focus",
+    "tags": [
+      "focusable elements [tabindex] [role]"
+    ],
+    "notes": "setupKeyboardNavigation()"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Focus body to start tab navigation\n    await page.focus('body');\n\n    // Helper to get the currently focused element's info\n    async function getFocusedElementInfo() {\n      return await page.evaluate(() => {\n        const el = document.activeElement;\n        if (!el) return null;\n        let tag = el.tagName.toLowerCase();\n        let id = el.id || null;\n        let name = el.getAttribute('name') || null;\n        let cls = el.className || null;\n        let placeholder = el.getAttribute('placeholder') || null;\n        let ariaLabel = el.getAttribute('aria-label') || null;\n        let text = (el.innerText || el.value || '').trim();\n        return { tag, id, name, cls, placeholder, ariaLabel, text };\n      });\n    }\n\n    // List to collect focus order\n    const focusOrder = [];\n\n    // We'll tab through the first 10 interactive elements\n    for (let i = 0; i < 10; i++) {\n      await page.keyboard.press('Tab');\n      // Wait a bit for focus to update\n      await page.waitForTimeout(200);\n      const info = await getFocusedElementInfo();\n      focusOrder.push(info);\n\n      // Take screenshot at each step\n      const shotPath = path.join(screenshotsDir, `step_2_tab_${i+1}.png`);\n      await page.screenshot({ path: shotPath });\n      screenshots.push(shotPath);\n    }\n\n    // Extracted data: focusOrder array\n    return {\n      success: true,\n      action: \"Tested keyboard navigation using Tab key through the first 10 interactive elements and recorded their focus order.\",\n      extractedData: {\n        focusOrder\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12856,
+      "timestamp": "2025-09-15T12:15:35.899Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Focus body to start keyboard navigation\n    await page.evaluate(() => document.body.focus());\n\n    // Wait for the search input to be ready\n    await page.waitForSelector('input[placeholder=\"Search Reddit\"]', { state: 'visible' });\n\n    // Track focus order and the focused element's accessible name or placeholder\n    const focusOrder = [];\n\n    // Helper to extract the currently focused element's label or placeholder\n    async function getFocusedInfo() {\n      return await page.evaluate(() => {\n        const el = document.activeElement;\n        if (!el) return null;\n        // Try aria-label\n        if (el.getAttribute && el.getAttribute('aria-label')) return el.getAttribute('aria-label');\n        // Try placeholder\n        if (el.placeholder) return el.placeholder;\n        // Try text content (for buttons)\n        if (el.tagName === 'BUTTON' && el.textContent) return el.textContent.trim();\n        // Try label[for]\n        if (el.id) {\n          const lbl = document.querySelector(`label[for=\"${el.id}\"]`);\n          if (lbl) return lbl.textContent.trim();\n        }\n        // Try select options\n        if (el.tagName === 'SELECT') return 'select:' + (el.name || el.id || el.className);\n        // Otherwise fallback to tag\n        return el.tagName.toLowerCase();\n      });\n    }\n\n    // Bring the page into focus for keyboard events\n    await page.bringToFront();\n\n    // Wait for at least 1 button in the DOM (ensure interactive elements loaded)\n    await page.waitForSelector('button', { state: 'visible' });\n\n    // The tab order may be: user menu, theme toggle, create post, then sidebar community buttons, then main post form, etc.\n    // We'll simulate Tabbing 12 times and record each focus change\n\n    // Focus body again to ensure starting point\n    await page.evaluate(() => document.body.focus());\n\n    for (let i = 0; i < 12; i++) {\n      await page.keyboard.press('Tab');\n      await page.waitForTimeout(150); // Give time for focus to update\n      const focused = await getFocusedInfo();\n      focusOrder.push(focused);\n      // Take a screenshot at first, 4th, 7th, and last steps\n      if ([0,3,6,11].includes(i)) {\n        const shotName = `step_${i+2}_tab${i+1}.png`;\n        await page.screenshot({ path: path.join(screenshotsDir, shotName) });\n        screenshots.push(path.join(screenshotsDir, shotName));\n      }\n    }\n\n    // Also, after tab navigation, extract the id/class/tag of the currently focused element\n    const lastFocused = await page.evaluate(() => {\n      const el = document.activeElement;\n      return {\n        tag: el.tagName,\n        id: el.id,\n        class: el.className,\n        ariaLabel: el.getAttribute && el.getAttribute('aria-label'),\n        placeholder: el.placeholder || null,\n        text: el.textContent ? el.textContent.trim() : null\n      };\n    });\n\n    return {\n      success: true,\n      action: \"Tested keyboard navigation using Tab key; focus order and interactive elements were verified.\",\n      extractedData: {\n        focusOrder,\n        lastFocused\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 40837,
+      "timestamp": "2025-09-15T12:15:48.755Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // 1. Focus body to ensure TAB navigation starts at the top\n    await page.focus('body');\n\n    // 2. TAB navigation: capture focus order for first 8 interactive elements\n    // Use different selectors: aria-label, role, ID, class, placeholder, and text\n\n    // We'll keep track of the focused element's accessible name or type\n    const focusOrder = [];\n\n    // Helper to get focused element description\n    async function getFocusedElementInfo() {\n      return await page.evaluate(() => {\n        const el = document.activeElement;\n        if (!el) return null;\n        let label = el.getAttribute('aria-label') ||\n                    el.getAttribute('placeholder') ||\n                    el.getAttribute('id') ||\n                    el.getAttribute('name') ||\n                    el.innerText ||\n                    el.value ||\n                    el.outerHTML.slice(0, 40);\n        return {\n          tag: el.tagName,\n          type: el.type || '',\n          class: el.className,\n          label: label ? label.trim() : '',\n          role: el.getAttribute('role') || ''\n        };\n      });\n    }\n\n    // Start by focusing the search input directly (by placeholder, to check order)\n    await page.waitForSelector('input[placeholder=\"Search Reddit\"]', { timeout: 4000 });\n    await page.focus('input[placeholder=\"Search Reddit\"]');\n    const info0 = await getFocusedElementInfo();\n    focusOrder.push(info0);\n\n    // Now press TAB and record each focus, 7 more times\n    for (let i = 1; i <= 7; i++) {\n      await page.keyboard.press('Tab');\n      await page.waitForTimeout(300); // Allow DOM focus update\n\n      // Screenshot after each TAB to verify visually\n      const ssPath = path.join(screenshotsDir, `step_tab_${i}.png`);\n      await page.screenshot({ path: ssPath });\n      screenshots.push(ssPath);\n\n      const info = await getFocusedElementInfo();\n      focusOrder.push(info);\n    }\n\n    // Extracted data: focus order of the interactive elements\n    // We'll also include the tag, class, label, and role for clarity\n    const extractedData = {\n      focusOrder\n    };\n\n    // Final screenshot of the last focused element\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_final_focus.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_final_focus.png'));\n\n    return {\n      success: true,\n      action: \"Tested keyboard navigation using TAB key and captured focus order of interactive elements. Screenshots provide visual proof of focus transitions.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 24796,
+      "timestamp": "2025-09-15T12:16:29.592Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 78489,
+  "timestamp": "2025-09-15T12:15:35.899Z",
+  "savedAt": "2025-09-15T12:16:54.388Z",
+  "version": "1.0"
+}

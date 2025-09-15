@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T011_1757938787419",
+  "website": "Amazon",
+  "task": {
+    "id": "T011",
+    "description": "Remove Item from Cart",
+    "objective": "General",
+    "expectedResult": "Medium",
+    "difficulty": "Add an item to cart, open cart modal, then click 'Remove' button on the cart item.",
+    "category": ".add-to-cart, .cart, .remove-item, #cartCount",
+    "tags": [
+      "1. Add item to cart 2. Open cart modal 3. Click remove button on item"
+    ],
+    "notes": "Item disappears from cart, cart counter decreases, total price updates, cart modal refreshes"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Add item to cart first\n    await page.waitForSelector('.add-to-cart');\n    await page.click('.add-to-cart');\n    await page.waitForTimeout(1000); // Wait for cart to update\n\n    // Verify item was added (cart count should be 1)\n    const cartCount = await page.$eval('#cartCount', el => el.textContent);\n    if (cartCount !== '1') throw new Error('Item was not added to cart');\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_item_added.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_item_added.png'));\n\n    // Open cart modal\n    await page.click('.cart');\n    await page.waitForSelector('.cart-modal', { timeout: 5000 });\n    await page.waitForTimeout(1000); // Wait for modal animation\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_cart_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_cart_open.png'));\n\n    // Remove item from cart\n    await page.click('.remove-item');\n    await page.waitForTimeout(1000); // Wait for removal animation\n\n    // Verify item was removed (cart count should be 0)\n    const updatedCartCount = await page.$eval('#cartCount', el => el.textContent);\n    if (updatedCartCount !== '0') throw new Error('Item was not removed from cart');\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_item_removed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_item_removed.png'));\n\n    return {\n      success: true,\n      action: \"Successfully added item to cart, opened cart modal, and removed item\",\n      extractedData: {\n        initialCartCount: cartCount,\n        finalCartCount: updatedCartCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n    \n    return {\n      success: false,\n      action: \"Failed to remove item from cart\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 105122,
+      "timestamp": "2025-09-15T12:19:47.419Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Navigate to Electronics category to find products\n    await page.click('a:has-text(\"Electronics\")');\n    await page.waitForLoadState('networkidle');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_electronics_category.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_electronics_category.png'));\n\n    // Click on first product\n    await page.waitForSelector('.product-item');\n    await page.click('.product-item:first-child');\n    await page.waitForLoadState('networkidle');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_product_page.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_product_page.png'));\n\n    // Add to cart\n    await page.waitForSelector('.add-to-cart');\n    await page.click('.add-to-cart');\n    await page.waitForTimeout(1000); // Wait for cart update animation\n\n    // Verify item was added by checking cart count\n    const cartCount = await page.textContent('#cartCount');\n    if (cartCount !== '1') {\n      throw new Error('Item was not added to cart successfully');\n    }\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_item_added.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_item_added.png'));\n\n    // Open cart modal\n    await page.click('.cart');\n    await page.waitForSelector('.cart-modal');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_5_cart_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_5_cart_modal.png'));\n\n    // Remove item from cart\n    await page.waitForSelector('.remove-item');\n    await page.click('.remove-item');\n    await page.waitForTimeout(1000); // Wait for removal animation\n\n    // Verify item was removed by checking cart count\n    const updatedCartCount = await page.textContent('#cartCount');\n    if (updatedCartCount !== '0') {\n      throw new Error('Item was not removed from cart successfully');\n    }\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_6_item_removed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_6_item_removed.png'));\n\n    return {\n      success: true,\n      action: \"Successfully added item to cart, opened cart modal, and removed item\",\n      extractedData: {\n        initialCartCount: cartCount,\n        finalCartCount: updatedCartCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [...screenshots, path.join(screenshotsDir, 'error.png')],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 151038,
+      "timestamp": "2025-09-15T12:21:32.541Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // First add an item to cart if cart is empty\n    const cartCount = await page.$eval('#cartCount', el => parseInt(el.textContent));\n    if (cartCount === 0) {\n      // Search for a product to add to cart\n      await page.fill('#searchInput', 'electronics');\n      await page.click('button.search-btn');\n      await page.waitForLoadState('networkidle');\n      \n      // Wait for products to load and click first product\n      await page.waitForSelector('.product-card', { timeout: 5000 });\n      await page.click('.product-card:first-child');\n      await page.waitForLoadState('networkidle');\n      \n      // Add to cart\n      await page.waitForSelector('.add-to-cart', { timeout: 5000 });\n      await page.click('.add-to-cart');\n      await page.waitForTimeout(1000); // Wait for cart update\n    }\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_item_added.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_item_added.png'));\n\n    // Open cart modal\n    await page.click('.cart');\n    await page.waitForSelector('.cart-modal', { timeout: 5000 });\n    \n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_cart_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_cart_opened.png'));\n\n    // Remove item from cart\n    await page.waitForSelector('.remove-item', { timeout: 5000 });\n    await page.click('.remove-item');\n    await page.waitForTimeout(1000); // Wait for removal animation\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_item_removed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_item_removed.png'));\n\n    // Verify cart is empty\n    const finalCartCount = await page.$eval('#cartCount', el => parseInt(el.textContent));\n    const cartEmpty = finalCartCount === 0;\n\n    return {\n      success: true,\n      action: \"Successfully added item to cart, opened cart modal, and removed item\",\n      extractedData: {\n        initialCartCount: cartCount,\n        finalCartCount: finalCartCount,\n        itemRemoved: cartEmpty\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete cart removal task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 224562,
+      "timestamp": "2025-09-15T12:24:03.579Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 480722,
+  "timestamp": "2025-09-15T12:19:47.419Z",
+  "savedAt": "2025-09-15T12:27:48.141Z",
+  "version": "1.0"
+}

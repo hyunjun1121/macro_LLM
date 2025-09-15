@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_010_1757928732683",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_010",
+    "description": "General",
+    "objective": "Price Sorting Verification",
+    "expectedResult": "모든 숙소의 가격을 추출하여 배열로 저장하고 가격 순서가 올바른지 검증하기",
+    "difficulty": "Medium",
+    "category": ".listing-price .amount",
+    "tags": [
+      "Data extraction",
+      "array manipulation"
+    ],
+    "notes": "가격 배열 (예: [65, 95, 110, 120, 140, 160, 180, 185, 220, 280, 350, 380, 420, 450, 750])"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the listings to load\n    await page.waitForSelector('.listing-price');\n\n    // Extract prices from the listings\n    const prices = await page.$$eval('.listing-price .amount', elements => \n      elements.map(el => parseFloat(el.innerText.replace(/[^0-9.-]+/g,\"\")))\n    );\n\n    // Verify if the prices are in ascending order\n    const isSorted = prices.every((price, index) => index === 0 || price >= prices[index - 1]);\n\n    // Take a screenshot after extraction\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_prices_extracted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_prices_extracted.png'));\n\n    return {\n      success: true,\n      action: \"Extracted prices and verified order\",\n      extractedData: {\n        prices,\n        isSorted\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13935,
+      "timestamp": "2025-09-15T09:32:12.683Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for prices to load\n    await page.waitForSelector('.listing-price .amount');\n\n    // Extract all prices\n    const prices = await page.$$eval('.listing-price .amount', elements => \n      elements.map(el => parseFloat(el.textContent.replace(/[^0-9.-]+/g,\"\"))) // Extract and convert to float\n    );\n\n    // Validate price order\n    const isSorted = prices.every((value, index, array) => \n      index === 0 || value >= array[index - 1]\n    );\n\n    // Log the result of validation\n    console.log(`Prices are in order: ${isSorted}`);\n\n    // Take screenshot after extraction\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_prices_extracted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_prices_extracted.png'));\n\n    return {\n      success: true,\n      action: isSorted ? \"Prices extracted and verified to be in order\" : \"Prices extracted but not in order\",\n      extractedData: prices,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14143,
+      "timestamp": "2025-09-15T09:32:26.619Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the price elements to load\n    await page.waitForSelector('.listing-price .amount');\n\n    // Extract all prices from the listings\n    const prices = await page.$$eval('.listing-price .amount', elements => {\n      return elements.map(element => {\n        const priceText = element.textContent.trim();\n        return parseFloat(priceText.replace(/[^0-9.-]+/g, \"\"));\n      });\n    });\n\n    // Take screenshot after extracting prices\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_prices_extracted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_prices_extracted.png'));\n\n    // Validate if prices are sorted correctly\n    const sortedPrices = [...prices].sort((a, b) => a - b);\n    const isSorted = JSON.stringify(prices) === JSON.stringify(sortedPrices);\n\n    return {\n      success: true,\n      action: \"Extracted prices and verified sorting\",\n      extractedData: {\n        prices,\n        isSorted\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12763,
+      "timestamp": "2025-09-15T09:32:40.762Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 40842,
+  "timestamp": "2025-09-15T09:32:12.683Z",
+  "savedAt": "2025-09-15T09:32:53.526Z",
+  "version": "1.0"
+}

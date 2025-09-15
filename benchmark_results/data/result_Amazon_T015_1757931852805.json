@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T015_1757931852805",
+  "website": "Amazon",
+  "task": {
+    "id": "T015",
+    "description": "Close Modal with Escape Key",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Open any modal (cart or product detail), then press the Escape key to close it.",
+    "category": ".modal, #productModal, #cartModal",
+    "tags": [
+      "1. Open any modal 2. Press Escape key"
+    ],
+    "notes": "Modal becomes hidden, modal overlay disappears, focus returns to main page"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Step 2: Open a modal (try cart modal first)\n    // The cart icon is in the header with class 'cart'\n    await page.waitForSelector('.cart', { timeout: 5000 });\n    await page.click('.cart');\n\n    // Wait for the cart modal to appear\n    // The modal might have id #cartModal or class .modal\n    let modalSelector = '#cartModal';\n    let modalAppeared = false;\n    try {\n      await page.waitForSelector('#cartModal', { timeout: 3000, state: 'visible' });\n      modalAppeared = true;\n    } catch {\n      // Try generic modal class\n      try {\n        await page.waitForSelector('.modal', { timeout: 2000, state: 'visible' });\n        modalSelector = '.modal';\n        modalAppeared = true;\n      } catch {\n        // Try product modal as fallback\n        try {\n          await page.waitForSelector('#productModal', { timeout: 2000, state: 'visible' });\n          modalSelector = '#productModal';\n          modalAppeared = true;\n        } catch {\n          throw new Error('No modal appeared after clicking cart or product');\n        }\n      }\n    }\n\n    // Take screenshot with modal open\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_open.png'));\n\n    // Step 3: Press Escape to close the modal\n    await page.keyboard.press('Escape');\n\n    // Wait for the modal to disappear\n    await page.waitForSelector(modalSelector, { state: 'hidden', timeout: 3000 });\n\n    // Take screenshot after closing modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_modal_closed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_modal_closed.png'));\n\n    // Extracted data: confirm modal is closed (not visible in DOM)\n    const modalStillVisible = await page.evaluate((sel) => {\n      const el = document.querySelector(sel);\n      if (!el) return false;\n      const style = window.getComputedStyle(el);\n      return style.display !== 'none' && style.visibility !== 'hidden' && el.offsetParent !== null;\n    }, modalSelector);\n\n    return {\n      success: !modalStillVisible,\n      action: \"Opened a modal (cart or product), pressed Escape to close it, and verified it closed.\",\n      extractedData: {\n        modalSelector,\n        modalStillVisible\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 43486,
+      "timestamp": "2025-09-15T10:24:12.805Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Initial screenshot of homepage\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open a modal: Click the cart icon to open the cart modal\n    // Use cart-text span (alternate selector to previous attempts)\n    const cartSelector = 'span.cart-text';\n    await page.waitForSelector(cartSelector, { timeout: 5000 });\n    await page.click(cartSelector);\n\n    // Wait for any modal to appear (by class)\n    // Try .modal, #cartModal, #productModal one after the other\n    let modalHandle = null;\n    try {\n      await page.waitForSelector('.modal, #cartModal, #productModal', { timeout: 3000 });\n      modalHandle = await page.$('.modal') || await page.$('#cartModal') || await page.$('#productModal');\n    } catch (e) {\n      throw new Error('Modal did not appear after clicking cart icon');\n    }\n\n    // Screenshot - modal open\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_open.png'));\n\n    // Focus the modal for keyboard events\n    // If modal is not focusable, focus the body\n    if (modalHandle) {\n      try {\n        await modalHandle.focus();\n      } catch (e) {\n        await page.focus('body');\n      }\n    } else {\n      await page.focus('body');\n    }\n\n    // Press Escape to close modal\n    await page.keyboard.press('Escape');\n\n    // Wait for modal to disappear\n    await page.waitForTimeout(400); // Some modals animate out; allow time\n    let modalStillOpen = false;\n    // Check if any modal is still visible (using style/display or existence)\n    const isModalVisible = await page.evaluate(() => {\n      const modal = document.querySelector('.modal') || document.querySelector('#cartModal') || document.querySelector('#productModal');\n      if (!modal) return false;\n      const style = window.getComputedStyle(modal);\n      return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';\n    });\n    modalStillOpen = isModalVisible;\n\n    // Screenshot - after pressing Escape\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_escape.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_escape.png'));\n\n    // Extract data to verify result\n    const extractedData = {\n      modalClosed: !modalStillOpen\n    };\n\n    return {\n      success: !modalStillOpen,\n      action: \"Opened the cart modal, pressed Escape, and verified that the modal was closed.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 44012,
+      "timestamp": "2025-09-15T10:24:56.291Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // --- STEP 2: Open the cart modal using cart icon (try unique selector strategies) ---\n    // Use the cart icon by its role and text fallback\n    const cartIconSelector = \"//div[contains(@class, 'cart') and .//span[contains(text(),'Cart')]]\";\n    await page.waitForSelector(cartIconSelector, { timeout: 5000 });\n    await page.click(cartIconSelector);\n    \n    // Wait for modal to appear (try various selectors for modals)\n    // Try #cartModal, .modal, or visible dialog\n    let modalAppeared = false;\n    let modalHandle = null;\n    const modalSelectors = [\n      '#cartModal',\n      '.modal:visible',\n      \"//div[contains(@class,'modal') and contains(@style,'display: block')]\",\n      \"//div[contains(@class, 'modal') and not(contains(@style,'display: none'))]\"\n    ];\n    for (const sel of modalSelectors) {\n      try {\n        await page.waitForSelector(sel, { timeout: 2000 });\n        modalHandle = await page.$(sel);\n        if (modalHandle) {\n          modalAppeared = true;\n          break;\n        }\n      } catch (e) { /* continue */ }\n    }\n\n    // Take screenshot of the opened modal\n    const modalOpenShot = path.join(screenshotsDir, 'step_2_modal_opened.png');\n    await page.screenshot({ path: modalOpenShot });\n    screenshots.push(modalOpenShot);\n\n    // --- STEP 3: Press Escape key to close the modal ---\n    await page.keyboard.press('Escape');\n    // Wait for modal to disappear (try all known selectors)\n    let modalClosed = false;\n    for (const sel of modalSelectors) {\n      try {\n        await page.waitForSelector(sel, { state: 'hidden', timeout: 3000 });\n        modalClosed = true;\n        break;\n      } catch (e) { /* try next selector */ }\n    }\n\n    // Take screenshot after closing modal\n    const afterEscapeShot = path.join(screenshotsDir, 'step_3_after_escape.png');\n    await page.screenshot({ path: afterEscapeShot });\n    screenshots.push(afterEscapeShot);\n\n    // --- STEP 4: Extract data to confirm modal is closed ---\n    // Try to locate modal again; if not found or hidden, consider closed\n    let modalStillVisible = false;\n    for (const sel of modalSelectors) {\n      const handle = await page.$(sel);\n      if (handle) {\n        const visible = await handle.isVisible ? await handle.isVisible() : await page.evaluate(el => {\n          const style = window.getComputedStyle(el);\n          return style && style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';\n        }, handle);\n        if (visible) {\n          modalStillVisible = true;\n          break;\n        }\n      }\n    }\n\n    return {\n      success: modalAppeared && modalClosed && !modalStillVisible,\n      action: \"Opened cart modal, pressed Escape to close it, and verified modal was closed.\",\n      extractedData: {\n        modalWasOpened: modalAppeared,\n        modalWasClosed: modalClosed,\n        modalStillVisible: modalStillVisible\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 43809,
+      "timestamp": "2025-09-15T10:25:40.304Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 131308,
+  "timestamp": "2025-09-15T10:24:12.805Z",
+  "savedAt": "2025-09-15T10:26:24.113Z",
+  "version": "1.0"
+}

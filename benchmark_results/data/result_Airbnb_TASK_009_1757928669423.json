@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_009_1757928669423",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_009",
+    "description": "General",
+    "objective": "Search History Storage",
+    "expectedResult": "검색 수행 후 localStorage의 검색 기록이 업데이트되는지 확인하고 최신 검색어 추출하기",
+    "difficulty": "Medium",
+    "category": ".search-btn, localStorage",
+    "tags": [
+      "Search execution",
+      "storage inspection"
+    ],
+    "notes": "localStorage의 airbnb_searches 배열에서 가장 최근 검색 기록"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the search input to be available and enter a search term\n    await page.waitForSelector('#locationInput');\n    await page.fill('#locationInput', 'New York');\n\n    // Take a screenshot after entering the search term\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_term_entered.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_term_entered.png'));\n\n    // Click the search button\n    await page.waitForSelector('.search-btn');\n    await page.click('.search-btn');\n\n    // Wait for the search results to load\n    await page.waitForLoadState('networkidle');\n\n    // Take a screenshot of the search results\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_results.png'));\n\n    // Check localStorage for search history\n    const searchHistory = await page.evaluate(() => {\n      return JSON.parse(localStorage.getItem('searchHistory')) || [];\n    });\n\n    // Extract the latest search term\n    const latestSearchTerm = searchHistory.length > 0 ? searchHistory[searchHistory.length - 1] : null;\n\n    return {\n      success: true,\n      action: \"Performed search and extracted latest search term from localStorage\",\n      extractedData: { latestSearchTerm },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17205,
+      "timestamp": "2025-09-15T09:31:09.423Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the search input field to be available and perform a search\n    await page.waitForSelector('#locationInput');\n    await page.fill('#locationInput', 'New York'); // Input a search term\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_input_search.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_input_search.png'));\n\n    // Click on the search button\n    const searchButtonSelector = '.search-btn'; // Using a class selector for search button\n    await page.waitForSelector(searchButtonSelector);\n    await page.click(searchButtonSelector);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_click_search.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_click_search.png'));\n\n    // Wait for search results to load\n    await page.waitForSelector('.search-results'); // Assuming there's a class for search results\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_search_results_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_search_results_loaded.png'));\n\n    // Check if localStorage has been updated with the search term\n    const searchHistory = await page.evaluate(() => {\n      return JSON.parse(localStorage.getItem('searchHistory')) || [];\n    });\n\n    const latestSearch = searchHistory[searchHistory.length - 1]; // Get the last search term\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_5_local_storage_check.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_5_local_storage_check.png'));\n\n    return {\n      success: true,\n      action: \"Performed search and extracted latest search term from localStorage\",\n      extractedData: { latestSearch },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20400,
+      "timestamp": "2025-09-15T09:31:26.628Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Interact with the search input\n    await page.waitForSelector('#locationInput');\n    await page.fill('#locationInput', 'New York');\n\n    // Take screenshot after entering the search term\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_input.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_input.png'));\n\n    // Click the search button\n    await page.waitForSelector('.search-btn');\n    await page.click('.search-btn');\n\n    // Wait for the search results to load\n    await page.waitForLoadState('networkidle');\n\n    // Take screenshot of the results page\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_results.png'));\n\n    // Access localStorage and extract search history\n    const searchHistory = await page.evaluate(() => {\n      return JSON.parse(localStorage.getItem('searchHistory')) || [];\n    });\n\n    // Extract the latest search term from localStorage\n    const latestSearchTerm = searchHistory.length > 0 ? searchHistory[searchHistory.length - 1] : null;\n\n    return {\n      success: true,\n      action: \"Performed search and extracted latest search term from localStorage\",\n      extractedData: { latestSearchTerm },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20110,
+      "timestamp": "2025-09-15T09:31:47.028Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 57715,
+  "timestamp": "2025-09-15T09:31:09.423Z",
+  "savedAt": "2025-09-15T09:32:07.138Z",
+  "version": "1.0"
+}

@@ -1,0 +1,66 @@
+{
+  "id": "when2meet_T014_1757937192706",
+  "website": "when2meet",
+  "task": {
+    "id": "T014",
+    "description": "Verify Footer Links Present",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Check that all footer links are present and properly structured",
+    "category": ".footer-link",
+    "tags": [
+      "Inspect footer section"
+    ],
+    "notes": "Footer contains links for Features Pricing API Help Center Contact Status Privacy Terms"
+  },
+  "websiteInfo": {
+    "name": "when2meet",
+    "htmlFiles": [
+      "404.html",
+      "create.html",
+      "dashboard.html",
+      "event.html",
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the footer to be present\n    // Try common selectors for footer\n    let footer;\n    try {\n      footer = await page.waitForSelector('footer', { timeout: 3000 });\n    } catch {\n      // Try alternative: class or id\n      try {\n        footer = await page.waitForSelector('.footer', { timeout: 3000 });\n      } catch {\n        try {\n          footer = await page.waitForSelector('#footer', { timeout: 3000 });\n        } catch {\n          footer = null;\n        }\n      }\n    }\n\n    if (!footer) {\n      // No footer found\n      const failScreenshot = path.join(screenshotsDir, 'step_2_no_footer.png');\n      await page.screenshot({ path: failScreenshot });\n      screenshots.push(failScreenshot);\n      return {\n        success: false,\n        action: \"Footer not found on the page\",\n        extractedData: {},\n        screenshots,\n        error: \"Footer element not found\"\n      };\n    }\n\n    // Wait for at least one .footer-link in the footer\n    const footerLinks = await footer.$$('.footer-link');\n\n    // If no .footer-link found, try to find links inside footer\n    let links = footerLinks;\n    if (links.length === 0) {\n      links = await footer.$$('a');\n    }\n\n    // Extract link texts and hrefs\n    const extractedLinks = [];\n    for (const link of links) {\n      const text = (await link.innerText()).trim();\n      const href = await link.getAttribute('href');\n      const classes = await link.getAttribute('class');\n      extractedLinks.push({\n        text,\n        href,\n        class: classes\n      });\n    }\n\n    // Take screenshot of the footer area\n    const footerBox = await footer.boundingBox();\n    if (footerBox) {\n      const footerScreenshot = path.join(screenshotsDir, 'step_3_footer.png');\n      await page.screenshot({\n        path: footerScreenshot,\n        clip: {\n          x: Math.floor(footerBox.x),\n          y: Math.floor(footerBox.y),\n          width: Math.ceil(footerBox.width),\n          height: Math.ceil(footerBox.height)\n        }\n      });\n      screenshots.push(footerScreenshot);\n    }\n\n    // Check that all links are present and properly structured\n    // \"Properly structured\" means: has href, non-empty text, and (if possible) class includes 'footer-link'\n    const presentAndStructured = extractedLinks.map(link => {\n      return {\n        text: link.text,\n        href: !!link.href,\n        hasFooterLinkClass: link.class ? link.class.includes('footer-link') : false\n      };\n    });\n\n    // If no links found, fail\n    if (extractedLinks.length === 0) {\n      return {\n        success: false,\n        action: \"No footer links found\",\n        extractedData: { extractedLinks },\n        screenshots,\n        error: \"No links found in footer\"\n      };\n    }\n\n    // All links must have href and non-empty text\n    const allLinksValid = presentAndStructured.every(l => l.href && l.text.length > 0);\n\n    return {\n      success: allLinksValid,\n      action: allLinksValid\n        ? \"Verified all footer links are present and properly structured\"\n        : \"Some footer links are missing href or text\",\n      extractedData: {\n        footerLinks: extractedLinks,\n        summary: presentAndStructured\n      },\n      screenshots,\n      error: allLinksValid ? null : \"Some footer links are missing href or text\"\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16976,
+      "timestamp": "2025-09-15T11:53:12.706Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n    const screenshots = [];\n\n    // Take initial screenshot\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the footer to be present in the DOM by locating a likely footer element\n    // Try different strategies: 'footer', a class containing 'footer', or links near end of DOM\n    let footerHandle = await page.$('footer');\n    if (!footerHandle) {\n      // Try by class name\n      footerHandle = await page.$('[class*=\"footer\"]');\n    }\n    if (!footerHandle) {\n      // Try by text content (case-insensitive, contains 'about', 'privacy', etc.)\n      // This is more generic in case footer is div or section\n      footerHandle = await page.$x(\n        \"//div[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'about') or contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'privacy') or contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'contact')]\"\n      );\n      if (footerHandle && footerHandle.length > 0) {\n        footerHandle = footerHandle[0];\n      } else {\n        footerHandle = null;\n      }\n    }\n\n    if (!footerHandle) {\n      throw new Error('Footer not found using multiple selector strategies');\n    }\n\n    // Wait for at least one .footer-link in the footer\n    // Use a combination of CSS and XPath selectors for robustness\n    let footerLinks = await footerHandle.$$('.footer-link');\n    if (footerLinks.length === 0) {\n      // Try finding all links under the footer with a class containing 'footer'\n      footerLinks = await footerHandle.$$('[class*=\"footer\"] a');\n    }\n    if (footerLinks.length === 0) {\n      // Try generic a tags under footer\n      footerLinks = await footerHandle.$$('a');\n    }\n\n    // Extract link texts and hrefs\n    const linksData = [];\n    for (const linkEl of footerLinks) {\n      const text = (await linkEl.innerText()).trim();\n      const href = await linkEl.getAttribute('href');\n      if (text.length > 0) {\n        linksData.push({ text, href });\n      }\n    }\n\n    // Take screenshot of the footer area\n    const footerShotPath = path.join(screenshotsDir, 'step_2_footer.png');\n    await footerHandle.screenshot({ path: footerShotPath });\n    screenshots.push(footerShotPath);\n\n    // Check for proper structure: are all links inside semantic footer or visually grouped container?\n    let footerTagName = '';\n    if (footerHandle) {\n      footerTagName = await footerHandle.evaluate(node => node.tagName);\n    }\n\n    // Prepare result\n    return {\n      success: true,\n      action: \"Verified presence and structure of footer links using multiple selector strategies. Extracted all visible footer links and their hrefs.\",\n      extractedData: {\n        footerTag: footerTagName,\n        footerLinks: linksData\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12536,
+      "timestamp": "2025-09-15T11:53:29.682Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1Path = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1Path });\n    screenshots.push(step1Path);\n\n    // Wait for the footer to be present using multiple strategies\n    // Try to find a <footer> element or a section with role=\"contentinfo\" or class including 'footer'\n    const footerSelectors = [\n      'footer',\n      '[role=\"contentinfo\"]',\n      '[class*=\"footer\"]'\n    ];\n    let footerHandle = null;\n    for (const sel of footerSelectors) {\n      try {\n        footerHandle = await page.waitForSelector(sel, { timeout: 2500 });\n        if (footerHandle) break;\n      } catch (e) {}\n    }\n\n    // If not found, throw error\n    if (!footerHandle) {\n      throw new Error('Footer section not found on page using known selectors');\n    }\n\n    // Wait for any .footer-link elements inside the footer to load\n    await footerHandle.waitForSelector('.footer-link', { timeout: 3000 });\n\n    // Take screenshot of the footer area\n    const footerBox = await footerHandle.boundingBox();\n    if (footerBox) {\n      const step2Path = path.join(screenshotsDir, 'step_2_footer.png');\n      await page.screenshot({\n        path: step2Path,\n        clip: footerBox\n      });\n      screenshots.push(step2Path);\n    }\n\n    // Extract all footer links with class .footer-link\n    const footerLinks = await page.$$eval(\n      'footer .footer-link, [role=\"contentinfo\"] .footer-link, [class*=\"footer\"] .footer-link',\n      nodes =>\n        nodes.map(node => ({\n          text: node.textContent.trim(),\n          href: node.getAttribute('href'),\n          tag: node.tagName\n        }))\n    );\n\n    // Fallback: If not found, try just any <a> in the footer with visible text\n    let linkCount = footerLinks.length;\n    if (linkCount === 0) {\n      const altFooterLinks = await footerHandle.$$eval('a', nodes =>\n        nodes\n          .filter(node => node.offsetParent !== null && node.textContent.trim().length > 0)\n          .map(node => ({\n            text: node.textContent.trim(),\n            href: node.getAttribute('href'),\n            tag: node.tagName,\n            class: node.className\n          }))\n      );\n      // Only keep those that look like footer links (by class or by position)\n      // This is a fallback\n      for (const l of altFooterLinks) {\n        if (l.class && l.class.includes('footer-link')) {\n          footerLinks.push(l);\n        }\n      }\n      // If still empty, just use all altFooterLinks (very defensive)\n      if (footerLinks.length === 0 && altFooterLinks.length > 0) {\n        footerLinks.push(...altFooterLinks);\n      }\n      linkCount = footerLinks.length;\n    }\n\n    // Take a final screenshot highlighting all links (mark them with a red outline)\n    await page.evaluate(() => {\n      // Highlight .footer-link elements with a red outline\n      [...document.querySelectorAll('footer .footer-link,[role=\"contentinfo\"] .footer-link,[class*=\"footer\"] .footer-link')].forEach(el => {\n        el.style.outline = '2px solid red';\n      });\n    });\n    const step3Path = path.join(screenshotsDir, 'step_3_footer_links_highlighted.png');\n    await page.screenshot({ path: step3Path });\n    screenshots.push(step3Path);\n\n    // Prepare extracted data\n    const extractedData = {\n      footerLinks,\n      linkCount\n    };\n\n    return {\n      success: linkCount > 0,\n      action: `Verified presence of ${linkCount} footer link(s) and extracted their structure.`,\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13334,
+      "timestamp": "2025-09-15T11:53:42.218Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 42846,
+  "timestamp": "2025-09-15T11:53:12.706Z",
+  "savedAt": "2025-09-15T11:53:55.552Z",
+  "version": "1.0"
+}

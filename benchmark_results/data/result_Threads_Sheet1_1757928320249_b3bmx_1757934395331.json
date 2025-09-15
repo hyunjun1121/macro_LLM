@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928320249_b3bmx_1757934395331",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928320249_b3bmx",
+    "description": "G009",
+    "objective": "Change Theme Setting",
+    "expectedResult": "Open settings, go to Appearance tab, and change theme to Light",
+    "difficulty": "#settings-btn, .tab-btn[data-tab='appearance'], #theme-select",
+    "category": 2,
+    "tags": [
+      "15 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // 1. Open settings modal by clicking the settings button in sidebar\n    await page.waitForSelector('#settings-btn', { state: 'visible', timeout: 5000 });\n    await page.click('#settings-btn');\n\n    // Wait for the settings modal/dialog to appear (look for a common settings element)\n    // Try to wait for the appearance tab button\n    await page.waitForSelector(\".tab-btn[data-tab='appearance']\", { state: 'visible', timeout: 5000 });\n\n    // Take screenshot after opening settings\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_settings_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_settings_open.png'));\n\n    // 2. Click on the \"Appearance\" tab in settings\n    await page.click(\".tab-btn[data-tab='appearance']\");\n\n    // Wait for the theme select dropdown to be visible\n    await page.waitForSelector('#theme-select', { state: 'visible', timeout: 5000 });\n\n    // Take screenshot after switching to Appearance tab\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_appearance_tab.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_appearance_tab.png'));\n\n    // 3. Change theme to \"Light\"\n    // First, get the current value to check if it's already \"light\"\n    const currentTheme = await page.$eval('#theme-select', el => el.value);\n\n    if (currentTheme !== 'light') {\n      await page.selectOption('#theme-select', 'light');\n      // Wait for the theme to apply (look for .light-theme on body)\n      await page.waitForSelector('body.light-theme', { timeout: 3000 });\n    } else {\n      // If already light, still wait for .light-theme to be present\n      await page.waitForSelector('body.light-theme', { timeout: 3000 });\n    }\n\n    // Take screenshot after changing theme\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_theme_light.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_theme_light.png'));\n\n    // Extract verification data: check if body has class \"light-theme\" and theme-select value is \"light\"\n    const themeApplied = await page.evaluate(() => {\n      const bodyHasLight = document.body.classList.contains('light-theme');\n      const themeSelect = document.querySelector('#theme-select');\n      return {\n        bodyHasLight,\n        themeSelectValue: themeSelect ? themeSelect.value : null\n      };\n    });\n\n    return {\n      success: themeApplied.bodyHasLight && themeApplied.themeSelectValue === 'light',\n      action: \"Opened settings, navigated to Appearance tab, and changed theme to Light\",\n      extractedData: themeApplied,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13349,
+      "timestamp": "2025-09-15T11:06:35.331Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open the settings panel using the sidebar \"Settings\" nav-item\n    // Try an alternative selector: Sidebar with text \"Settings\", not just by id\n    const settingsNavXPath = \"//li[contains(@class,'nav-item') and .//span[text()='Settings']]\";\n    await page.waitForSelector(settingsNavXPath, { timeout: 5000 });\n    const settingsNav = await page.$(settingsNavXPath);\n    await settingsNav.click();\n\n    // Wait for the settings modal/dialog to appear\n    // Wait for the appearance tab button using a different selector: use attribute selector\n    const appearanceTabSelector = \".tab-btn[data-tab='appearance']\";\n    await page.waitForSelector(appearanceTabSelector, { timeout: 5000 });\n\n    // Take screenshot after settings opened\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_settings_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_settings_open.png'));\n\n    // Click the Appearance tab\n    const appearanceTab = await page.$(appearanceTabSelector);\n    if (appearanceTab) {\n      await appearanceTab.click();\n    } else {\n      throw new Error(\"Appearance tab not found\");\n    }\n\n    // Wait for the theme select dropdown to be visible\n    const themeSelectSelector = \"#theme-select\";\n    await page.waitForSelector(themeSelectSelector, { timeout: 5000 });\n\n    // Take screenshot after switching to Appearance tab\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_appearance_tab.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_appearance_tab.png'));\n\n    // Change the theme to Light\n    // Use selectOption and verify by extracting the value after\n    await page.selectOption(themeSelectSelector, 'light');\n\n    // Wait for possible UI update (class on body or container)\n    await page.waitForTimeout(500); // brief pause for CSS changes\n\n    // Take screenshot after changing theme\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_theme_light.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_theme_light.png'));\n\n    // Extract data: check if .light-theme class is applied to body or app-container\n    let lightThemeApplied = false;\n    // Try both body and main container\n    lightThemeApplied = await page.evaluate(() => {\n      return (\n        document.body.classList.contains('light-theme') ||\n        document.querySelector('.app-container')?.classList.contains('light-theme')\n      );\n    });\n\n    // Also extract the value of the select\n    const themeValue = await page.$eval(themeSelectSelector, el => el.value);\n\n    return {\n      success: lightThemeApplied && themeValue === 'light',\n      action: \"Opened settings, navigated to Appearance tab, and changed theme to Light\",\n      extractedData: {\n        themeSelectValue: themeValue,\n        lightThemeApplied\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 22649,
+      "timestamp": "2025-09-15T11:06:48.680Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // --- Step 1: Open settings via sidebar ---\n    // Use robust selector: nav .nav-item#settings-btn, fallback to text if needed\n    const settingsBtnSelector = \"nav .nav-item#settings-btn\";\n    await page.waitForSelector(settingsBtnSelector, { state: 'visible', timeout: 3000 });\n    await page.click(settingsBtnSelector);\n\n    // Wait for settings modal/dialog to appear (look for \"Appearance\" tab button)\n    // Try a flexible selector for the appearance tab: .tab-btn[data-tab='appearance'] OR button:text(\"Appearance\")\n    let appearanceTabSelector = \".tab-btn[data-tab='appearance']\";\n    await page.waitForSelector(appearanceTabSelector, { state: 'visible', timeout: 3000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_settings_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_settings_opened.png'));\n\n    // --- Step 2: Switch to Appearance tab ---\n    await page.click(appearanceTabSelector);\n\n    // Wait for theme select dropdown to be visible\n    const themeSelectSelector = \"#theme-select\";\n    await page.waitForSelector(themeSelectSelector, { state: 'visible', timeout: 3000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_appearance_tab.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_appearance_tab.png'));\n\n    // --- Step 3: Change theme to \"Light\" ---\n    // Select the \"Light\" option (option[value='light'])\n    // Use selectOption for reliability\n    await page.selectOption(themeSelectSelector, { value: 'light' });\n\n    // Wait for the theme to apply (look for .light-theme on body)\n    await page.waitForSelector('body.light-theme', { timeout: 2000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_theme_light_applied.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_theme_light_applied.png'));\n\n    // --- Extract confirmation data ---\n    // Check that the body has the \"light-theme\" class\n    const bodyHasLightTheme = await page.evaluate(() => {\n      return document.body.classList.contains('light-theme');\n    });\n\n    // Get the value of the theme select\n    const selectedTheme = await page.$eval('#theme-select', el => el.value);\n\n    return {\n      success: bodyHasLightTheme && selectedTheme === 'light',\n      action: \"Opened settings, navigated to Appearance tab, and changed theme to Light\",\n      extractedData: {\n        bodyHasLightTheme,\n        selectedTheme\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14526,
+      "timestamp": "2025-09-15T11:07:11.329Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 50524,
+  "timestamp": "2025-09-15T11:06:35.331Z",
+  "savedAt": "2025-09-15T11:07:25.855Z",
+  "version": "1.0"
+}

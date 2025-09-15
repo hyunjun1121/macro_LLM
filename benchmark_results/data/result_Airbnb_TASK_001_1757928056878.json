@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_001_1757928056878",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_001",
+    "description": "General",
+    "objective": "Basic Location Search",
+    "expectedResult": "입력창에 'Seoul'을 입력하고 검색 버튼을 클릭한 후, 첫 번째 검색 결과의 제목을 추출하여 출력하기",
+    "difficulty": "Easy",
+    "category": "#locationInput, .search-btn, .listing-card:first-child .listing-location",
+    "tags": [
+      "Basic Selenium interaction",
+      "text extraction"
+    ],
+    "notes": "Seoul이 포함된 첫 번째 숙소의 위치명 (예: 'Bukchon, Seoul, South Korea')"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the location input\n    await page.waitForSelector('#locationInput', { timeout: 5000 });\n\n    // Type 'Seoul' into the location input\n    await page.fill('#locationInput', 'Seoul');\n\n    // Screenshot after input\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_input_seoul.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_input_seoul.png'));\n\n    // Wait for the search button (try by class, fallback to text)\n    let searchBtn = await page.$('.search-btn');\n    if (!searchBtn) {\n      searchBtn = await page.$('button:has-text(\"Search\")');\n    }\n    if (!searchBtn) {\n      // Try xpath as last resort\n      searchBtn = await page.$('//button[contains(@class,\"search-btn\") or contains(text(),\"Search\")]');\n    }\n    if (!searchBtn) {\n      throw new Error('Search button not found');\n    }\n\n    // Click the search button\n    await searchBtn.click();\n\n    // Wait for search results to load (wait for first listing card location)\n    await page.waitForSelector('.listing-card:first-child .listing-location', { timeout: 7000 });\n\n    // Screenshot after results load\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_results_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_results_loaded.png'));\n\n    // Extract the title/location of the first search result\n    const firstResultTitle = await page.$eval(\n      '.listing-card:first-child .listing-location',\n      el => el.textContent.trim()\n    );\n\n    // Screenshot highlighting the extracted title (optional, but for completeness)\n    // We'll scroll into view and highlight\n    await page.$eval('.listing-card:first-child .listing-location', el => el.scrollIntoView());\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_extracted_title.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_extracted_title.png'));\n\n    return {\n      success: true,\n      action: \"Entered 'Seoul' in the search input, clicked search, and extracted the first result's title.\",\n      extractedData: {\n        firstResultTitle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 25940,
+      "timestamp": "2025-09-15T09:20:56.878Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the location input using multiple strategies (ID, placeholder)\n    const locationInputSelector = '#locationInput';\n    await page.waitForSelector(locationInputSelector, { timeout: 5000 });\n\n    // Click and fill the input with 'Seoul'\n    await page.click(locationInputSelector, { timeout: 2000 });\n    await page.fill(locationInputSelector, 'Seoul');\n\n    // Take screenshot after entering 'Seoul'\n    const step2 = path.join(screenshotsDir, 'step_2_location_entered.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Try several strategies to find the search button\n    // 1. By class\n    let searchBtn;\n    try {\n      searchBtn = await page.waitForSelector('.search-btn', { timeout: 2000 });\n    } catch {\n      // 2. By visible text\n      searchBtn = await page.waitForSelector('//button[contains(., \"Search\")]', { timeout: 2000 });\n    }\n    if (!searchBtn) {\n      // 3. By button with type submit (fallback)\n      searchBtn = await page.waitForSelector('button[type=\"submit\"]', { timeout: 2000 });\n    }\n\n    // Click the search button\n    await (searchBtn ? searchBtn.click() : page.click('.search-btn'));\n\n    // Wait for the results to update: wait for the first listing card location/title to appear\n    const firstResultSelector = '.listing-card:first-child .listing-location';\n    await page.waitForSelector(firstResultSelector, { timeout: 8000 });\n\n    // Take screenshot of the results\n    const step3 = path.join(screenshotsDir, 'step_3_results.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Extract the title/location of the first result\n    const firstResultTitle = await page.$eval(\n      firstResultSelector,\n      el => el.textContent.trim()\n    );\n\n    return {\n      success: true,\n      action: \"Entered 'Seoul' in the location input, clicked the search button, and extracted the title of the first search result.\",\n      extractedData: {\n        firstResultTitle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 28248,
+      "timestamp": "2025-09-15T09:21:22.818Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the location input using alternative selector (placeholder attribute)\n    const locationInput = await page.waitForSelector('input[placeholder=\"Search destinations\"]', { timeout: 5000 });\n\n    // Click and fill 'Seoul'\n    await locationInput.click({ clickCount: 3 });\n    await locationInput.fill('Seoul');\n\n    // Take screenshot after entering Seoul\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_location_filled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_location_filled.png'));\n\n    // Wait for the search button using a robust selector strategy\n    let searchBtn = await page.$('.search-btn');\n    // If not found, try an alternative: button with text \"Search\"\n    if (!searchBtn) {\n      searchBtn = await page.$('//button[contains(translate(text(),\"SEARCH\",\"search\"),\"search\")]');\n    }\n    // If still not found, try by role and text\n    if (!searchBtn) {\n      searchBtn = await page.getByRole('button', { name: /search/i });\n    }\n    if (!searchBtn) {\n      throw new Error('Search button not found');\n    }\n\n    // Click the search button\n    await searchBtn.click();\n\n    // Wait for first search result card to appear\n    // Try multiple strategies for robustness\n    let firstResult;\n    try {\n      // Try direct CSS selector\n      await page.waitForSelector('.listing-card:first-child .listing-location', { timeout: 7000 });\n      firstResult = await page.$('.listing-card:first-child .listing-location');\n    } catch {\n      // Try more robust/fallback: using XPath for the first card's location\n      await page.waitForSelector('.listing-card', { timeout: 7000 });\n      const cards = await page.$$('.listing-card');\n      if (cards.length > 0) {\n        firstResult = await cards[0].$(' .listing-location');\n      }\n    }\n\n    if (!firstResult) {\n      throw new Error('First listing location not found after search');\n    }\n\n    // Wait for the element to be visible and extract its text\n    await firstResult.waitForElementState('visible', { timeout: 5000 });\n    const firstResultTitle = (await firstResult.textContent()).trim();\n\n    // Take screenshot after results appear\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_results.png'));\n\n    return {\n      success: true,\n      action: \"Entered 'Seoul' in search, clicked search button, extracted the first result's location/title.\",\n      extractedData: {\n        firstListingLocation: firstResultTitle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 25338,
+      "timestamp": "2025-09-15T09:21:51.066Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 79526,
+  "timestamp": "2025-09-15T09:20:56.878Z",
+  "savedAt": "2025-09-15T09:22:16.405Z",
+  "version": "1.0"
+}

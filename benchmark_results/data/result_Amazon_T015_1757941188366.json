@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T015_1757941188366",
+  "website": "Amazon",
+  "task": {
+    "id": "T015",
+    "description": "Close Modal with Escape Key",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Open any modal (cart or product detail), then press the Escape key to close it.",
+    "category": ".modal, #productModal, #cartModal",
+    "tags": [
+      "1. Open any modal 2. Press Escape key"
+    ],
+    "notes": "Modal becomes hidden, modal overlay disappears, focus returns to main page"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open a modal (cart modal in this case)\n    await page.waitForSelector('.cart', { timeout: 5000 });\n    await page.click('.cart');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_cart_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_cart_clicked.png'));\n\n    // Wait for modal to appear using multiple selector strategies\n    const modalSelector = '#cartModal, .modal, #productModal';\n    await page.waitForSelector(modalSelector, { timeout: 5000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_modal_open.png'));\n\n    // Press Escape key to close modal\n    await page.keyboard.press('Escape');\n    \n    // Wait for modal to close (check for hidden state)\n    await page.waitForSelector(modalSelector, { state: 'hidden', timeout: 5000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_modal_closed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_modal_closed.png'));\n\n    return {\n      success: true,\n      action: \"Opened cart modal and closed it with Escape key\",\n      extractedData: {\n        modalClosed: true,\n        modalType: \"cart\"\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 168104,
+      "timestamp": "2025-09-15T12:59:48.366Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open cart modal by clicking cart icon\n    await page.waitForSelector('.cart', { state: 'visible' });\n    await page.click('.cart');\n    \n    // Wait for modal to appear and take screenshot\n    await page.waitForSelector('#cartModal, .modal', { state: 'visible' });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_open.png'));\n\n    // Press Escape key to close modal\n    await page.keyboard.press('Escape');\n    \n    // Wait for modal to close and verify it's hidden\n    await page.waitForSelector('#cartModal, .modal', { state: 'hidden' });\n    \n    // Take final screenshot after closing modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_modal_closed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_modal_closed.png'));\n\n    return {\n      success: true,\n      action: \"Opened cart modal and closed it using Escape key\",\n      extractedData: {\n        modalClosed: true\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 138845,
+      "timestamp": "2025-09-15T13:02:36.470Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open cart modal by clicking cart icon\n    await page.click('.cart');\n    await page.waitForSelector('#cartModal, .modal', { state: 'visible', timeout: 5000 });\n    \n    // Take screenshot of open modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_open.png'));\n\n    // Press Escape key to close modal\n    await page.keyboard.press('Escape');\n    \n    // Wait for modal to close\n    await page.waitForSelector('#cartModal, .modal', { state: 'hidden', timeout: 5000 });\n    \n    // Take screenshot after closing modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_modal_closed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_modal_closed.png'));\n\n    return {\n      success: true,\n      action: \"Opened cart modal and closed it with Escape key\",\n      extractedData: {\n        modalStatus: \"closed\",\n        methodUsed: \"Escape key press\"\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 133903,
+      "timestamp": "2025-09-15T13:04:55.315Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 440852,
+  "timestamp": "2025-09-15T12:59:48.366Z",
+  "savedAt": "2025-09-15T13:07:09.218Z",
+  "version": "1.0"
+}

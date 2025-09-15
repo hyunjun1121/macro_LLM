@@ -1,0 +1,62 @@
+{
+  "id": "TikTok_Sheet1_1757928337539_eeoaw_1757945083227",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928337539_eeoaw",
+    "description": 5,
+    "objective": "General",
+    "expectedResult": "사이드바에서 Profile 메뉴를 클릭하여 프로필 페이지로 이동",
+    "difficulty": "data-page='profile'인 .sidebar-item을 클릭",
+    "category": "Easy",
+    "tags": [
+      ".sidebar-item[data-page='profile']"
+    ],
+    "notes": "data-page='profile'인 .sidebar-item을 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for sidebar to load\n    await page.waitForSelector('.sidebar', { timeout: 5000 });\n\n    // Click on Profile menu item using data-page attribute selector\n    await page.click('.sidebar-item[data-page=\"profile\"]');\n    \n    // Wait for profile page to load\n    await page.waitForSelector('#profilePage', { timeout: 3000 });\n    \n    // Take screenshot after navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_profile_page.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_profile_page.png'));\n\n    // Extract profile information to verify success\n    const profileInfo = await page.evaluate(() => {\n      const username = document.querySelector('.profile-username')?.textContent;\n      const followers = document.querySelector('.followers-count')?.textContent;\n      return { username, followers };\n    });\n\n    return {\n      success: true,\n      action: \"Clicked Profile menu in sidebar and navigated to profile page\",\n      extractedData: profileInfo,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 97031,
+      "timestamp": "2025-09-15T14:04:43.227Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for sidebar to load\n    await page.waitForSelector('.sidebar');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_sidebar_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_sidebar_loaded.png'));\n\n    // Find and click Profile menu item using data-page attribute\n    const profileMenuItem = await page.waitForSelector('.sidebar-item[data-page=\"profile\"]');\n    await profileMenuItem.click();\n\n    // Wait for navigation/transition to complete\n    await page.waitForTimeout(1000);\n    await page.waitForLoadState('networkidle');\n\n    // Verify navigation by checking if profile page is active\n    const profilePageActive = await page.evaluate(() => {\n      const profileItem = document.querySelector('.sidebar-item[data-page=\"profile\"]');\n      return profileItem ? profileItem.classList.contains('active') : false;\n    });\n\n    // Take final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_profile_page.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_profile_page.png'));\n\n    // Extract profile information for verification\n    const extractedData = await page.evaluate(() => {\n      const profileItem = document.querySelector('.sidebar-item[data-page=\"profile\"]');\n      const profilePage = document.querySelector('#profilePage');\n      return {\n        profileMenuItemText: profileItem ? profileItem.textContent.trim() : null,\n        profilePageVisible: profilePage ? profilePage.classList.contains('active') : false,\n        profileMenuItemActive: profileItem ? profileItem.classList.contains('active') : false\n      };\n    });\n\n    return {\n      success: true,\n      action: \"Clicked Profile menu item in sidebar and navigated to profile page\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 156617,
+      "timestamp": "2025-09-15T14:06:20.258Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for sidebar to load and click Profile menu\n    await page.waitForSelector('.sidebar-item[data-page=\"profile\"]', { state: 'visible' });\n    \n    // Verify the Profile menu item exists and is clickable\n    const profileMenuItem = await page.$('.sidebar-item[data-page=\"profile\"]');\n    if (!profileMenuItem) {\n      throw new Error('Profile menu item not found');\n    }\n\n    // Click using different strategy - using text content and XPath\n    await page.click('xpath=//div[contains(@class, \"sidebar-item\") and .//span[text()=\"Profile\"]]');\n    \n    // Wait for profile page to load\n    await page.waitForSelector('#profilePage', { state: 'visible' });\n    await page.waitForTimeout(1000); // Additional wait for animations\n\n    // Take screenshot after navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_profile_page.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_profile_page.png'));\n\n    // Extract verification data from profile page\n    const profileData = await page.evaluate(() => {\n      const username = document.querySelector('.profile-username')?.textContent;\n      const followers = document.querySelector('.followers-count')?.textContent;\n      return { username, followers };\n    });\n\n    return {\n      success: true,\n      action: \"Clicked Profile menu in sidebar and navigated to profile page\",\n      extractedData: profileData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to click Profile menu and navigate to profile page\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 86556,
+      "timestamp": "2025-09-15T14:08:56.876Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 340204,
+  "timestamp": "2025-09-15T14:04:43.227Z",
+  "savedAt": "2025-09-15T14:10:23.431Z",
+  "version": "1.0"
+}

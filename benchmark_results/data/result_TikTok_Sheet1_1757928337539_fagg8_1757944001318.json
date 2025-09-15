@@ -1,0 +1,62 @@
+{
+  "id": "TikTok_Sheet1_1757928337539_fagg8_1757944001318",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928337539_fagg8",
+    "description": 1,
+    "objective": "General",
+    "expectedResult": "첫 번째 비디오의 재생/일시정지 버튼을 클릭",
+    "difficulty": "data-video-id='1'인 컨테이너의 .play-pause-btn을 클릭",
+    "category": "Easy",
+    "tags": [
+      ".video-container[data-video-id='1'] .play-pause-btn"
+    ],
+    "notes": "data-video-id='1'인 컨테이너의 .play-pause-btn을 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and locate the first video container with data-video-id='1'\n    const videoContainer = await page.waitForSelector('div[data-video-id=\"1\"]');\n    \n    // Wait for the play/pause button within the first video container\n    const playPauseBtn = await videoContainer.waitForSelector('button.play-pause-btn');\n    \n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Click the play/pause button\n    await playPauseBtn.click();\n    \n    // Wait for state change and take screenshot after click\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    // Extract verification data\n    const buttonIcon = await playPauseBtn.$eval('i', el => el.className);\n    const videoState = await videoContainer.$eval('video', el => el.paused ? 'paused' : 'playing');\n\n    return {\n      success: true,\n      action: \"Clicked play/pause button of first video (data-video-id='1')\",\n      extractedData: {\n        buttonIcon,\n        videoState,\n        videoId: await videoContainer.getAttribute('data-video-id')\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 105681,
+      "timestamp": "2025-09-15T13:46:41.318Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for video container with data-video-id='1' to be visible\n    await page.waitForSelector('[data-video-id=\"1\"]', { state: 'visible' });\n\n    // Take screenshot after container is visible\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_container_visible.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_container_visible.png'));\n\n    // Click the play-pause button using CSS selector\n    const playPauseBtn = await page.$('[data-video-id=\"1\"] .play-pause-btn');\n    await playPauseBtn.click();\n\n    // Take screenshot after clicking the button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_button_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_button_clicked.png'));\n\n    // Verify the action by checking if the icon changed (pause to play or vice versa)\n    const iconClass = await playPauseBtn.$eval('i', el => el.className);\n    const isPaused = iconClass.includes('fa-play');\n    \n    return {\n      success: true,\n      action: \"Clicked play/pause button on first video\",\n      extractedData: {\n        videoId: 1,\n        buttonState: isPaused ? 'paused' : 'playing',\n        iconClass: iconClass\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 51109,
+      "timestamp": "2025-09-15T13:48:26.999Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the video container with data-video-id='1'\n    const videoContainer = await page.waitForSelector('div[data-video-id=\"1\"]', {\n      timeout: 10000\n    });\n\n    // Wait for and click the play-pause button within the specific container\n    const playPauseBtn = await videoContainer.waitForSelector('button.play-pause-btn');\n    await playPauseBtn.click();\n\n    // Take screenshot after clicking the button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_click.png'));\n\n    // Extract video status to verify the action\n    const videoStatus = await page.evaluate(() => {\n      const video = document.querySelector('div[data-video-id=\"1\"] video');\n      return {\n        isPaused: video ? video.paused : null,\n        currentTime: video ? video.currentTime : null\n      };\n    });\n\n    return {\n      success: true,\n      action: \"Clicked play/pause button of first video (data-video-id='1')\",\n      extractedData: {\n        videoStatus,\n        buttonClicked: \"First video's play/pause button\"\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 50652,
+      "timestamp": "2025-09-15T13:49:18.108Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 207442,
+  "timestamp": "2025-09-15T13:46:41.318Z",
+  "savedAt": "2025-09-15T13:50:08.760Z",
+  "version": "1.0"
+}

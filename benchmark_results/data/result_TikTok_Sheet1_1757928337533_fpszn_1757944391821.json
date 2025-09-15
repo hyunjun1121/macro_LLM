@@ -1,0 +1,62 @@
+{
+  "id": "TikTok_Sheet1_1757928337533_fpszn_1757944391821",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928337533_fpszn",
+    "description": 3,
+    "objective": "General",
+    "expectedResult": "첫 번째 비디오의 좋아요 버튼을 클릭하여 liked 상태로 변경",
+    "difficulty": "data-video-id='1'인 컨테이너의 .like-btn을 클릭",
+    "category": "Easy",
+    "tags": [
+      ".video-container[data-video-id='1'] .like-btn"
+    ],
+    "notes": "data-video-id='1'인 컨테이너의 .like-btn을 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and locate the first video container with data-video-id='1'\n    await page.waitForSelector('div.video-container[data-video-id=\"1\"]');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_video_found.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_video_found.png'));\n\n    // Click the like button inside the first video container\n    const likeButton = await page.$('div.video-container[data-video-id=\"1\"] button.like-btn');\n    await likeButton.click();\n    \n    // Wait for potential UI updates after clicking like\n    await page.waitForTimeout(1000);\n    \n    // Take screenshot after clicking like\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_liked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_liked.png'));\n\n    // Verify the like action was successful by checking button state\n    const buttonClass = await likeButton.evaluate(el => el.className);\n    const isLiked = buttonClass.includes('liked') || buttonClass.includes('active');\n\n    return {\n      success: true,\n      action: \"Clicked like button on first video (data-video-id='1')\",\n      extractedData: {\n        videoId: '1',\n        buttonClass: buttonClass,\n        isLiked: isLiked\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 103504,
+      "timestamp": "2025-09-15T13:53:11.821Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and locate the first video container using data-video-id attribute\n    const firstVideoContainer = await page.waitForSelector('div[data-video-id=\"1\"]', { timeout: 5000 });\n    \n    // Wait for like button within the first video container\n    const likeButton = await firstVideoContainer.waitForSelector('button.like-btn');\n    \n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_like.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_like.png'));\n\n    // Click the like button\n    await likeButton.click();\n    \n    // Wait for state change - check if liked class is added (common pattern)\n    await page.waitForTimeout(1000);\n    \n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_like.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_like.png'));\n\n    // Verify the like action was successful by checking button state\n    const isLiked = await likeButton.evaluate(btn => btn.classList.contains('liked'));\n    const likeCount = await likeButton.evaluate(btn => btn.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Clicked like button on first video (data-video-id='1')\",\n      extractedData: {\n        isLiked: isLiked,\n        likeCount: likeCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 96733,
+      "timestamp": "2025-09-15T13:54:55.325Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first video container with data-video-id='1'\n    await page.waitForSelector('div[data-video-id=\"1\"]', { timeout: 5000 });\n\n    // Use XPath to locate the like button within the first video container\n    const likeButton = await page.waitForSelector('xpath=//div[@data-video-id=\"1\"]//button[contains(@class, \"like-btn\")]', { timeout: 3000 });\n    \n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Click the like button\n    await likeButton.click();\n    \n    // Wait for potential state change (if any animation/update occurs)\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    // Extract button state to verify action\n    const buttonState = await page.$eval('xpath=//div[@data-video-id=\"1\"]//button[contains(@class, \"like-btn\")]', \n      (btn) => ({\n        classList: btn.className,\n        textContent: btn.textContent.trim()\n      })\n    );\n\n    return {\n      success: true,\n      action: \"Clicked like button on first video (data-video-id='1')\",\n      extractedData: {\n        buttonState: buttonState,\n        videoId: 1\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 93331,
+      "timestamp": "2025-09-15T13:56:32.058Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 293568,
+  "timestamp": "2025-09-15T13:53:11.821Z",
+  "savedAt": "2025-09-15T13:58:05.389Z",
+  "version": "1.0"
+}

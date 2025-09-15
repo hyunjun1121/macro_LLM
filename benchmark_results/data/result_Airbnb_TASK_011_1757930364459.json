@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_011_1757930364459",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_011",
+    "description": "General",
+    "objective": "Host Rating Extraction",
+    "expectedResult": "모든 숙소에서 평점이 4.8 이상인 숙소들의 ID와 평점을 추출하여 객체 배열로 반환하기",
+    "difficulty": "Medium",
+    "category": ".listing-rating span",
+    "tags": [
+      "Data extraction",
+      "filtering"
+    ],
+    "notes": "평점 4.8 이상 숙소 배열 (예: [{id: 'jun_1', rating: 4.9}, {id: 'listing_2', rating: 4.8}])"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n    await page.waitForTimeout(2000); // Additional wait for dynamic content\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for listings to load\n    await page.waitForSelector('.listing-card', { timeout: 10000 });\n    \n    // Scroll to load all listings (handle lazy loading)\n    await page.evaluate(async () => {\n      await new Promise((resolve) => {\n        let totalHeight = 0;\n        const distance = 500;\n        const timer = setInterval(() => {\n          const scrollHeight = document.body.scrollHeight;\n          window.scrollBy(0, distance);\n          totalHeight += distance;\n          if (totalHeight >= scrollHeight) {\n            clearInterval(timer);\n            resolve();\n          }\n        }, 100);\n      });\n    });\n\n    // Take screenshot after scrolling\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_scroll.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_scroll.png'));\n\n    // Extract listings with rating >= 4.8\n    const highRatedListings = await page.$$eval('.listing-card', (listings) => {\n      return listings\n        .map(listing => {\n          const ratingElement = listing.querySelector('.listing-rating span');\n          const rating = ratingElement ? parseFloat(ratingElement.textContent) : 0;\n          const id = listing.id || listing.getAttribute('data-id') || 'unknown-id';\n          return { id, rating };\n        })\n        .filter(item => item.rating >= 4.8);\n    });\n\n    // Take final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_final.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_final.png'));\n\n    return {\n      success: true,\n      action: \"Extracted high-rated listings (rating >= 4.8)\",\n      extractedData: highRatedListings,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    const errorScreenshot = path.join(screenshotsDir, 'error.png');\n    await page.screenshot({ path: errorScreenshot });\n    \n    return {\n      success: false,\n      action: \"Failed to extract high-rated listings\",\n      extractedData: {},\n      screenshots: [errorScreenshot],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 128572,
+      "timestamp": "2025-09-15T09:59:24.459Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for listings to load\n    await page.waitForSelector('.listing-card', { timeout: 10000 });\n    \n    // Get all listings with ratings >= 4.8\n    const highRatedListings = await page.evaluate(() => {\n      const listings = [];\n      \n      // Find all listing elements\n      const listingElements = document.querySelectorAll('.listing-card');\n      \n      for (const listing of listingElements) {\n        // Try multiple selector strategies for rating\n        const ratingElement = \n          listing.querySelector('.listing-rating span') ||\n          listing.querySelector('[data-rating]') ||\n          listing.querySelector('.rating-value');\n        \n        if (ratingElement) {\n          const ratingText = ratingElement.textContent.trim();\n          const rating = parseFloat(ratingText);\n          \n          if (!isNaN(rating) && rating >= 4.8) {\n            // Try multiple ways to get listing ID\n            const id = \n              listing.dataset.id ||\n              listing.id ||\n              listing.querySelector('a')?.href?.match(/listing_(\\w+)/)?.[1];\n            \n            if (id) {\n              listings.push({ id, rating });\n            }\n          }\n        }\n      }\n      \n      return listings;\n    });\n\n    // Take screenshot of results\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_results.png'));\n\n    return {\n      success: true,\n      action: \"Extracted high-rated listings with ratings >= 4.8\",\n      extractedData: highRatedListings,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    const errorScreenshot = path.join(screenshotsDir, 'error.png');\n    await page.screenshot({ path: errorScreenshot });\n    \n    return {\n      success: false,\n      action: \"Failed to extract high-rated listings\",\n      extractedData: {},\n      screenshots: [errorScreenshot],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 123515,
+      "timestamp": "2025-09-15T10:01:33.031Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for listings to load\n    await page.waitForSelector('.listing-card, [data-testid=\"listing-card\"]', { timeout: 10000 });\n\n    // Get all listing elements\n    const listings = await page.$$('.listing-card, [data-testid=\"listing-card\"]');\n    \n    const results = [];\n    \n    // Process each listing\n    for (const listing of listings) {\n      try {\n        // Extract rating using multiple selector strategies\n        const ratingElement = await listing.$('.listing-rating span, [class*=\"rating\"] span, [data-rating]');\n        if (!ratingElement) continue;\n\n        const ratingText = await ratingElement.textContent();\n        const rating = parseFloat(ratingText);\n        \n        if (rating >= 4.8) {\n          // Extract ID using multiple strategies\n          const id = await listing.evaluate(el => \n            el.getAttribute('data-id') || \n            el.getAttribute('id') || \n            el.querySelector('[data-listing-id]')?.getAttribute('data-listing-id')\n          );\n\n          if (id) {\n            results.push({ id, rating });\n          }\n        }\n      } catch (err) {\n        console.log('Error processing listing:', err);\n      }\n    }\n\n    // Take final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_results.png'));\n\n    return {\n      success: true,\n      action: \"Extracted listings with rating >= 4.8\",\n      extractedData: results,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: [],\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 85620,
+      "timestamp": "2025-09-15T10:03:36.546Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 337707,
+  "timestamp": "2025-09-15T09:59:24.459Z",
+  "savedAt": "2025-09-15T10:05:02.166Z",
+  "version": "1.0"
+}

@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337542_irur8_1757951425322",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337542_irur8",
+    "description": "G008",
+    "objective": "Switch to Activity View",
+    "expectedResult": "Click on Activity navigation item to view activity feed",
+    "difficulty": ".nav-item[data-view='activity']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click on Activity navigation item\n    await page.waitForSelector('.nav-item[data-view=\"activity\"]');\n    await page.click('.nav-item[data-view=\"activity\"]');\n    \n    // Wait for activity view to load\n    await page.waitForSelector('#activity-view');\n    \n    // Take screenshot after navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_activity_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_activity_view.png'));\n\n    // Extract activity feed data\n    const extractedData = {\n      activityItems: await page.$$eval('.activity-item', items => \n        items.map(item => ({\n          type: item.dataset.type || 'unknown',\n          timestamp: item.querySelector('.activity-time')?.textContent || null,\n          content: item.querySelector('.activity-content')?.textContent?.trim() || null\n        }))\n      ),\n      notificationCount: await page.$eval('#activity-badge', badge => badge.textContent).catch(() => '0')\n    };\n\n    return {\n      success: true,\n      action: \"Successfully clicked on Activity navigation item and viewed activity feed\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 104188,
+      "timestamp": "2025-09-15T15:50:25.322Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click on Activity navigation item using multiple selector strategies\n    const activitySelector = '.nav-item[data-view=\"activity\"]';\n    await page.waitForSelector(activitySelector, { state: 'visible' });\n    \n    // Alternative selector strategy using XPath with text content\n    const activityXPath = '//li[contains(@class, \"nav-item\") and .//span[text()=\"Activity\"]]';\n    await page.waitForSelector(`xpath=${activityXPath}`);\n    \n    // Click using the most reliable selector\n    await page.click(activitySelector);\n    \n    // Wait for activity view to become active\n    await page.waitForSelector('#activity-view.active', { timeout: 5000 })\n        .catch(() => page.waitForSelector('.view.active [data-activity-feed]'));\n\n    // Wait for activity feed content to load\n    await page.waitForTimeout(1000); // Brief pause for content rendering\n\n    // Take screenshot after navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_activity_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_activity_view.png'));\n\n    // Extract activity feed data to verify completion\n    const activityItems = await page.$$eval('.activity-item, [data-activity-type]', items => \n        items.map(item => ({\n            type: item.dataset.activityType || 'unknown',\n            text: item.textContent.trim().slice(0, 100)\n        }))\n    );\n\n    return {\n        success: true,\n        action: \"Clicked on Activity navigation item and viewed activity feed\",\n        extractedData: {\n            activityItemsCount: activityItems.length,\n            sampleItems: activityItems.slice(0, 3)\n        },\n        screenshots,\n        error: null\n    };\n  } catch (error) {\n    // Take error screenshot if possible\n    try {\n        await page.screenshot({ path: path.join(screenshotsDir, 'step_error.png') });\n        screenshots.push(path.join(screenshotsDir, 'step_error.png'));\n    } catch (e) {}\n    \n    return {\n        success: false,\n        action: \"Failed to click Activity navigation item\",\n        extractedData: {},\n        screenshots,\n        error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 143138,
+      "timestamp": "2025-09-15T15:52:09.510Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation menu to load\n    await page.waitForSelector('.nav-menu', { state: 'visible' });\n\n    // Find and click Activity navigation item using data-view attribute\n    const activityNavItem = await page.$('.nav-item[data-view=\"activity\"]');\n    if (!activityNavItem) {\n      throw new Error('Activity navigation item not found');\n    }\n\n    await activityNavItem.click();\n    await page.waitForTimeout(1000); // Wait for view transition\n\n    // Wait for activity view to become active\n    await page.waitForSelector('#activity-view.active', { state: 'visible' });\n\n    // Take screenshot after clicking Activity\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_activity_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_activity_view.png'));\n\n    // Extract activity feed data\n    const activityItems = await page.$$eval('.activity-item', items => \n      items.map(item => ({\n        text: item.textContent.trim(),\n        timestamp: item.querySelector('.timestamp')?.textContent || null\n      }))\n    );\n\n    return {\n      success: true,\n      action: \"Clicked on Activity navigation item to view activity feed\",\n      extractedData: {\n        activityItemsCount: activityItems.length,\n        activityItems: activityItems.slice(0, 3) // First 3 items\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 167259,
+      "timestamp": "2025-09-15T15:54:32.648Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 414585,
+  "timestamp": "2025-09-15T15:50:25.322Z",
+  "savedAt": "2025-09-15T15:57:19.907Z",
+  "version": "1.0"
+}

@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_007_1757929426421",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_007",
+    "description": "General",
+    "objective": "Listing Modal Open",
+    "expectedResult": "jun_2 숙소 카드를 클릭하여 상세 모달을 열고 모달 제목이 정확히 표시되는지 확인하기",
+    "difficulty": "Medium",
+    "category": "[data-listing-id='jun_2'], .modal-overlay, #modal-title",
+    "tags": [
+      "Modal interaction",
+      "text validation"
+    ],
+    "notes": "모달 제목 텍스트 ('Luxury Apartment in Gangnam')"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the jun_2 listing card\n    const listingCardSelector = \"[data-listing-id='jun_2']\";\n    await page.waitForSelector(listingCardSelector, { timeout: 10000 });\n    await page.click(listingCardSelector);\n\n    // Wait for modal to appear and take screenshot\n    await page.waitForSelector('.modal-overlay', { state: 'visible', timeout: 5000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_opened.png'));\n\n    // Extract modal title text\n    const modalTitle = await page.$eval('#modal-title', el => el.textContent.trim());\n    \n    // Verify modal title is displayed\n    await page.waitForSelector('#modal-title:not(:empty)');\n    const isTitleVisible = await page.isVisible('#modal-title');\n    \n    // Take final screenshot of modal with title\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_modal_title.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_modal_title.png'));\n\n    return {\n      success: true,\n      action: \"Clicked jun_2 listing card and verified modal title display\",\n      extractedData: {\n        modalTitle: modalTitle,\n        isTitleVisible: isTitleVisible\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take screenshot on error\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 54532,
+      "timestamp": "2025-09-15T09:43:46.421Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the jun_2 listing card to be visible\n    const listingSelector = \"[data-listing-id='jun_2']\";\n    await page.waitForSelector(listingSelector, { state: 'visible' });\n    \n    // Click the jun_2 listing card\n    await page.click(listingSelector);\n    \n    // Wait for modal to appear with multiple selector strategies\n    await Promise.race([\n      page.waitForSelector('.modal-overlay', { state: 'visible' }),\n      page.waitForSelector('#modal-title', { state: 'visible' }),\n      page.waitForTimeout(2000) // Fallback timeout\n    ]);\n\n    // Take screenshot after modal opens\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_opened.png'));\n\n    // Extract modal title text\n    const modalTitle = await page.textContent('#modal-title');\n    \n    // Verify modal title is displayed correctly\n    if (!modalTitle || modalTitle.trim() === '') {\n      throw new Error('Modal title is empty or not visible');\n    }\n\n    // Take final screenshot with modal content\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_modal_content.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_modal_content.png'));\n\n    return {\n      success: true,\n      action: \"Successfully clicked jun_2 listing card and verified modal title\",\n      extractedData: {\n        modalTitle: modalTitle.trim()\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    const errorScreenshot = path.join(screenshotsDir, 'error.png');\n    await page.screenshot({ path: errorScreenshot });\n    \n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [errorScreenshot],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 67517,
+      "timestamp": "2025-09-15T09:44:40.953Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for listings to load\n    await page.waitForSelector('[data-listing-id]', { timeout: 10000 });\n\n    // Find and click the jun_2 listing using attribute selector\n    const jun2Listing = await page.$('[data-listing-id=\"jun_2\"]');\n    if (!jun2Listing) {\n      throw new Error('jun_2 listing not found');\n    }\n\n    await jun2Listing.click();\n    await page.waitForTimeout(1000); // Wait for modal animation\n\n    // Wait for modal to appear with multiple selector strategies\n    await page.waitForSelector('.modal-overlay', { state: 'visible', timeout: 5000 });\n    await page.waitForSelector('#modal-title', { timeout: 5000 });\n\n    // Extract modal title text\n    const modalTitle = await page.$eval('#modal-title', el => el.textContent.trim());\n    \n    // Take screenshot of the modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_open.png'));\n\n    return {\n      success: true,\n      action: \"Clicked jun_2 listing and verified modal title\",\n      extractedData: {\n        modalTitle: modalTitle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 37555,
+      "timestamp": "2025-09-15T09:45:48.471Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 159605,
+  "timestamp": "2025-09-15T09:43:46.421Z",
+  "savedAt": "2025-09-15T09:46:26.026Z",
+  "version": "1.0"
+}

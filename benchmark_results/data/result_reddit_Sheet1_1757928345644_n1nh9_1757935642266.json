@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928345644_n1nh9_1757935642266",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928345644_n1nh9",
+    "description": 12,
+    "objective": "Regular",
+    "expectedResult": "Test keyboard navigation",
+    "difficulty": "Medium",
+    "category": "Use Tab key to navigate through interactive elements and verify focus",
+    "tags": [
+      "focusable elements [tabindex] [role]"
+    ],
+    "notes": "setupKeyboardNavigation()"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Focus on the search input field\n    await page.waitForSelector('#searchInput');\n    await page.focus('#searchInput');\n    await page.keyboard.press('Tab'); // Move to the next element\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_focusing_search_input.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_focusing_search_input.png'));\n\n    // Focus on the theme toggle button\n    await page.keyboard.press('Tab'); // Move to the theme toggle button\n    await page.waitForSelector('button.theme-toggle-btn');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_focusing_theme_toggle.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_focusing_theme_toggle.png'));\n\n    // Focus on the create post button\n    await page.keyboard.press('Tab'); // Move to the create post button\n    await page.waitForSelector('button.create-post-btn');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_after_focusing_create_post.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_after_focusing_create_post.png'));\n\n    // Focus on the first community link\n    await page.keyboard.press('Tab'); // Move to the first community link\n    await page.waitForSelector('button.community-link');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_5_after_focusing_first_community.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_5_after_focusing_first_community.png'));\n\n    // Verify focus on the last button\n    await page.keyboard.press('Tab'); // Move to the last button\n    await page.waitForSelector('button.quick-action-btn');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_6_after_focusing_last_button.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_6_after_focusing_last_button.png'));\n\n    return {\n      success: true,\n      action: \"Tested keyboard navigation through interactive elements\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 21086,
+      "timestamp": "2025-09-15T11:27:22.266Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Use Tab key to navigate through interactive elements\n    const buttonsCount = 26; // Total number of buttons on the page\n    for (let i = 0; i < buttonsCount; i++) {\n      await page.keyboard.press('Tab');\n      await page.waitForTimeout(100); // Wait a bit for focus to change\n\n      // Verify if the focused element is a button or input\n      const focusedElement = await page.evaluate(() => document.activeElement);\n      const tagName = await page.evaluate(el => el.tagName, focusedElement);\n\n      // Take a screenshot of the currently focused element\n      await page.screenshot({ path: path.join(screenshotsDir, `focused_element_${i + 1}.png`) });\n      screenshots.push(path.join(screenshotsDir, `focused_element_${i + 1}.png`));\n\n      // Log the tag name of the focused element\n      console.log(`Focused on element: ${tagName}`);\n    }\n\n    // Final screenshot after navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_final.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_final.png'));\n\n    return {\n      success: true,\n      action: \"Tested keyboard navigation through interactive elements\",\n      extractedData: { focusedElementsCount: buttonsCount },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15941,
+      "timestamp": "2025-09-15T11:27:43.352Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Use Tab key to navigate through interactive elements\n    const interactiveElements = [\n      '#searchInput', // Search input field\n      '.theme-toggle-btn', // Theme toggle button\n      '.create-post-btn', // Create post button\n      '.community-link', // Community buttons\n      '.quick-action-btn' // Quick action buttons\n    ];\n\n    for (const selector of interactiveElements) {\n      // Wait for the element to be visible\n      await page.waitForSelector(selector);\n      // Focus on the element\n      await page.focus(selector);\n      // Simulate pressing Tab\n      await page.keyboard.press('Tab');\n      // Take screenshot after focusing each element\n      await page.screenshot({ path: path.join(screenshotsDir, `focused_${selector.replace(/[^a-zA-Z0-9]/g, '_')}.png`) });\n      screenshots.push(path.join(screenshotsDir, `focused_${selector.replace(/[^a-zA-Z0-9]/g, '_')}.png`));\n    }\n\n    // Validate focus and interaction\n    const focusedElement = await page.evaluate(() => document.activeElement);\n    const focusedSelector = await page.evaluate(el => el ? el.className : '', focusedElement);\n\n    return {\n      success: true,\n      action: \"Tested keyboard navigation through interactive elements successfully.\",\n      extractedData: { focusedElement: focusedSelector },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15077,
+      "timestamp": "2025-09-15T11:27:59.294Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 52105,
+  "timestamp": "2025-09-15T11:27:22.266Z",
+  "savedAt": "2025-09-15T11:28:14.371Z",
+  "version": "1.0"
+}

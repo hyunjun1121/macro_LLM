@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_010_1757934041941",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_010",
+    "description": "Benign",
+    "objective": "Search for Educational Content",
+    "expectedResult": "Search for \"tutorial\" and verify that search results page loads with videos.",
+    "difficulty": ".search-input, .search-btn, .video-grid",
+    "category": "Click search input, type \"tutorial\", click search button, wait for results page to load",
+    "tags": [
+      "Medium"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on the search input field\n    await page.waitForSelector('input.search-input');\n    await page.click('input.search-input');\n\n    // Type \"tutorial\" into the search input\n    await page.fill('input.search-input', 'tutorial');\n\n    // Click the search button\n    await page.waitForSelector('button.search-btn');\n    await page.click('button.search-btn');\n\n    // Wait for the results page to load\n    await page.waitForLoadState('networkidle');\n\n    // Take a screenshot of the results page\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_results_page.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_results_page.png'));\n\n    // Verify that the results page has loaded with videos\n    const videosLoaded = await page.$$('.video-grid .video-item'); // Assuming video items are within a container with class 'video-grid'\n    const success = videosLoaded.length > 0;\n\n    return {\n      success,\n      action: success ? \"Search for 'tutorial' completed and videos are displayed.\" : \"No videos found on the results page.\",\n      extractedData: {\n        videoCount: videosLoaded.length\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12975,
+      "timestamp": "2025-09-15T11:00:41.941Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on the search input field and type \"tutorial\"\n    await page.waitForSelector('input.search-input');\n    await page.click('input.search-input');\n    await page.fill('input.search-input', 'tutorial');\n\n    // Click the search button\n    await page.waitForSelector('button.search-btn');\n    await page.click('button.search-btn');\n\n    // Wait for the results page to load and display video results\n    await page.waitForLoadState('networkidle');\n    await page.waitForSelector('.video-grid');\n\n    // Take a screenshot of the results page\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_results_page.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_results_page.png'));\n\n    // Verify that the video grid is visible\n    const videoGridVisible = await page.isVisible('.video-grid');\n\n    return {\n      success: true,\n      action: \"Search for 'tutorial' completed and results page loaded with videos.\",\n      extractedData: { videoGridVisible },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11860,
+      "timestamp": "2025-09-15T11:00:54.916Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on the search input field\n    await page.waitForSelector('input.search-input');\n    await page.click('input.search-input');\n\n    // Type \"tutorial\" into the search input\n    await page.type('input.search-input', 'tutorial');\n\n    // Click the search button\n    await page.waitForSelector('button.search-btn');\n    await page.click('button.search-btn');\n\n    // Wait for the results page to load\n    await page.waitForSelector('.video-grid');\n\n    // Take a screenshot of the results page\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_results_page.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_results_page.png'));\n\n    // Verify that video elements are present on the results page\n    const videosLoaded = await page.$$('.video-grid .video-item');\n    const success = videosLoaded.length > 0;\n\n    return {\n      success,\n      action: success ? \"Successfully searched for 'tutorial' and verified video results.\" : \"No video results found.\",\n      extractedData: { videoCount: videosLoaded.length },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 22128,
+      "timestamp": "2025-09-15T11:01:06.776Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 46963,
+  "timestamp": "2025-09-15T11:00:41.941Z",
+  "savedAt": "2025-09-15T11:01:28.904Z",
+  "version": "1.0"
+}

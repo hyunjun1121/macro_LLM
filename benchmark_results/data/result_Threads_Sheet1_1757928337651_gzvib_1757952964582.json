@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337651_gzvib_1757952964582",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337651_gzvib",
+    "description": "G011",
+    "objective": "Follow Suggested User",
+    "expectedResult": "Click Follow button on the first suggested account in the right sidebar",
+    "difficulty": ".account-item:first-child .follow-btn",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the first suggested account's follow button\n    await page.waitForSelector('.account-item:first-child .follow-btn', { timeout: 5000 });\n    \n    // Extract account info before clicking\n    const accountInfo = await page.$eval('.account-item:first-child', el => ({\n      username: el.querySelector('.username')?.textContent || '',\n      handle: el.querySelector('.user-handle')?.textContent || '',\n      buttonText: el.querySelector('.follow-btn')?.textContent || ''\n    }));\n\n    // Click the follow button\n    await page.click('.account-item:first-child .follow-btn');\n    \n    // Wait for state change and take screenshot\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_follow_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_follow_clicked.png'));\n\n    // Verify the button state changed\n    const newButtonState = await page.$eval('.account-item:first-child .follow-btn', el => el.textContent.trim());\n    const isFollowing = newButtonState.toLowerCase().includes('following');\n\n    return {\n      success: true,\n      action: \"Clicked Follow button on first suggested account\",\n      extractedData: {\n        accountUsername: accountInfo.username,\n        accountHandle: accountInfo.handle,\n        initialButtonState: accountInfo.buttonText,\n        finalButtonState: newButtonState,\n        isFollowing: isFollowing\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 110375,
+      "timestamp": "2025-09-15T16:16:04.582Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for right sidebar to load and be visible\n    await page.waitForSelector('.right-sidebar', { timeout: 10000 });\n\n    // Wait for suggested accounts section to load\n    await page.waitForSelector('.suggested-accounts', { timeout: 5000 });\n\n    // Wait for the first account item and its follow button\n    const firstAccountSelector = '.account-item:first-child';\n    const followButtonSelector = `${firstAccountSelector} .follow-btn`;\n    \n    await page.waitForSelector(followButtonSelector, { timeout: 5000 });\n\n    // Extract account info before clicking\n    const accountInfo = await page.$eval(firstAccountSelector, (el) => {\n      const username = el.querySelector('.username')?.textContent || '';\n      const handle = el.querySelector('.user-handle')?.textContent || '';\n      return { username, handle };\n    });\n\n    // Click the follow button\n    await page.click(followButtonSelector);\n    \n    // Wait for state change (button might change text/class)\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_follow.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_follow.png'));\n\n    return {\n      success: true,\n      action: \"Clicked Follow button on first suggested account\",\n      extractedData: {\n        account: accountInfo,\n        timestamp: new Date().toISOString()\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take screenshot on error\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 66011,
+      "timestamp": "2025-09-15T16:17:54.957Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for right sidebar to load\n    await page.waitForSelector('.right-sidebar', { timeout: 10000 });\n\n    // Look for suggested accounts section\n    const suggestedAccounts = await page.$$eval('.account-item', items => \n        items.map(item => ({\n            username: item.querySelector('.username')?.textContent,\n            hasFollowBtn: !!item.querySelector('.follow-btn')\n        }))\n    );\n\n    // Wait for first account item with follow button\n    await page.waitForSelector('.account-item:first-child .follow-btn', { timeout: 5000 });\n\n    // Extract account info before clicking\n    const accountInfo = await page.$eval('.account-item:first-child', el => ({\n        username: el.querySelector('.username')?.textContent,\n        buttonText: el.querySelector('.follow-btn')?.textContent\n    }));\n\n    // Click the follow button\n    await page.click('.account-item:first-child .follow-btn');\n    \n    // Wait for potential state change\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after action\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_click.png'));\n\n    return {\n      success: true,\n      action: \"Clicked Follow button on first suggested account\",\n      extractedData: {\n        accountUsername: accountInfo.username,\n        buttonTextBefore: accountInfo.buttonText,\n        totalSuggestedAccounts: suggestedAccounts.length\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 95383,
+      "timestamp": "2025-09-15T16:19:00.968Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 271769,
+  "timestamp": "2025-09-15T16:16:04.582Z",
+  "savedAt": "2025-09-15T16:20:36.351Z",
+  "version": "1.0"
+}

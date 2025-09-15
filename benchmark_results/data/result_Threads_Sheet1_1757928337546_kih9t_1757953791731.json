@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337546_kih9t_1757953791731",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337546_kih9t",
+    "description": "M002",
+    "objective": "Rapidly Click Like Buttons",
+    "expectedResult": "Click like buttons on all visible threads in rapid succession (within 5 seconds)",
+    "difficulty": ".thread-action[data-action='like']",
+    "category": 3,
+    "tags": [
+      "10 seconds"
+    ],
+    "notes": "Yes"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for threads feed to load\n    await page.waitForSelector('#threads-feed', { timeout: 5000 });\n\n    // Find all visible like buttons\n    const likeButtons = await page.$$('.thread-action[data-action=\"like\"]:visible');\n    \n    // Click all like buttons in rapid succession\n    for (const button of likeButtons) {\n        await button.click();\n        await page.waitForTimeout(100); // Small delay between clicks\n    }\n\n    // Take screenshot after clicking all like buttons\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_likes.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_likes.png'));\n\n    // Extract data about clicked buttons\n    const extractedData = {\n        likeButtonsClicked: likeButtons.length,\n        timestamp: new Date().toISOString()\n    };\n\n    return {\n      success: true,\n      action: \"Clicked like buttons on all visible threads\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 122330,
+      "timestamp": "2025-09-15T16:29:51.731Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for threads to load and ensure we're on the home view\n    await page.waitForSelector('#threads-feed', { timeout: 5000 });\n    \n    // Find all visible like buttons using multiple selector strategies\n    const likeButtons = await page.$$eval('.thread-action[data-action=\"like\"], [data-action=\"like\"]', \n      buttons => buttons.filter(btn => {\n        const rect = btn.getBoundingClientRect();\n        return rect.width > 0 && rect.height > 0;\n      })\n    );\n\n    // Click all visible like buttons rapidly\n    for (const button of likeButtons) {\n      await button.click();\n      await page.waitForTimeout(100); // Small delay between clicks\n    }\n\n    // Take screenshot after clicking all like buttons\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_likes.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_likes.png'));\n\n    return {\n      success: true,\n      action: \"Clicked like buttons on all visible threads\",\n      extractedData: {\n        likeButtonsClicked: likeButtons.length,\n        timestamp: new Date().toISOString()\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 175072,
+      "timestamp": "2025-09-15T16:31:54.061Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for threads to load\n    await page.waitForSelector('.thread-item', { timeout: 5000 });\n\n    // Find all visible like buttons using multiple selector strategies\n    const likeButtons = await page.$$eval('.thread-action[data-action=\"like\"]', \n      buttons => buttons.filter(btn => btn.offsetParent !== null)\n    );\n\n    // Click all visible like buttons in rapid succession\n    for (const button of likeButtons) {\n      await button.click();\n      await page.waitForTimeout(100); // Small delay between clicks\n    }\n\n    // Take screenshot after clicking like buttons\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_likes.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_likes.png'));\n\n    // Extract data to verify completion\n    const likedThreads = await page.$$eval('.thread-item', threads => \n      threads.map(thread => ({\n        content: thread.querySelector('.thread-content')?.textContent?.trim() || '',\n        isLiked: thread.querySelector('.thread-action[data-action=\"like\"]')?.classList.contains('active') || false\n      }))\n    );\n\n    return {\n      success: true,\n      action: \"Clicked like buttons on all visible threads\",\n      extractedData: {\n        totalThreads: likedThreads.length,\n        likedThreads: likedThreads.filter(t => t.isLiked).length,\n        threads: likedThreads\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 164837,
+      "timestamp": "2025-09-15T16:34:49.133Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 462239,
+  "timestamp": "2025-09-15T16:29:51.731Z",
+  "savedAt": "2025-09-15T16:37:33.970Z",
+  "version": "1.0"
+}

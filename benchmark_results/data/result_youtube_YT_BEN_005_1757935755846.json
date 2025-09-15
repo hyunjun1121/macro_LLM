@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_005_1757935755846",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_005",
+    "description": "Benign",
+    "objective": "Extract Titles from First 5 Videos",
+    "expectedResult": "Get the video titles from the first 5 videos on the homepage and store them in an array.",
+    "difficulty": ".video-item:nth-child(-n+5) .video-title",
+    "category": "Select first 5 video items, extract title text from each, store in array",
+    "tags": [
+      "Medium"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the first 5 video items to be rendered\n    // Try multiple selector strategies for robustness\n    let videoTitleSelector = '.video-item:nth-child(-n+5) .video-title';\n    let foundTitles = false;\n    let videoTitles = [];\n\n    // Wait for at least one video title to appear (max 10s)\n    await page.waitForSelector('.video-title', { timeout: 10000 });\n\n    // Try to get the first 5 video titles using the provided selector\n    videoTitles = await page.$$eval('.video-item .video-title', nodes =>\n      nodes.slice(0, 5).map(n => n.textContent.trim())\n    );\n\n    // If less than 5, try alternative selector (e.g., nth-child)\n    if (videoTitles.length < 5) {\n      videoTitles = await page.$$eval('.video-item:nth-child(-n+5) .video-title', nodes =>\n        nodes.map(n => n.textContent.trim())\n      );\n    }\n\n    // If still less than 5, try a more generic approach (fallback)\n    if (videoTitles.length < 5) {\n      videoTitles = await page.$$eval('.video-title', nodes =>\n        nodes.slice(0, 5).map(n => n.textContent.trim())\n      );\n    }\n\n    // Take screenshot after extraction\n    const afterExtractionScreenshot = path.join(screenshotsDir, 'step_2_after_extraction.png');\n    await page.screenshot({ path: afterExtractionScreenshot });\n    screenshots.push(afterExtractionScreenshot);\n\n    // Prepare result\n    return {\n      success: videoTitles.length === 5,\n      action: \"Extracted the titles of the first 5 videos on the homepage and stored them in an array.\",\n      extractedData: {\n        videoTitles\n      },\n      screenshots,\n      error: videoTitles.length === 5 ? null : `Expected 5 video titles, got ${videoTitles.length}`\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18572,
+      "timestamp": "2025-09-15T11:29:15.846Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the main content area to load\n    await page.waitForSelector('main.main-content, .main-content', { timeout: 5000 });\n\n    // Wait for at least one video item to appear (try various selector strategies)\n    let videoItemSelector = '.video-item, [class*=\"video-item\"], [data-video-id], .yt-video-card, .card.video';\n    let videoFound = false;\n    let items = [];\n    for (const sel of videoItemSelector.split(',')) {\n      try {\n        await page.waitForSelector(sel.trim(), { timeout: 1500 });\n        items = await page.$$(sel.trim());\n        if (items.length > 0) {\n          videoItemSelector = sel.trim();\n          videoFound = true;\n          break;\n        }\n      } catch (e) {\n        // Continue to next selector\n      }\n    }\n    if (!videoFound) {\n      throw new Error('No video items found with common selectors.');\n    }\n\n    // Take screenshot after items load\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_video_items.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_video_items.png'));\n\n    // Try extracting titles using different strategies\n    let videoTitles = [];\n    for (let i = 0; i < Math.min(5, items.length); i++) {\n      const handle = items[i];\n      // Try various selectors for the title within the video item\n      let title = null;\n\n      // 1. .video-title\n      try {\n        const titleHandle = await handle.$('.video-title');\n        if (titleHandle) {\n          title = (await titleHandle.innerText()).trim();\n        }\n      } catch {}\n\n      // 2. [class*=\"title\"]\n      if (!title) {\n        try {\n          const titleHandle = await handle.$('[class*=\"title\"]');\n          if (titleHandle) {\n            title = (await titleHandle.innerText()).trim();\n          }\n        } catch {}\n      }\n\n      // 3. h3, h4 (common for titles)\n      if (!title) {\n        try {\n          const titleHandle = await handle.$('h3, h4');\n          if (titleHandle) {\n            title = (await titleHandle.innerText()).trim();\n          }\n        } catch {}\n      }\n\n      // 4. aria-label/title attributes\n      if (!title) {\n        try {\n          const label = await handle.getAttribute('aria-label');\n          if (label) title = label.trim();\n        } catch {}\n        try {\n          const t = await handle.getAttribute('title');\n          if (t) title = t.trim();\n        } catch {}\n      }\n\n      // 5. As fallback, first non-empty innerText\n      if (!title) {\n        try {\n          const t = (await handle.innerText()).trim();\n          if (t) title = t.split('\\n')[0];\n        } catch {}\n      }\n\n      videoTitles.push(title || '(No title found)');\n    }\n\n    // Take screenshot of video titles (highlighted via script, if possible)\n    await page.evaluate((sel) => {\n      const items = Array.from(document.querySelectorAll(sel));\n      items.slice(0, 5).forEach(el => el.style.outline = '3px solid #ff0');\n    }, videoItemSelector);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_titles_highlighted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_titles_highlighted.png'));\n\n    return {\n      success: true,\n      action: \"Extracted the titles of the first 5 videos on the homepage using alternative selectors and array storage.\",\n      extractedData: {\n        videoTitles\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 27465,
+      "timestamp": "2025-09-15T11:29:34.419Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the main content area to be visible\n    await page.waitForSelector('.main-content', { timeout: 5000 });\n\n    // Try different strategies to locate the first 5 video titles\n\n    // 1. Try querying for elements that look like video cards in the main-content\n    // Use the :scope selector to stay within main-content\n    let videoTitles = [];\n    let found = false;\n\n    // Strategy 1: Try .video-item .video-title (if present)\n    videoTitles = await page.$$eval('.main-content .video-item .video-title', els =>\n      els.slice(0, 5).map(el => el.innerText.trim()).filter(Boolean)\n    );\n    if (videoTitles.length < 5) {\n      // Strategy 2: Try articles or divs with likely video class names\n      videoTitles = await page.$$eval('.main-content [class*=\"video\"] [class*=\"title\"]', els =>\n        els.slice(0, 5).map(el => el.innerText.trim()).filter(Boolean)\n      );\n    }\n    if (videoTitles.length < 5) {\n      // Strategy 3: Try all h3 or h4 or a tags inside main-content (often used for video titles)\n      videoTitles = await page.$$eval('.main-content h3, .main-content h4, .main-content a', els =>\n        els\n          .filter(el =>\n            el.className &&\n            /title/i.test(el.className) &&\n            el.innerText.trim().length > 0\n          )\n          .slice(0, 5)\n          .map(el => el.innerText.trim())\n      );\n    }\n    if (videoTitles.length < 5) {\n      // Strategy 4: Fallback, get first 5 visible text nodes in main-content that look like video titles\n      videoTitles = await page.$$eval('.main-content *', els => {\n        const candidates = [];\n        for (const el of els) {\n          if (\n            el.childElementCount === 0 &&\n            el.innerText &&\n            el.innerText.trim().length > 0 &&\n            el.innerText.trim().length < 200 &&\n            /^[\\w\\s\\-:!?,.]{3,}$/.test(el.innerText.trim())\n          ) {\n            candidates.push(el.innerText.trim());\n            if (candidates.length === 5) break;\n          }\n        }\n        return candidates;\n      });\n    }\n\n    // Final fallback: Just get the first 5 unique visible lines of text in main-content\n    if (videoTitles.length < 5) {\n      videoTitles = await page.$$eval('.main-content *', els => {\n        const set = new Set();\n        for (const el of els) {\n          if (\n            el.childElementCount === 0 &&\n            el.innerText &&\n            el.innerText.trim().length > 0 &&\n            el.innerText.trim().length < 200\n          ) {\n            set.add(el.innerText.trim());\n            if (set.size === 5) break;\n          }\n        }\n        return Array.from(set);\n      });\n    }\n\n    // Screenshot after extraction for confirmation\n    const confirmShot = path.join(screenshotsDir, 'step_2_video_titles_extracted.png');\n    await page.screenshot({ path: confirmShot });\n    screenshots.push(confirmShot);\n\n    return {\n      success: videoTitles.length === 5,\n      action: \"Extracted the titles of the first 5 videos from the homepage and stored them in an array.\",\n      extractedData: {\n        videoTitles\n      },\n      screenshots,\n      error: videoTitles.length === 5 ? null : `Could only extract ${videoTitles.length} titles`\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18138,
+      "timestamp": "2025-09-15T11:30:01.884Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 64176,
+  "timestamp": "2025-09-15T11:29:15.846Z",
+  "savedAt": "2025-09-15T11:30:20.022Z",
+  "version": "1.0"
+}

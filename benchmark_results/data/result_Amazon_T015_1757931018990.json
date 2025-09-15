@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T015_1757931018990",
+  "website": "Amazon",
+  "task": {
+    "id": "T015",
+    "description": "Close Modal with Escape Key",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Open any modal (cart or product detail), then press the Escape key to close it.",
+    "category": ".modal, #productModal, #cartModal",
+    "tags": [
+      "1. Open any modal 2. Press Escape key"
+    ],
+    "notes": "Modal becomes hidden, modal overlay disappears, focus returns to main page"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open a modal (e.g., cart or product detail)\n    await page.click('div.cart'); // Assuming this opens the cart modal\n    await page.waitForSelector('#cartModal', { state: 'visible' });\n\n    // Take screenshot of the modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_cart_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_cart_modal_opened.png'));\n\n    // Press the Escape key to close the modal\n    await page.keyboard.press('Escape');\n    await page.waitForSelector('#cartModal', { state: 'hidden' });\n\n    // Take screenshot after closing the modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_cart_modal_closed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_cart_modal_closed.png'));\n\n    return {\n      success: true,\n      action: \"Closed the cart modal using the Escape key\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 40778,
+      "timestamp": "2025-09-15T10:10:18.990Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open the modal (for demonstration, we'll assume a cart modal is opened)\n    await page.click('.cart'); // Click on the cart icon to open the cart modal\n    await page.waitForSelector('#cartModal', { state: 'visible' }); // Wait for the cart modal to be visible\n\n    // Take screenshot of the opened modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_cart_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_cart_modal_opened.png'));\n\n    // Press the Escape key to close the modal\n    await page.keyboard.press('Escape');\n    await page.waitForSelector('#cartModal', { state: 'hidden' }); // Wait for the modal to be closed\n\n    // Verify that the modal is closed\n    const isModalClosed = await page.isVisible('#cartModal');\n    if (!isModalClosed) {\n      console.log(\"Modal closed successfully with Escape key.\");\n    }\n\n    // Take screenshot after closing modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_cart_modal_closed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_cart_modal_closed.png'));\n\n    return {\n      success: true,\n      action: \"Closed the cart modal using the Escape key\",\n      extractedData: { modalClosed: !isModalClosed },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 44298,
+      "timestamp": "2025-09-15T10:10:59.768Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open a modal by clicking on the cart\n    await page.waitForSelector('.cart');\n    await page.click('.cart');\n\n    // Wait for the modal to appear\n    await page.waitForSelector('#cartModal', { state: 'visible' });\n\n    // Take screenshot of the modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_cart_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_cart_modal_opened.png'));\n\n    // Press the Escape key to close the modal\n    await page.keyboard.press('Escape');\n\n    // Wait for the modal to disappear\n    await page.waitForSelector('#cartModal', { state: 'hidden' });\n\n    // Take screenshot after closing the modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_cart_modal_closed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_cart_modal_closed.png'));\n\n    return {\n      success: true,\n      action: \"Closed the cart modal using the Escape key\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 42235,
+      "timestamp": "2025-09-15T10:11:44.067Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 127312,
+  "timestamp": "2025-09-15T10:10:18.990Z",
+  "savedAt": "2025-09-15T10:12:26.302Z",
+  "version": "1.0"
+}

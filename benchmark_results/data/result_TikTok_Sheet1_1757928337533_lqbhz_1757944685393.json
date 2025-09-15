@@ -1,0 +1,63 @@
+{
+  "id": "TikTok_Sheet1_1757928337533_lqbhz_1757944685393",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928337533_lqbhz",
+    "description": 4,
+    "objective": "General",
+    "expectedResult": "검색창에 '#dance'를 입력하고 검색 버튼 클릭",
+    "difficulty": "searchInput에 '#dance'를 타이핑하고 .search-btn을 클릭",
+    "category": "Medium",
+    "tags": [
+      "#searchInput",
+      ".search-btn"
+    ],
+    "notes": "searchInput에 '#dance'를 타이핑하고 .search-btn을 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for search input and button\n    await page.waitForSelector('#searchInput');\n    await page.waitForSelector('#searchBtn');\n\n    // Type #dance into search input\n    await page.fill('#searchInput', '#dance');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_typed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_typed.png'));\n\n    // Click search button\n    await page.click('#searchBtn');\n    \n    // Wait for potential search results to load\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_completed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_completed.png'));\n\n    // Extract search results if available\n    const extractedData = {};\n    const results = await page.$$('.search-result, .video-container, .user-info');\n    if (results.length > 0) {\n      extractedData.searchResultsCount = results.length;\n    }\n\n    return {\n      success: true,\n      action: \"Typed '#dance' in search input and clicked search button\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete search task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 97539,
+      "timestamp": "2025-09-15T13:58:05.393Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for search input to be visible and enabled\n    await page.waitForSelector('#searchInput', { state: 'visible' });\n    await page.waitForSelector('#searchInput', { state: 'enabled' });\n\n    // Type '#dance' into search input\n    await page.fill('#searchInput', '#dance');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_typed_search.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_typed_search.png'));\n\n    // Wait for search button to be visible and clickable\n    await page.waitForSelector('.search-btn', { state: 'visible' });\n    await page.waitForSelector('.search-btn', { state: 'enabled' });\n\n    // Click search button using multiple strategies\n    await Promise.all([\n      page.waitForNavigation(),\n      page.click('.search-btn')\n    ]);\n\n    // Verify search results by checking if search results appear\n    await page.waitForSelector('.search-results', { timeout: 5000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_results.png'));\n\n    // Extract search results data\n    const extractedData = await page.evaluate(() => {\n      const results = document.querySelectorAll('.search-result-item');\n      return Array.from(results).map(result => ({\n        text: result.textContent.trim(),\n        type: result.getAttribute('data-type') || 'unknown'\n      }));\n    });\n\n    return {\n      success: true,\n      action: \"Typed '#dance' in search input and clicked search button\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete search task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 63923,
+      "timestamp": "2025-09-15T13:59:42.932Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for search input and type '#dance'\n    await page.waitForSelector('#searchInput', { state: 'visible' });\n    await page.fill('#searchInput', '');\n    await page.type('#searchInput', '#dance', { delay: 100 });\n    \n    // Take screenshot after typing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_typed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_typed.png'));\n\n    // Click search button\n    await page.waitForSelector('.search-btn', { state: 'visible' });\n    await page.click('.search-btn');\n    \n    // Wait for potential search results and take final screenshot\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_results.png'));\n\n    // Extract search input value to verify task completion\n    const searchValue = await page.$eval('#searchInput', el => el.value);\n\n    return {\n      success: true,\n      action: \"Typed '#dance' in search input and clicked search button\",\n      extractedData: {\n        searchInputValue: searchValue,\n        searchPerformed: searchValue === '#dance'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot if possible\n    try {\n      await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n      screenshots.push(path.join(screenshotsDir, 'error.png'));\n    } catch (e) {}\n    \n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 56815,
+      "timestamp": "2025-09-15T14:00:46.855Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 218277,
+  "timestamp": "2025-09-15T13:58:05.393Z",
+  "savedAt": "2025-09-15T14:01:43.670Z",
+  "version": "1.0"
+}

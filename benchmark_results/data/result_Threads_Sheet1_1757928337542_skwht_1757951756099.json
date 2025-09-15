@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337542_skwht_1757951756099",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337542_skwht",
+    "description": "G005",
+    "objective": "Search for Users",
+    "expectedResult": "Go to search view, type 'jun' in search input, and switch to People tab",
+    "difficulty": "#search-input, .tab-btn[data-tab='people']",
+    "category": 2,
+    "tags": [
+      "15 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on Search navigation item\n    await page.waitForSelector('[data-view=\"search\"]');\n    await page.click('[data-view=\"search\"]');\n    await page.waitForSelector('#search-view.active');\n    \n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_view.png'));\n\n    // Type 'jun' in search input\n    await page.waitForSelector('#search-input');\n    await page.fill('#search-input', 'jun');\n    \n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_input.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_input.png'));\n\n    // Switch to People tab\n    await page.waitForSelector('.tab-btn[data-tab=\"people\"]');\n    await page.click('.tab-btn[data-tab=\"people\"]');\n    \n    // Wait for tab to activate\n    await page.waitForTimeout(500);\n    \n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_people_tab.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_people_tab.png'));\n\n    // Extract data to verify completion\n    const searchValue = await page.$eval('#search-input', el => el.value);\n    const activeTab = await page.$eval('.tab-btn.active', el => el.dataset.tab);\n\n    return {\n      success: true,\n      action: \"Navigated to search view, typed 'jun' in search input, and switched to People tab\",\n      extractedData: {\n        searchInputValue: searchValue,\n        activeTab: activeTab\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 52833,
+      "timestamp": "2025-09-15T15:55:56.099Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click search navigation item using data-view attribute\n    await page.waitForSelector('[data-view=\"search\"]');\n    await page.click('[data-view=\"search\"]');\n    await page.waitForTimeout(1000);\n\n    // Wait for search view to be active and search input to be visible\n    await page.waitForSelector('#search-view.active');\n    await page.waitForSelector('#search-input');\n    \n    // Take screenshot after navigating to search view\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_view.png'));\n\n    // Type 'jun' in search input\n    await page.fill('#search-input', 'jun');\n    await page.waitForTimeout(500);\n\n    // Take screenshot after typing search term\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_typed_search.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_typed_search.png'));\n\n    // Switch to People tab using data-tab attribute\n    await page.waitForSelector('.tab-btn[data-tab=\"people\"]');\n    await page.click('.tab-btn[data-tab=\"people\"]');\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after switching to People tab\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_people_tab.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_people_tab.png'));\n\n    // Extract data to verify task completion\n    const activeTab = await page.$eval('.tab-btn.active', el => el.dataset.tab);\n    const searchValue = await page.$eval('#search-input', el => el.value);\n\n    return {\n      success: true,\n      action: \"Navigated to search view, typed 'jun' in search input, and switched to People tab\",\n      extractedData: {\n        activeTab,\n        searchValue,\n        searchViewVisible: await page.isVisible('#search-view.active')\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 67565,
+      "timestamp": "2025-09-15T15:56:48.932Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on search navigation item using data-view attribute\n    await page.waitForSelector('.nav-item[data-view=\"search\"]');\n    await page.click('.nav-item[data-view=\"search\"]');\n    \n    // Wait for search view to be active\n    await page.waitForSelector('#search-view.active');\n    \n    // Take screenshot after navigating to search\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_view.png'));\n\n    // Type 'jun' in search input using multiple selector strategies\n    await page.waitForSelector('#search-input');\n    await page.focus('#search-input');\n    await page.fill('#search-input', 'jun');\n    \n    // Take screenshot after typing in search\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_typed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_typed.png'));\n\n    // Switch to People tab using CSS selector with data attribute\n    await page.waitForSelector('.tab-btn[data-tab=\"people\"]');\n    await page.click('.tab-btn[data-tab=\"people\"]');\n    \n    // Verify tab is active by checking for active class\n    await page.waitForSelector('.tab-btn[data-tab=\"people\"].active');\n    \n    // Take screenshot after switching to People tab\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_people_tab.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_people_tab.png'));\n\n    // Extract data to verify task completion\n    const extractedData = {\n      searchValue: await page.$eval('#search-input', el => el.value),\n      activeTab: await page.$eval('.tab-btn.active', el => el.dataset.tab)\n    };\n\n    return {\n      success: true,\n      action: \"Navigated to search view, typed 'jun' in search input, and switched to People tab\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 65848,
+      "timestamp": "2025-09-15T15:57:56.497Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 186246,
+  "timestamp": "2025-09-15T15:55:56.099Z",
+  "savedAt": "2025-09-15T15:59:02.345Z",
+  "version": "1.0"
+}

@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T003_1757929977017",
+  "website": "Amazon",
+  "task": {
+    "id": "T003",
+    "description": "Add First Product to Cart",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Click the 'Add to Cart' button on the first product card displayed on the homepage.",
+    "category": ".product-card:first-child .add-to-cart, #cartCount",
+    "tags": [
+      "1. Locate first product card 2. Click 'Add to Cart' button 3. Verify cart counter updates"
+    ],
+    "notes": "Cart counter increases from 0 to 1, notification appears confirming item added, cart icon shows updated count"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first product card to be visible\n    // Try several selectors for robustness\n    let productCardSelector = '.product-card';\n    await page.waitForSelector(productCardSelector, { timeout: 5000 });\n\n    // Find the first product card and its 'Add to Cart' button\n    // Try direct descendant first\n    let addToCartBtn = await page.$('.product-card:first-child .add-to-cart');\n    if (!addToCartBtn) {\n      // Fallback: find all product cards, pick first, then find its button\n      const cards = await page.$$('.product-card');\n      if (cards.length > 0) {\n        addToCartBtn = await cards[0].$('.add-to-cart');\n      }\n    }\n\n    if (!addToCartBtn) {\n      throw new Error(\"Could not find 'Add to Cart' button on first product card\");\n    }\n\n    // Scroll into view and click the 'Add to Cart' button\n    await addToCartBtn.scrollIntoViewIfNeeded();\n    await addToCartBtn.click();\n\n    // Wait for cart count to update (assume it increases to at least 1)\n    const cartCountSelector = '#cartCount';\n    await page.waitForSelector(cartCountSelector, { timeout: 3000 });\n\n    // Wait for the cart count to become > 0\n    await page.waitForFunction(\n      selector => {\n        const el = document.querySelector(selector);\n        return el && parseInt(el.textContent, 10) > 0;\n      },\n      cartCountSelector,\n      { timeout: 3000 }\n    );\n\n    // Take screenshot after adding to cart\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_add_to_cart.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_add_to_cart.png'));\n\n    // Extract the cart count value\n    const cartCount = await page.$eval(cartCountSelector, el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Clicked 'Add to Cart' on the first product card and verified cart count increased.\",\n      extractedData: {\n        cartCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 41754,
+      "timestamp": "2025-09-15T09:52:57.017Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first product card to be visible\n    // Use a selector combination for robustness: Find the first .product-card using XPath (differs from previous attempt)\n    const productCardLocator = await page.waitForSelector('xpath=(//div[contains(@class,\"product-card\")])[1]', { timeout: 5000 });\n    // Take a screenshot of the first product card area\n    await productCardLocator.screenshot({ path: path.join(screenshotsDir, 'step_2_first_product_card.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_first_product_card.png'));\n\n    // Find the \"Add to Cart\" button inside the first product card using text selector as an alternative to class\n    const addToCartBtn = await productCardLocator.waitForSelector('button:has-text(\"Add to Cart\")', { timeout: 3000 });\n\n    // Click the \"Add to Cart\" button\n    await addToCartBtn.click();\n\n    // Wait for the cart count to update (should animate from 0 to 1)\n    await page.waitForFunction(() => {\n      const el = document.getElementById('cartCount');\n      return el && (el.innerText.trim() === \"1\" || el.textContent.trim() === \"1\");\n    }, { timeout: 4000 });\n\n    // Take a screenshot after adding to cart\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_cart_updated.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_cart_updated.png'));\n\n    // Extract cart count for verification\n    const cartCountText = await page.$eval('#cartCount', el => el.innerText.trim());\n\n    // Extract the product title from the first product card for reporting\n    let productTitle = \"\";\n    try {\n      // Try to find element with .product-title class or first h2/h3 child\n      const titleElement = await productCardLocator.$('.product-title') ||\n                           await productCardLocator.$('h2') ||\n                           await productCardLocator.$('h3');\n      if (titleElement) {\n        productTitle = (await titleElement.innerText()).trim();\n      }\n    } catch (e) {\n      // Fallback to empty\n      productTitle = \"\";\n    }\n\n    return {\n      success: true,\n      action: \"Clicked 'Add to Cart' on the first product card and verified cart count incremented.\",\n      extractedData: {\n        cartCount: cartCountText,\n        firstProductTitle: productTitle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 54877,
+      "timestamp": "2025-09-15T09:53:38.771Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first product card using an alternative selector strategy\n    // Try to get the first product card by finding the first .product-card or similar, fallback to img[alt*=\"iPhone\"] parent\n    let productCardHandle = await page.$('.product-card');\n    if (!productCardHandle) {\n      // Fallback: Find by product image alt if class not present\n      const imgHandle = await page.$('img[alt*=\"iPhone\"], img[alt*=\"Apple\"]');\n      if (imgHandle) {\n        productCardHandle = await imgHandle.evaluateHandle((img) => img.closest('div'));\n      }\n    }\n\n    if (!productCardHandle) {\n      throw new Error('First product card not found');\n    }\n\n    // Try to find the \"Add to Cart\" button within the first product card, using a variety of selector strategies\n    let addToCartButton = await productCardHandle.$('button.add-to-cart');\n    if (!addToCartButton) {\n      // Try a text-based selector\n      addToCartButton = await productCardHandle.$('button:has-text(\"Add to Cart\")');\n    }\n    if (!addToCartButton) {\n      // Try by role and text, as last fallback\n      addToCartButton = await productCardHandle.$('xpath=.//button[contains(., \"Add to Cart\")]');\n    }\n\n    if (!addToCartButton) {\n      throw new Error('Add to Cart button not found in the first product card');\n    }\n\n    // Scroll into view and click the button\n    await addToCartButton.scrollIntoViewIfNeeded();\n    await addToCartButton.click();\n\n    // Wait for the cart count (#cartCount) to increment (should be > 0)\n    await page.waitForSelector('#cartCount');\n    // Wait until the cart count is updated to 1 (or more)\n    await page.waitForFunction(() => {\n      const el = document.querySelector('#cartCount');\n      return el && parseInt(el.textContent) > 0;\n    });\n\n    // Take screenshot after adding to cart\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_add_to_cart.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_add_to_cart.png'));\n\n    // Extract the cart count\n    const cartCount = await page.$eval('#cartCount', el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Clicked 'Add to Cart' on the first product card and verified cart count increment.\",\n      extractedData: {\n        cartCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 42615,
+      "timestamp": "2025-09-15T09:54:33.648Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 139246,
+  "timestamp": "2025-09-15T09:52:57.017Z",
+  "savedAt": "2025-09-15T09:55:16.263Z",
+  "version": "1.0"
+}

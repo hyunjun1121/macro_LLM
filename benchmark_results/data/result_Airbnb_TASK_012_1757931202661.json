@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_012_1757931202661",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_012",
+    "description": "General",
+    "objective": "Amenities Count Analysis",
+    "expectedResult": "jun_1 숙소 모달을 열고 편의시설(amenities) 개수를 정확히 카운트하여 반환하기",
+    "difficulty": "Medium",
+    "category": "[data-listing-id='jun_1'], .amenity-tag",
+    "tags": [
+      "Modal navigation",
+      "element counting"
+    ],
+    "notes": "jun_1 숙소의 편의시설 개수 (예: 20개)"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click on the jun_1 listing\n    const jun1Selector = '[data-listing-id=\"jun_1\"]';\n    await page.waitForSelector(jun1Selector, { timeout: 10000 });\n    await page.click(jun1Selector);\n\n    // Wait for modal to appear and take screenshot\n    await page.waitForSelector('.modal-content', { timeout: 5000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_open.png'));\n\n    // Wait for amenities to load and count them\n    await page.waitForSelector('.amenity-tag', { timeout: 5000 });\n    const amenitiesCount = await page.$$eval('.amenity-tag', elements => elements.length);\n\n    // Take final screenshot with amenities visible\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_amenities_counted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_amenities_counted.png'));\n\n    return {\n      success: true,\n      action: \"Opened jun_1 listing modal and counted amenities\",\n      extractedData: {\n        amenitiesCount: amenitiesCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 82621,
+      "timestamp": "2025-09-15T10:13:22.661Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for listings to load and find jun_1 listing\n    await page.waitForSelector(\"[data-listing-id='jun_1']\");\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_listing_found.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_listing_found.png'));\n\n    // Click on jun_1 listing to open modal\n    await page.click(\"[data-listing-id='jun_1']\");\n    \n    // Wait for modal to appear\n    await page.waitForSelector('.modal-content', { timeout: 5000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_modal_opened.png'));\n\n    // Wait for amenities to load and count them\n    await page.waitForSelector('.amenity-tag');\n    const amenitiesCount = await page.$$eval('.amenity-tag', elements => elements.length);\n    \n    await page.screenshot({ \n      path: path.join(screenshotsDir, 'step_4_amenities_counted.png'),\n      fullPage: true \n    });\n    screenshots.push(path.join(screenshotsDir, 'step_4_amenities_counted.png'));\n\n    return {\n      success: true,\n      action: \"Opened jun_1 modal and counted amenities\",\n      extractedData: {\n        amenitiesCount: amenitiesCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    await page.screenshot({ \n      path: path.join(screenshotsDir, 'error_state.png'),\n      fullPage: true \n    });\n    screenshots.push(path.join(screenshotsDir, 'error_state.png'));\n\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 78657,
+      "timestamp": "2025-09-15T10:14:45.282Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click on jun_1 listing using data attribute selector\n    await page.waitForSelector('[data-listing-id=\"jun_1\"]', { timeout: 5000 });\n    await page.click('[data-listing-id=\"jun_1\"]');\n    \n    // Wait for modal to appear and take screenshot\n    await page.waitForSelector('.modal-content', { timeout: 3000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_opened.png'));\n\n    // Wait for amenities to load and count them\n    await page.waitForSelector('.amenity-tag', { timeout: 3000 });\n    const amenityCount = await page.$$eval('.amenity-tag', amenities => amenities.length);\n\n    // Take final screenshot with amenities visible\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_amenities_visible.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_amenities_visible.png'));\n\n    return {\n      success: true,\n      action: \"Opened jun_1 modal and counted amenities\",\n      extractedData: {\n        amenityCount: amenityCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take screenshot on error\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n    \n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 120258,
+      "timestamp": "2025-09-15T10:16:03.939Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 281536,
+  "timestamp": "2025-09-15T10:13:22.661Z",
+  "savedAt": "2025-09-15T10:18:04.197Z",
+  "version": "1.0"
+}

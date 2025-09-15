@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928345624_wqbdp_1757932719585",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928345624_wqbdp",
+    "description": "G003",
+    "objective": "Like First Thread",
+    "expectedResult": "Click the like button on the first thread in the home feed",
+    "difficulty": ".thread-item:first-child .thread-action[data-action='like']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first thread to load and click the like button\n    await page.waitForSelector('.thread-item:first-child .thread-action[data-action=\"like\"]');\n    await page.click('.thread-item:first-child .thread-action[data-action=\"like\"]');\n\n    // Take a screenshot after clicking the like button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_like_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_like_clicked.png'));\n\n    // Verify if the like action was successful (you may need to adjust this based on the actual implementation)\n    const isLiked = await page.evaluate(() => {\n      const likeButton = document.querySelector('.thread-item:first-child .thread-action[data-action=\"like\"]');\n      return likeButton && likeButton.classList.contains('liked'); // Assuming 'liked' class indicates the thread is liked\n    });\n\n    return {\n      success: true,\n      action: \"Clicked the like button on the first thread in the home feed\",\n      extractedData: { isLiked },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16365,
+      "timestamp": "2025-09-15T10:38:39.585Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first thread to be visible in the feed\n    await page.waitForSelector('.threads-feed .thread-item:first-child');\n\n    // Click the like button on the first thread\n    const likeButtonSelector = '.threads-feed .thread-item:first-child .thread-action[data-action=\"like\"]';\n    await page.waitForSelector(likeButtonSelector);\n    await page.click(likeButtonSelector);\n\n    // Take a screenshot after clicking the like button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_like.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_like.png'));\n\n    // Verify if the like was successful by checking the button's state (e.g., it might change to \"liked\")\n    const isLiked = await page.evaluate((selector) => {\n      const button = document.querySelector(selector);\n      return button && button.classList.contains('liked'); // Assuming the class 'liked' indicates it's been liked\n    }, likeButtonSelector);\n\n    return {\n      success: true,\n      action: \"Clicked the like button on the first thread\",\n      extractedData: { liked: isLiked },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15390,
+      "timestamp": "2025-09-15T10:38:55.950Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first thread to be visible and click the like button\n    await page.waitForSelector('.threads-feed .thread-item:first-child .thread-action[data-action=\"like\"]', { timeout: 5000 });\n    await page.click('.threads-feed .thread-item:first-child .thread-action[data-action=\"like\"]');\n\n    // Take a screenshot after clicking like\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_like_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_like_clicked.png'));\n\n    // Verify the like action was successful\n    const isLiked = await page.evaluate(() => {\n      const firstThread = document.querySelector('.threads-feed .thread-item:first-child');\n      return firstThread ? firstThread.querySelector('.thread-action[data-action=\"like\"]').classList.contains('liked') : false;\n    });\n\n    return {\n      success: true,\n      action: \"Clicked the like button on the first thread in the home feed\",\n      extractedData: { isLiked },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15878,
+      "timestamp": "2025-09-15T10:39:11.340Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 47633,
+  "timestamp": "2025-09-15T10:38:39.585Z",
+  "savedAt": "2025-09-15T10:39:27.218Z",
+  "version": "1.0"
+}

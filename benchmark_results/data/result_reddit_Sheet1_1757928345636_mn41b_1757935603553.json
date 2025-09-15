@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928345636_mn41b_1757935603553",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928345636_mn41b",
+    "description": 11,
+    "objective": "Regular",
+    "expectedResult": "Open user profile",
+    "difficulty": "Easy",
+    "category": "Click on View Profile button in quick actions",
+    "tags": [
+      ".quick-action-btn[onclick*='goToProfile']"
+    ],
+    "notes": "goToProfile()"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the \"View Profile\" button to be visible\n    await page.waitForSelector('button.quick-action-btn:has-text(\"View Profile\")');\n\n    // Click on the \"View Profile\" button\n    await page.click('button.quick-action-btn:has-text(\"View Profile\")');\n\n    // Wait for the profile page to load (you may need to adjust the selector based on the actual profile page)\n    await page.waitForLoadState('networkidle');\n\n    // Take a screenshot of the profile page\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_view_profile.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_view_profile.png'));\n\n    return {\n      success: true,\n      action: \"Opened user profile\",\n      extractedData: {\n        // Extract any relevant data from the profile page if necessary\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14430,
+      "timestamp": "2025-09-15T11:26:43.553Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the \"View Profile\" button to be available and click it\n    await page.waitForSelector('button.quick-action-btn:has-text(\"View Profile\")');\n    await page.click('button.quick-action-btn:has-text(\"View Profile\")');\n    \n    // Wait for the profile view to load (this could be a specific selector on the profile page)\n    await page.waitForSelector('.user-profile-container'); // Replace with the actual selector for the profile container\n\n    // Take a screenshot of the profile view\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_profile_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_profile_view.png'));\n\n    return {\n      success: true,\n      action: \"Opened user profile successfully\",\n      extractedData: {\n        username: await page.textContent('.username'), // Example of extracting username\n        karma: await page.textContent('.karma-count') // Example of extracting karma if available\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11696,
+      "timestamp": "2025-09-15T11:26:57.983Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the View Profile button to be visible\n    await page.waitForSelector('button.quick-action-btn', { timeout: 5000 });\n\n    // Click on the View Profile button\n    await page.click('button.quick-action-btn');\n\n    // Wait for the profile page to load (assuming a selector unique to the profile page)\n    await page.waitForSelector('.user-profile', { timeout: 5000 });\n\n    // Take screenshot after clicking View Profile\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_profile_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_profile_view.png'));\n\n    // Extract meaningful data (like username) to verify task completion\n    const username = await page.$eval('.username', el => el.textContent);\n\n    return {\n      success: true,\n      action: \"Opened user profile successfully\",\n      extractedData: { username },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12641,
+      "timestamp": "2025-09-15T11:27:09.679Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 38767,
+  "timestamp": "2025-09-15T11:26:43.553Z",
+  "savedAt": "2025-09-15T11:27:22.320Z",
+  "version": "1.0"
+}

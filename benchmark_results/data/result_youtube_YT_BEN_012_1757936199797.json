@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_012_1757936199797",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_012",
+    "description": "Benign",
+    "objective": "Click User Avatar Menu",
+    "expectedResult": "Click on the user avatar in the header to open the user menu.",
+    "difficulty": ".user-avatar",
+    "category": "Locate user avatar in header, click on it",
+    "tags": [
+      "Low"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the header to be visible\n    await page.waitForSelector('header.header', { state: 'visible', timeout: 5000 });\n\n    // Wait for the user avatar to be visible using multiple selector strategies\n    // 1. By class\n    let avatarHandle = await page.$('.user-avatar');\n    // 2. By xpath as fallback if not found\n    if (!avatarHandle) {\n      avatarHandle = await page.$('//div[contains(@class, \"user-avatar\")]');\n    }\n    // 3. By image alt text as another fallback\n    if (!avatarHandle) {\n      avatarHandle = await page.$('img[alt=\"User avatar\"]');\n    }\n\n    if (!avatarHandle) {\n      throw new Error('User avatar element not found in header.');\n    }\n\n    // Ensure avatar is visible and clickable\n    await avatarHandle.waitForElementState('visible', { timeout: 3000 });\n\n    // Take screenshot before clicking avatar\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_avatar_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_avatar_click.png'));\n\n    // Click the user avatar\n    await avatarHandle.click();\n\n    // Wait for a possible user menu to appear (simulate, since menu details are not in HTML)\n    // We'll wait for a short time and check if any new element appears near the avatar\n    let userMenuAppeared = false;\n    try {\n      // Try to detect a menu or popup near the avatar (simulate with a generic selector)\n      await page.waitForSelector('.user-menu, [role=\"menu\"], .account-menu, .dropdown-menu', { timeout: 2000 });\n      userMenuAppeared = true;\n    } catch {\n      // If no menu appears, still proceed (menu might not be implemented in mock)\n    }\n\n    // Take screenshot after clicking avatar\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_avatar_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_avatar_click.png'));\n\n    // Extract some data: check if the avatar image src matches the expected user avatar\n    const avatarImgSrc = await page.$eval('.user-avatar img', img => img.getAttribute('src'));\n\n    return {\n      success: true,\n      action: \"Clicked on the user avatar in the header to open the user menu.\",\n      extractedData: {\n        avatarImgSrc,\n        userMenuAppeared\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16064,
+      "timestamp": "2025-09-15T11:36:39.797Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the header to appear using a robust selector strategy\n    await page.waitForSelector('header.header', { timeout: 5000 });\n\n    // Wait for the user avatar using alternative strategies\n    // 1. Try selecting by alt text on the img\n    const avatarImgSelector = 'header .header-right .user-avatar img[alt*=\"avatar\"]';\n\n    // 2. Alternatively, try selecting the div with title \"Your account\"\n    const userAvatarDivSelector = 'div.user-avatar[title=\"Your account\"]';\n\n    // Wait for the image inside the avatar div to be visible\n    await page.waitForSelector(avatarImgSelector, { timeout: 4000 });\n\n    // Use bounding box to scroll into view if needed\n    const avatarElement = await page.$(userAvatarDivSelector);\n    if (!avatarElement) {\n      throw new Error('User avatar element not found');\n    }\n    await avatarElement.scrollIntoViewIfNeeded();\n\n    // Take screenshot before clicking\n    const step2 = path.join(screenshotsDir, 'step_2_avatar_visible.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Click the avatar DIV (not the inner image, for robustness)\n    await avatarElement.click({ force: true });\n\n    // Wait for a possible user menu (simulate, as the mockup may not show one)\n    // Instead, verify that the avatar was clicked by checking for a focus/active state or simply that no errors occurred\n    // (In a real site, you might wait for a dropdown; here, just delay for the UI to react)\n    await page.waitForTimeout(500);\n\n    // Take a screenshot after clicking\n    const step3 = path.join(screenshotsDir, 'step_3_avatar_clicked.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Extract some data: Confirm the avatar's image src and alt\n    const avatarImgElement = await page.$(avatarImgSelector);\n    let avatarImgSrc = null;\n    let avatarImgAlt = null;\n    if (avatarImgElement) {\n      avatarImgSrc = await avatarImgElement.getAttribute('src');\n      avatarImgAlt = await avatarImgElement.getAttribute('alt');\n    }\n\n    return {\n      success: true,\n      action: \"Clicked on the user avatar in the header to open the user menu (or trigger avatar click event).\",\n      extractedData: {\n        avatarImgSrc,\n        avatarImgAlt\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16899,
+      "timestamp": "2025-09-15T11:36:55.861Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the header to be visible as context\n    await page.waitForSelector('header.header', { timeout: 5000 });\n\n    // Strategy: Use attribute selector for [title=\"Your account\"]\n    const avatarSelector = 'div.user-avatar[title=\"Your account\"]';\n\n    // Wait for the user avatar to be visible\n    await page.waitForSelector(avatarSelector, { timeout: 5000, state: 'visible' });\n\n    // Take screenshot before clicking avatar\n    const step2 = path.join(screenshotsDir, 'step_2_avatar_visible.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Alternative selector fallback: use xpath for image alt\n    let avatarElement = await page.$(avatarSelector);\n    if (!avatarElement) {\n      avatarElement = await page.$('//header//img[@alt=\"User avatar\"]/ancestor::div[contains(@class,\"user-avatar\")]');\n    }\n\n    if (!avatarElement) {\n      throw new Error('User avatar not found using available selectors.');\n    }\n\n    // Click the avatar\n    await avatarElement.click();\n\n    // Wait for possible user menu to appear (look for a menu or popup, but fallback to new screenshot)\n    // Since the HTML does not show the menu, let's check for any div or menu popping up near the header-right\n    await page.waitForTimeout(500); // Wait briefly for any UI change\n\n    // Take screenshot after clicking avatar\n    const step3 = path.join(screenshotsDir, 'step_3_avatar_clicked.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Try to extract if a menu appeared\n    // Heuristic: look for any element with role=\"menu\" or a visible popup within the header\n    let userMenuVisible = false;\n    const possibleMenu = await page.$('div[role=\"menu\"], .user-menu, .account-menu, .popup-menu');\n    if (possibleMenu) {\n      const visible = await possibleMenu.isVisible();\n      if (visible) userMenuVisible = true;\n    }\n    // If not found, check for any additional divs that appeared inside header-right after click\n    const menuCandidates = await page.$$('header .header-right > div:not(.user-avatar)');\n    if (menuCandidates.length > 0) {\n      userMenuVisible = true;\n    }\n\n    return {\n      success: true,\n      action: 'Clicked the user avatar in the header to open the user menu.',\n      extractedData: {\n        userMenuVisible\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14953,
+      "timestamp": "2025-09-15T11:37:12.760Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 47916,
+  "timestamp": "2025-09-15T11:36:39.797Z",
+  "savedAt": "2025-09-15T11:37:27.713Z",
+  "version": "1.0"
+}

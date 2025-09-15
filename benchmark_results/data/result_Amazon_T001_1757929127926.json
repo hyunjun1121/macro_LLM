@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T001_1757929127926",
+  "website": "Amazon",
+  "task": {
+    "id": "T001",
+    "description": "Navigate to Electronics Category",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Click on the 'Electronics' link in the navigation menu to navigate to the electronics category page.",
+    "category": ".nav-links a[onclick*='electronics'], .category-card[onclick*='electronics']",
+    "tags": [
+      "1. Locate electronics navigation link 2. Click the electronics link 3. Wait for page to load"
+    ],
+    "notes": "URL contains '/electronics' OR page heading shows 'Electronics', products grid is populated with electronics items"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the navigation menu to be visible\n    await page.waitForSelector('.nav-links');\n\n    // Click on the 'Electronics' link in the navigation menu\n    await page.click('a[onclick*=\"electronics\"]');\n\n    // Wait for the electronics category page to load\n    await page.waitForLoadState('networkidle');\n\n    // Take a screenshot of the electronics category page\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_electronics_category.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_electronics_category.png'));\n\n    return {\n      success: true,\n      action: \"Navigated to the Electronics category page\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 43151,
+      "timestamp": "2025-09-15T09:38:47.926Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the navigation menu to load\n    await page.waitForSelector('.nav-links');\n\n    // Click on the 'Electronics' link in the navigation menu\n    await page.click('a:contains(\"Electronics\")');\n\n    // Wait for the electronics category page to load\n    await page.waitForLoadState('networkidle');\n\n    // Take screenshot of the electronics category page\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_electronics_category.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_electronics_category.png'));\n\n    // Verify the navigation was successful by checking the page title or content\n    const pageTitle = await page.title();\n    const isElectronicsPage = pageTitle.includes(\"Electronics\");\n\n    return {\n      success: isElectronicsPage,\n      action: \"Navigated to the Electronics category\",\n      extractedData: { pageTitle },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 45116,
+      "timestamp": "2025-09-15T09:39:31.077Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on the 'Electronics' link in the navigation menu\n    await page.waitForSelector('.nav-links a[onclick*=\"electronics\"]');\n    await page.click('.nav-links a[onclick*=\"electronics\"]');\n    await page.waitForLoadState('networkidle');\n\n    // Take screenshot after navigating to Electronics category\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_navigated_to_electronics.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_navigated_to_electronics.png'));\n\n    // Check if the navigation was successful by verifying the URL or content\n    const currentUrl = page.url();\n    const electronicsPageLoaded = await page.evaluate(() => {\n      return document.querySelector('h1') && document.querySelector('h1').innerText.includes('Electronics');\n    });\n\n    return {\n      success: electronicsPageLoaded,\n      action: electronicsPageLoaded ? \"Successfully navigated to Electronics category\" : \"Failed to navigate to Electronics category\",\n      extractedData: {\n        currentUrl,\n        title: await page.title()\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 43524,
+      "timestamp": "2025-09-15T09:40:16.193Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 131791,
+  "timestamp": "2025-09-15T09:38:47.926Z",
+  "savedAt": "2025-09-15T09:40:59.717Z",
+  "version": "1.0"
+}

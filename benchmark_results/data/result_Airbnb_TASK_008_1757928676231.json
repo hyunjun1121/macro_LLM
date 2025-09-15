@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_008_1757928676231",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_008",
+    "description": "General",
+    "objective": "Profile Menu Navigation",
+    "expectedResult": "프로필 버튼을 클릭하여 드롭다운 메뉴를 열고 'Profile' 링크가 올바른 href 속성을 가지는지 확인하기",
+    "difficulty": "Easy",
+    "category": ".profile-btn, #profileDropdown, [href='profile.html']",
+    "tags": [
+      "Dropdown menu interaction",
+      "attribute inspection"
+    ],
+    "notes": "Profile 링크의 href 속성값 ('profile.html')"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the profile button to be visible and click it\n    await page.waitForSelector('button.profile-btn', { state: 'visible', timeout: 5000 });\n    const profileBtn = await page.$('button.profile-btn');\n    if (!profileBtn) throw new Error('Profile button not found');\n    await profileBtn.click();\n\n    // Wait for the dropdown menu to appear\n    await page.waitForSelector('#profileDropdown', { state: 'visible', timeout: 3000 });\n\n    // Take screenshot after dropdown opens\n    const step2 = path.join(screenshotsDir, 'step_2_dropdown_open.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Find the 'Profile' link inside the dropdown\n    // Use multiple selector strategies\n    let profileLink = await page.$('#profileDropdown a[href=\"profile.html\"]');\n    if (!profileLink) {\n      // Try by text as fallback\n      profileLink = await page.$('//div[@id=\"profileDropdown\"]//a[normalize-space(text())=\"Profile\"]');\n    }\n    if (!profileLink) throw new Error('Profile link not found in dropdown');\n\n    // Extract the href attribute of the Profile link\n    const href = await profileLink.getAttribute('href');\n\n    // Take screenshot highlighting the Profile link (optional: scroll into view)\n    await profileLink.scrollIntoViewIfNeeded();\n    const step3 = path.join(screenshotsDir, 'step_3_profile_link.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Prepare extracted data\n    const extractedData = {\n      profileLinkHref: href,\n      profileLinkText: (await profileLink.innerText()).trim()\n    };\n\n    // Verify if href is correct\n    const isHrefCorrect = href === 'profile.html';\n\n    return {\n      success: isHrefCorrect,\n      action: \"Clicked the profile button, opened dropdown, and verified the 'Profile' link href is 'profile.html'\",\n      extractedData,\n      screenshots,\n      error: isHrefCorrect ? null : `Profile link href was '${href}', expected 'profile.html'`\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13605,
+      "timestamp": "2025-09-15T09:31:16.231Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the profile button using alternative selector: aria-label, role, or structure-based selector\n    // Try using the avatar letter \"J\" as anchor, then traverse up to button\n    const profileAvatarSelector = '.profile-avatar span';\n    await page.waitForSelector(profileAvatarSelector, { timeout: 5000 });\n    // Get the profile button handle via DOM traversal\n    const profileBtn = await page.$eval(\n      profileAvatarSelector,\n      el => el.closest('button')\n    );\n    // If not found, fallback to text selector\n    let profileBtnHandle;\n    if (profileBtn) {\n      // Use the direct selector, but Playwright needs ElementHandle, so locate it again\n      profileBtnHandle = await page.$('button.profile-btn');\n    } else {\n      // Try XPath as a last resort\n      profileBtnHandle = await page.$('//button[contains(@class,\"profile-btn\")]');\n    }\n\n    // Click the profile button to open dropdown (using Playwright API)\n    if (profileBtnHandle) {\n      await profileBtnHandle.click();\n    } else {\n      // fallback: click by script\n      await page.evaluate(() => {\n        const avatar = document.querySelector('.profile-avatar span');\n        if (avatar) avatar.closest('button').click();\n      });\n    }\n\n    // Wait for the dropdown menu to be visible (use #profileDropdown, but ensure it is visible)\n    await page.waitForSelector('#profileDropdown', { state: 'visible', timeout: 3000 });\n\n    // Screenshot after dropdown open\n    const step2 = path.join(screenshotsDir, 'step_2_dropdown_open.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Wait for the \"Profile\" link\n    // Try multiple selector strategies: text, href, and inside the dropdown\n    let profileLinkHandle = await page.$('#profileDropdown a[href=\"profile.html\"]');\n    if (!profileLinkHandle) {\n      // Fallback: search for anchor with text \"Profile\" inside #profileDropdown\n      profileLinkHandle = await page.$('#profileDropdown >> text=Profile');\n    }\n    if (!profileLinkHandle) {\n      // Fallback: XPath\n      profileLinkHandle = await page.$('//div[@id=\"profileDropdown\"]//a[contains(text(),\"Profile\")]');\n    }\n\n    let profileLinkText = null;\n    let profileLinkHref = null;\n    if (profileLinkHandle) {\n      profileLinkText = await profileLinkHandle.innerText();\n      profileLinkHref = await profileLinkHandle.getAttribute('href');\n    }\n\n    // Screenshot after locating the Profile link\n    const step3 = path.join(screenshotsDir, 'step_3_profile_link.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Build extractedData\n    const extractedData = {\n      profileLinkText,\n      profileLinkHref,\n      isProfileHrefCorrect: profileLinkHref === 'profile.html'\n    };\n\n    return {\n      success: extractedData.isProfileHrefCorrect,\n      action: \"Opened the profile dropdown and verified that the 'Profile' link has href='profile.html'\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 22936,
+      "timestamp": "2025-09-15T09:31:29.836Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n\n    // Take initial screenshot\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the profile button using multiple strategies\n    // 1. By class\n    let profileBtn = await page.waitForSelector('button.profile-btn', { timeout: 5000 });\n\n    // 2. As fallback, by text (the avatar contains \"J\", but button itself may not have text, so try by class first)\n    // 3. As another fallback, by xpath: the button containing a span with text \"J\"\n    if (!profileBtn) {\n      profileBtn = await page.waitForSelector('//button[.//span[text()=\"J\"]]', { timeout: 3000 });\n    }\n\n    // Click the profile button to open dropdown\n    await profileBtn.click();\n\n    // Wait for the dropdown to become visible (using ID, then fallback to class)\n    let dropdown = await page.waitForSelector('#profileDropdown', { timeout: 3000 });\n    // Make sure it's visible (some dropdowns may be hidden via CSS)\n    await page.waitForFunction(\n      el => !!el && window.getComputedStyle(el).display !== 'none' && window.getComputedStyle(el).visibility !== 'hidden' && el.offsetHeight > 0,\n      dropdown\n    );\n\n    // Take screenshot after dropdown is visible\n    const dropdownShot = path.join(screenshotsDir, 'step_2_profile_dropdown_open.png');\n    await page.screenshot({ path: dropdownShot });\n    screenshots.push(dropdownShot);\n\n    // Find the \"Profile\" link using different strategies\n    // 1. Inside the dropdown, an <a> with text \"Profile\"\n    let profileLink = await dropdown.$('a[href=\"profile.html\"]');\n    if (!profileLink) {\n      // Fallback: Find by text inside the dropdown\n      profileLink = await dropdown.$('a:has-text(\"Profile\")');\n    }\n    if (!profileLink) {\n      // Fallback: Use xpath\n      const links = await dropdown.$$('a');\n      for (const link of links) {\n        const text = await link.textContent();\n        if (text && text.trim() === 'Profile') {\n          profileLink = link;\n          break;\n        }\n      }\n    }\n\n    // Extract the href attribute for verification\n    let extractedHref = null;\n    if (profileLink) {\n      extractedHref = await profileLink.getAttribute('href');\n    }\n\n    // Highlight the \"Profile\" link for the screenshot if found\n    if (profileLink) {\n      await page.evaluate(el => {\n        el.style.outline = '3px solid #ff5a5f';\n        el.style.background = '#ffeceb';\n      }, profileLink);\n    }\n\n    // Take screenshot of the highlighted \"Profile\" link\n    const profileLinkShot = path.join(screenshotsDir, 'step_3_profile_link_highlighted.png');\n    await page.screenshot({ path: profileLinkShot });\n    screenshots.push(profileLinkShot);\n\n    // Return result\n    return {\n      success: !!profileLink && extractedHref === 'profile.html',\n      action: \"Clicked profile button, opened dropdown, and verified 'Profile' link has correct href\",\n      extractedData: {\n        profileLinkFound: !!profileLink,\n        profileLinkHref: extractedHref\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18254,
+      "timestamp": "2025-09-15T09:31:52.772Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 54795,
+  "timestamp": "2025-09-15T09:31:16.231Z",
+  "savedAt": "2025-09-15T09:32:11.026Z",
+  "version": "1.0"
+}

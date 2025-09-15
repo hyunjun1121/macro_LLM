@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928320238_6089q_1757939773988",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928320238_6089q",
+    "description": "IG_REG_002",
+    "objective": "Regular",
+    "expectedResult": "Enter \"travel\" in main search input and verify search dropdown appears",
+    "difficulty": "Easy",
+    "category": "#mainSearchInput, .search-results",
+    "tags": [
+      "Search results container becomes visible after typing"
+    ],
+    "notes": "1. Click #mainSearchInput 2. Type \"travel\" 3. Verify .search-results element is displayed"
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the main search input to be visible\n    await page.waitForSelector('#mainSearchInput', { state: 'visible', timeout: 5000 });\n\n    // Focus and type \"travel\" into the main search input\n    const mainSearchInput = await page.$('#mainSearchInput');\n    await mainSearchInput.click({ clickCount: 3 });\n    await mainSearchInput.fill('');\n    await mainSearchInput.type('travel', { delay: 100 });\n\n    // Take screenshot after typing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_typed_travel.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_typed_travel.png'));\n\n    // Wait for the search dropdown to appear (assuming .search-results is the dropdown)\n    // Try both visible and attached in case of animation\n    await page.waitForSelector('.search-results', { state: 'visible', timeout: 5000 });\n\n    // Take screenshot of the search dropdown\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_dropdown.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_dropdown.png'));\n\n    // Extract some data from the dropdown to verify it appeared\n    const dropdownVisible = await page.$eval('.search-results', el => {\n      const style = window.getComputedStyle(el);\n      return style && style.display !== 'none' && style.visibility !== 'hidden' && el.offsetHeight > 0;\n    });\n\n    return {\n      success: dropdownVisible === true,\n      action: 'Entered \"travel\" in main search input and verified search dropdown appears',\n      extractedData: {\n        searchDropdownVisible: dropdownVisible\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12817,
+      "timestamp": "2025-09-15T12:36:13.988Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Locate the main search input using attribute selector as alternative strategy\n    await page.waitForSelector('input[placeholder=\"Search\"]#mainSearchInput', { state: 'visible', timeout: 5000 });\n    const searchInput = await page.$('input[placeholder=\"Search\"]#mainSearchInput');\n\n    // Focus and type \"travel\"\n    await searchInput.focus();\n    await page.type('input[placeholder=\"Search\"]#mainSearchInput', 'travel', { delay: 100 });\n\n    // Wait for dropdown to appear (using .search-results, but check for visible children with text)\n    // Try both the class and visible content with xpath\n    let dropdownAppeared = false;\n    let dropdownSelector = '.search-results';\n\n    // Wait for up to 3 seconds for the dropdown to show and be visible\n    try {\n      await page.waitForSelector(dropdownSelector, { state: 'visible', timeout: 3000 });\n      const dropdownContent = await page.$eval(\n        dropdownSelector,\n        el => el && (el.offsetParent !== null) && el.innerText.trim().length > 0\n      );\n      dropdownAppeared = !!dropdownContent;\n    } catch (e) {\n      // fallback: try xpath to find a \"Recent\" heading inside any visible .search-results\n      const [recentElement] = await page.$x(\n        `//div[contains(@class, \"search-results\")]//*[contains(text(), \"Recent\")]`\n      );\n      dropdownAppeared = !!recentElement;\n    }\n\n    // Take screenshot after typing and (possibly) dropdown\n    const afterTypeScreenshot = path.join(screenshotsDir, 'step_2_after_typing.png');\n    await page.screenshot({ path: afterTypeScreenshot });\n    screenshots.push(afterTypeScreenshot);\n\n    return {\n      success: dropdownAppeared,\n      action: `Entered \"travel\" into main search input and checked for search dropdown visibility.`,\n      extractedData: {\n        dropdownAppeared\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15726,
+      "timestamp": "2025-09-15T12:36:26.805Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Step 1: Take initial screenshot\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Step 2: Locate the main search input by placeholder attribute\n    // Try different strategies - first by placeholder, then fallback to ID, then CSS\n    let searchInput = await page.$('input[placeholder=\"Search\"][id=\"mainSearchInput\"]');\n    if (!searchInput) {\n      searchInput = await page.$('input#mainSearchInput');\n    }\n    if (!searchInput) {\n      // fallback: query by CSS selector\n      searchInput = await page.$('input[placeholder=\"Search\"]');\n    }\n    if (!searchInput) {\n      // fallback: XPath by placeholder and type\n      searchInput = await page.$('//input[@placeholder=\"Search\" and @type=\"text\"]');\n    }\n\n    if (!searchInput) {\n      throw new Error('Main search input not found with any selector');\n    }\n\n    // Step 3: Focus and type 'travel' into the main search input\n    await searchInput.click({ clickCount: 3 }); // ensure focus and clear any text\n    await page.keyboard.type('travel', { delay: 100 });\n\n    // Step 4: Take screenshot after typing\n    const step2 = path.join(screenshotsDir, 'step_2_after_typing.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Step 5: Wait for the search dropdown/overlay to appear\n    // Try multiple selectors for dropdown: .search-results, [class*=search-results], visible div with .search-results\n    let dropdownSelector = '.search-results';\n    await page.waitForSelector(dropdownSelector, { state: 'visible', timeout: 3000 });\n\n    // Step 6: Confirm dropdown appears and extract some sample result text if available\n    const dropdown = await page.$(dropdownSelector);\n    let dropdownVisible = false;\n    let firstResultText = null;\n\n    if (dropdown) {\n      // Check if visible\n      const box = await dropdown.boundingBox();\n      dropdownVisible = !!box;\n\n      // Try to extract first result username if any\n      const firstUser = await dropdown.$('.search-item .username');\n      if (firstUser) {\n        firstResultText = await firstUser.innerText();\n      }\n    }\n\n    // Step 7: Screenshot of dropdown visible\n    const step3 = path.join(screenshotsDir, 'step_3_dropdown_visible.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Prepare extracted data\n    const extractedData = {\n      dropdownVisible,\n      firstResultText\n    };\n\n    return {\n      success: dropdownVisible,\n      action: `Entered \"travel\" in main search input and found search dropdown${dropdownVisible ? '' : ' (not visible)'}`,\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 22389,
+      "timestamp": "2025-09-15T12:36:42.531Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 50932,
+  "timestamp": "2025-09-15T12:36:13.988Z",
+  "savedAt": "2025-09-15T12:37:04.920Z",
+  "version": "1.0"
+}

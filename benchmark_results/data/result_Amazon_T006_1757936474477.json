@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T006_1757936474477",
+  "website": "Amazon",
+  "task": {
+    "id": "T006",
+    "description": "Open Product Detail Modal",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Click on any product card to open its detailed product information modal.",
+    "category": ".product-card:first-child, #productModal",
+    "tags": [
+      "1. Click on first product card 2. Wait for product modal to open"
+    ],
+    "notes": "Product detail modal becomes visible, modal shows product title, price, description, and action buttons"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for product cards to load\n    await page.waitForSelector('.product-card', { state: 'visible' });\n\n    // Click the first product card\n    await page.click('.product-card:first-child');\n\n    // Wait for product modal to appear\n    await page.waitForSelector('#productModal', { state: 'visible' });\n    \n    // Take screenshot of the modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_open.png'));\n\n    // Extract product details from modal\n    const productDetails = await page.$eval('#productModal', modal => {\n      const title = modal.querySelector('.product-title')?.textContent?.trim() || 'Not found';\n      const price = modal.querySelector('.product-price')?.textContent?.trim() || 'Not found';\n      const rating = modal.querySelector('.product-rating')?.textContent?.trim() || 'Not found';\n      \n      return { title, price, rating };\n    }).catch(() => ({}));\n\n    return {\n      success: true,\n      action: \"Successfully opened product detail modal by clicking the first product card\",\n      extractedData: productDetails,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to open product detail modal\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 143745,
+      "timestamp": "2025-09-15T11:41:14.477Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for product cards to load using multiple selector strategies\n    await page.waitForSelector('.product-card', { timeout: 5000 });\n    await page.waitForSelector('img[src*=\"amazon.com/images/I/\"]', { timeout: 5000 });\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Click on the first product card using a more specific selector\n    await page.click('.product-card:first-child');\n    \n    // Wait for the modal to appear with multiple verification methods\n    await page.waitForSelector('#productModal', { timeout: 3000 });\n    await page.waitForSelector('.modal-content', { timeout: 3000 });\n    \n    // Verify modal is visible\n    const modalVisible = await page.isVisible('#productModal');\n    if (!modalVisible) {\n      throw new Error('Product modal did not appear after clicking product card');\n    }\n\n    // Take screenshot after modal appears\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_modal_open.png'));\n\n    // Extract product details from the modal\n    const productData = await page.evaluate(() => {\n      const modal = document.querySelector('#productModal');\n      return {\n        title: modal.querySelector('.product-title')?.textContent?.trim() || 'Not found',\n        price: modal.querySelector('.product-price')?.textContent?.trim() || 'Not found',\n        rating: modal.querySelector('.product-rating')?.textContent?.trim() || 'Not found',\n        description: modal.querySelector('.product-description')?.textContent?.trim() || 'Not found'\n      };\n    });\n\n    return {\n      success: true,\n      action: \"Successfully opened product detail modal by clicking on the first product card\",\n      extractedData: productData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    try {\n      await page.screenshot({ path: path.join(screenshotsDir, 'error_state.png') });\n      screenshots.push(path.join(screenshotsDir, 'error_state.png'));\n    } catch (e) {\n      console.log('Could not take error screenshot:', e.message);\n    }\n\n    return {\n      success: false,\n      action: \"Failed to open product detail modal\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 85931,
+      "timestamp": "2025-09-15T11:43:38.222Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for product cards to load\n    await page.waitForSelector('.product-card', { timeout: 5000 });\n\n    // Click on the first product card using CSS selector\n    await page.click('.product-card:first-child');\n\n    // Wait for the product modal to appear\n    await page.waitForSelector('#productModal', { state: 'visible', timeout: 3000 });\n\n    // Take screenshot after opening modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_opened.png'));\n\n    // Extract product information from the modal\n    const extractedData = await page.evaluate(() => {\n      const modal = document.querySelector('#productModal');\n      return {\n        productTitle: modal.querySelector('.product-title')?.textContent?.trim() || null,\n        productPrice: modal.querySelector('.product-price')?.textContent?.trim() || null,\n        productRating: modal.querySelector('.product-rating')?.textContent?.trim() || null,\n        isModalVisible: modal && getComputedStyle(modal).display !== 'none'\n      };\n    });\n\n    return {\n      success: true,\n      action: \"Successfully clicked on first product card and opened product detail modal\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take screenshot on error\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to open product detail modal\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 139930,
+      "timestamp": "2025-09-15T11:45:04.153Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 369606,
+  "timestamp": "2025-09-15T11:41:14.477Z",
+  "savedAt": "2025-09-15T11:47:24.083Z",
+  "version": "1.0"
+}

@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_012_1757928935658",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_012",
+    "description": "General",
+    "objective": "Amenities Count Analysis",
+    "expectedResult": "jun_1 숙소 모달을 열고 편의시설(amenities) 개수를 정확히 카운트하여 반환하기",
+    "difficulty": "Medium",
+    "category": "[data-listing-id='jun_1'], .amenity-tag",
+    "tags": [
+      "Modal navigation",
+      "element counting"
+    ],
+    "notes": "jun_1 숙소의 편의시설 개수 (예: 20개)"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // 1. Find the listing with data-listing-id='jun_1'\n    const listingSelector = \"[data-listing-id='jun_1']\";\n    await page.waitForSelector(listingSelector, { timeout: 5000 });\n\n    // Take screenshot of the listing area\n    const listingElement = await page.$(listingSelector);\n    if (listingElement) {\n      await listingElement.screenshot({ path: path.join(screenshotsDir, 'step_2_jun1_listing.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_2_jun1_listing.png'));\n    }\n\n    // 2. Open the modal for the listing (try clicking the listing card or a \"View\" button inside)\n    // Try clicking the listing itself\n    await listingElement.click();\n\n    // Wait for modal/dialog to appear (look for a modal, or a close button, or a unique modal class)\n    // We'll try common modal selectors and fallback to waiting for amenities\n    let modalAppeared = false;\n    for (const selector of [\n      '.modal', '.listing-modal', '.modal-content', '.modal-dialog', '[role=dialog]', '.listing-details', '.details-modal'\n    ]) {\n      try {\n        await page.waitForSelector(selector, { timeout: 2000 });\n        modalAppeared = true;\n        break;\n      } catch (e) {}\n    }\n    // Fallback: wait for amenities to appear\n    if (!modalAppeared) {\n      try {\n        await page.waitForSelector('.amenity-tag', { timeout: 4000 });\n        modalAppeared = true;\n      } catch (e) {}\n    }\n\n    // Take screenshot after modal open\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_modal_opened.png'));\n\n    // 3. Wait for amenities to be visible\n    await page.waitForSelector('.amenity-tag', { timeout: 5000 });\n\n    // 4. Count the number of amenities\n    const amenityCount = await page.$$eval('.amenity-tag', els => els.length);\n\n    // Take screenshot of amenities section (if possible, crop to amenities)\n    const amenityEls = await page.$$('.amenity-tag');\n    if (amenityEls && amenityEls.length > 0) {\n      await amenityEls[0].screenshot({ path: path.join(screenshotsDir, 'step_4_amenity_example.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_4_amenity_example.png'));\n    }\n\n    // Final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_5_final.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_5_final.png'));\n\n    return {\n      success: true,\n      action: \"Opened jun_1 숙소 modal and counted amenities accurately\",\n      extractedData: {\n        amenityCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15601,
+      "timestamp": "2025-09-15T09:35:35.659Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Find the listing card for jun_1 via attribute selector\n    // Try a robust query: [data-listing-id=\"jun_1\"] (works if visible on page)\n    const listingSelector = '[data-listing-id=\"jun_1\"]';\n    await page.waitForSelector(listingSelector, { timeout: 5000 });\n    const listingHandle = await page.$(listingSelector);\n\n    // Try to click it using different strategies\n    // 1. Look for a clickable descendant (button or link)\n    //    If not, click the card itself.\n    let clickable = await listingHandle.$('button, a');\n    if (!clickable) clickable = listingHandle;\n    await clickable.scrollIntoViewIfNeeded();\n    await clickable.click();\n\n    // Wait for the modal/dialog to appear.\n    // Try waiting for a close button, or a modal role, or a unique heading\n    let modalSelector = '.modal, .listing-modal, [role=\"dialog\"], .modal-content';\n    let foundModal = false;\n    for (const sel of modalSelector.split(',')) {\n      try {\n        await page.waitForSelector(sel.trim(), { timeout: 3000 });\n        foundModal = true;\n        break;\n      } catch (e) { /* try next */ }\n    }\n    // Take screenshot after modal opens\n    const modalScreenshot = path.join(screenshotsDir, 'step_2_modal_opened.png');\n    await page.screenshot({ path: modalScreenshot });\n    screenshots.push(modalScreenshot);\n\n    // Now try to find \"편의시설\", \"Amenities\", or similar section inside the modal\n    // Use a variety of selectors\n    // Common: .amenity-tag, or headings followed by tags, etc.\n    // 1. Wait for at least one .amenity-tag in DOM\n    await page.waitForSelector('.amenity-tag', { timeout: 4000 });\n\n    // 2. Count all amenity tags visible in the modal\n    // Use an eval to only count those inside the modal/dialog\n    // First, locate the modal node\n    const modalHandle = await page.$('.modal, .listing-modal, [role=\"dialog\"], .modal-content');\n    let amenityCount = 0;\n    if (modalHandle) {\n      amenityCount = await page.evaluate(modal => {\n        // Find all .amenity-tag descendants of the modal\n        return modal.querySelectorAll('.amenity-tag').length;\n      }, modalHandle);\n    } else {\n      // Fallback: count all .amenity-tag on page (shouldn't be more than just for this modal)\n      amenityCount = await page.$$eval('.amenity-tag', nodes => nodes.length);\n    }\n\n    // Take screenshot of the amenities section, if possible\n    // Try to scroll the first amenity-tag into view and screenshot it\n    const amenityTagHandle = await page.$('.amenity-tag');\n    if (amenityTagHandle) {\n      await amenityTagHandle.scrollIntoViewIfNeeded();\n      const amenitiesScreenshot = path.join(screenshotsDir, 'step_3_amenities_visible.png');\n      await page.screenshot({ path: amenitiesScreenshot });\n      screenshots.push(amenitiesScreenshot);\n    }\n\n    return {\n      success: true,\n      action: \"Opened the jun_1 숙소 modal and counted the number of amenities accurately.\",\n      extractedData: {\n        amenityCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20475,
+      "timestamp": "2025-09-15T09:35:51.259Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the \"jun_1\" listing card to appear\n    await page.waitForSelector('[data-listing-id=\"jun_1\"]', { timeout: 5000 });\n\n    // Take screenshot of the jun_1 listing before opening modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_jun1_visible.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_jun1_visible.png'));\n\n    // Try to open the modal for \"jun_1\" by clicking anywhere on the card\n    // Use XPath to click the listing card (in case of nested structure)\n    const jun1Card = await page.$('//*[@data-listing-id=\"jun_1\"]') ||\n                     await page.$('[data-listing-id=\"jun_1\"]');\n    if (!jun1Card) {\n      throw new Error('jun_1 listing not found');\n    }\n    await jun1Card.click();\n\n    // Wait for modal/dialog to appear; look for a modal/dialog role or a unique class\n    // Fallback strategy: Wait for any element containing '.amenity-tag' that is now visible\n    await page.waitForSelector('.amenity-tag', { timeout: 5000 });\n\n    // Take screenshot after opening modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_modal_opened.png'));\n\n    // Use multiple selector strategies to count amenities:\n    // Try all .amenity-tag elements inside any modal/dialog or visible overlay\n    let amenityCount = 0;\n    // Prefer context: Find closest visible modal/dialog, then querySelectorAll for .amenity-tag inside it\n    const modalHandle = await page.$('div[role=\"dialog\"]:visible, .modal:visible, .listing-modal:visible');\n    let amenityTags = [];\n    if (modalHandle) {\n      // Try inside modal/dialog\n      amenityTags = await modalHandle.$$eval('.amenity-tag', nodes => nodes.map(n => n.textContent.trim()).filter(Boolean));\n    }\n    if (!amenityTags.length) {\n      // Fallback: Use all visible amenity-tags on the screen (should be inside the modal)\n      amenityTags = await page.$$eval('.amenity-tag', nodes =>\n        nodes.filter(n => {\n          // Check visibility\n          const style = window.getComputedStyle(n);\n          return style && style.display !== 'none' && style.visibility !== 'hidden' && n.offsetParent !== null;\n        }).map(n => n.textContent.trim()).filter(Boolean)\n      );\n    }\n    amenityCount = amenityTags.length;\n\n    // Take screenshot of amenities section\n    if (amenityCount > 0) {\n      // Scroll to amenities section if possible\n      const amenityTagHandle = await page.$('.amenity-tag');\n      if (amenityTagHandle) {\n        await amenityTagHandle.scrollIntoViewIfNeeded();\n      }\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_4_amenities.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_4_amenities.png'));\n    }\n\n    return {\n      success: true,\n      action: \"Opened the jun_1 숙소 modal and counted the number of amenities accurately.\",\n      extractedData: {\n        amenityCount,\n        amenityList: amenityTags\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 19314,
+      "timestamp": "2025-09-15T09:36:11.734Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 55390,
+  "timestamp": "2025-09-15T09:35:35.658Z",
+  "savedAt": "2025-09-15T09:36:31.048Z",
+  "version": "1.0"
+}

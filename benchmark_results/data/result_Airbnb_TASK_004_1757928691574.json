@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_004_1757928691574",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_004",
+    "description": "General",
+    "objective": "Date Range Selection",
+    "expectedResult": "체크인 날짜를 내일, 체크아웃을 모레로 설정하고 날짜 입력 필드값이 올바르게 설정되었는지 확인하기",
+    "difficulty": "Medium",
+    "category": "#checkinInput, #checkoutInput",
+    "tags": [
+      "Date input handling",
+      "validation"
+    ],
+    "notes": "체크인/체크아웃 날짜 문자열 (ISO format)"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Calculate tomorrow and day after tomorrow dates\n    const tomorrow = new Date();\n    tomorrow.setDate(tomorrow.getDate() + 1);\n    const dayAfterTomorrow = new Date();\n    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);\n\n    // Format dates as YYYY-MM-DD for date inputs\n    const formatDate = (date) => date.toISOString().split('T')[0];\n    const tomorrowStr = formatDate(tomorrow);\n    const dayAfterTomorrowStr = formatDate(dayAfterTomorrow);\n\n    // Wait for date input fields to be visible\n    await page.waitForSelector('#checkinInput', { state: 'visible' });\n    await page.waitForSelector('#checkoutInput', { state: 'visible' });\n\n    // Set checkin date to tomorrow\n    await page.fill('#checkinInput', tomorrowStr);\n    \n    // Set checkout date to day after tomorrow\n    await page.fill('#checkoutInput', dayAfterTomorrowStr);\n\n    // Take screenshot after setting dates\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_dates_set.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_dates_set.png'));\n\n    // Verify the dates were set correctly\n    const checkinValue = await page.$eval('#checkinInput', el => el.value);\n    const checkoutValue = await page.$eval('#checkoutInput', el => el.value);\n\n    // Take verification screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_verification.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_verification.png'));\n\n    return {\n      success: true,\n      action: \"Set checkin to tomorrow and checkout to day after tomorrow, verified dates are correct\",\n      extractedData: {\n        checkinDate: checkinValue,\n        checkoutDate: checkoutValue,\n        expectedCheckin: tomorrowStr,\n        expectedCheckout: dayAfterTomorrowStr,\n        datesMatch: checkinValue === tomorrowStr && checkoutValue === dayAfterTomorrowStr\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 44512,
+      "timestamp": "2025-09-15T09:31:31.574Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Calculate tomorrow and day after tomorrow dates in YYYY-MM-DD format\n    const tomorrow = new Date();\n    tomorrow.setDate(tomorrow.getDate() + 1);\n    const tomorrowStr = tomorrow.toISOString().split('T')[0];\n    \n    const dayAfterTomorrow = new Date();\n    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);\n    const dayAfterTomorrowStr = dayAfterTomorrow.toISOString().split('T')[0];\n\n    // Wait for and fill checkin input\n    await page.waitForSelector('input#checkinInput');\n    await page.fill('input#checkinInput', tomorrowStr);\n    \n    // Wait for and fill checkout input\n    await page.waitForSelector('input#checkoutInput');\n    await page.fill('input#checkoutInput', dayAfterTomorrowStr);\n\n    // Take screenshot after setting dates\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_dates_set.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_dates_set.png'));\n\n    // Verify the dates are correctly set\n    const checkinValue = await page.$eval('input#checkinInput', el => el.value);\n    const checkoutValue = await page.$eval('input#checkoutInput', el => el.value);\n\n    // Take screenshot after verification\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_verification.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_verification.png'));\n\n    return {\n      success: true,\n      action: \"Set checkin date to tomorrow and checkout date to day after tomorrow\",\n      extractedData: {\n        checkinDate: checkinValue,\n        checkoutDate: checkoutValue,\n        datesMatch: checkinValue === tomorrowStr && checkoutValue === dayAfterTomorrowStr\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to set and verify dates\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 52952,
+      "timestamp": "2025-09-15T09:32:16.086Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Calculate tomorrow and day after tomorrow dates\n    const today = new Date();\n    const tomorrow = new Date(today);\n    tomorrow.setDate(today.getDate() + 1);\n    \n    const dayAfterTomorrow = new Date(today);\n    dayAfterTomorrow.setDate(today.getDate() + 2);\n\n    // Format dates as YYYY-MM-DD for input fields\n    const formatDate = (date) => {\n      return date.toISOString().split('T')[0];\n    };\n\n    const tomorrowStr = formatDate(tomorrow);\n    const dayAfterTomorrowStr = formatDate(dayAfterTomorrow);\n\n    // Wait for and set check-in date\n    await page.waitForSelector('#checkinInput', { state: 'visible' });\n    await page.fill('#checkinInput', tomorrowStr);\n    \n    // Wait for and set check-out date\n    await page.waitForSelector('#checkoutInput', { state: 'visible' });\n    await page.fill('#checkoutInput', dayAfterTomorrowStr);\n\n    // Take screenshot after setting dates\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_dates_set.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_dates_set.png'));\n\n    // Verify the dates are correctly set\n    const checkinValue = await page.$eval('#checkinInput', el => el.value);\n    const checkoutValue = await page.$eval('#checkoutInput', el => el.value);\n\n    // Extract verification data\n    const extractedData = {\n      checkinDate: checkinValue,\n      checkoutDate: checkoutValue,\n      expectedCheckin: tomorrowStr,\n      expectedCheckout: dayAfterTomorrowStr,\n      datesMatch: checkinValue === tomorrowStr && checkoutValue === dayAfterTomorrowStr\n    };\n\n    // Take final verification screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_verification.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_verification.png'));\n\n    return {\n      success: true,\n      action: \"Set check-in to tomorrow and check-out to day after tomorrow, then verified dates\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 45952,
+      "timestamp": "2025-09-15T09:33:09.038Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 143416,
+  "timestamp": "2025-09-15T09:31:31.574Z",
+  "savedAt": "2025-09-15T09:33:54.990Z",
+  "version": "1.0"
+}

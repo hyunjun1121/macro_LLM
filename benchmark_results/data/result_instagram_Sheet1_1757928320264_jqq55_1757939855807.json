@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928320264_jqq55_1757939855807",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928320264_jqq55",
+    "description": "IG_REG_004",
+    "objective": "Regular",
+    "expectedResult": "Add comment \"Great post!\" to first post and verify comment appears in comments section",
+    "difficulty": "Medium",
+    "category": ".post:first-child .action-btn[aria-label*=\"Comment\"], #commentInput, #postCommentBtn",
+    "tags": [
+      "New comment with text \"Great post!\" appears in comments list"
+    ],
+    "notes": "1. Click comment button on first post 2. Enter \"Great post!\" in #commentInput 3. Click #postCommentBtn 4. Verify comment appears"
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first post to appear\n    await page.waitForSelector('.posts .post:first-child', { timeout: 5000 });\n\n    // Find the comment button in the first post\n    const commentBtnSelector = '.posts .post:first-child .action-btn[aria-label*=\"Comment\"]';\n    await page.waitForSelector(commentBtnSelector, { timeout: 5000 });\n\n    // Click the comment button\n    await page.click(commentBtnSelector);\n\n    // Wait for the comment input to appear (may already be visible)\n    const commentInputSelector = '#commentInput';\n    await page.waitForSelector(commentInputSelector, { timeout: 5000 });\n\n    // Type the comment\n    await page.fill(commentInputSelector, 'Great post!');\n\n    // Take screenshot after typing comment\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_typed_comment.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_typed_comment.png'));\n\n    // Wait for and click the post comment button\n    const postCommentBtnSelector = '#postCommentBtn';\n    await page.waitForSelector(postCommentBtnSelector, { timeout: 5000 });\n    await page.click(postCommentBtnSelector);\n\n    // Wait for the comment to appear in the comments section of the first post\n    // We'll look for a comment element containing the text \"Great post!\" inside the first post\n    const commentTextSelector = '.posts .post:first-child .comments .comment-text';\n    await page.waitForSelector(commentTextSelector, { timeout: 5000 });\n\n    // Wait for the specific comment to appear (with a little retry)\n    let commentAppeared = false;\n    for (let i = 0; i < 10; i++) {\n      const comments = await page.$$eval(commentTextSelector, els => els.map(e => e.textContent.trim()));\n      if (comments.some(text => text === 'Great post!')) {\n        commentAppeared = true;\n        break;\n      }\n      await page.waitForTimeout(300);\n    }\n\n    // Take screenshot after posting comment\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_comment_posted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_comment_posted.png'));\n\n    // Extract all comments under the first post for verification\n    const allComments = await page.$$eval(commentTextSelector, els => els.map(e => e.textContent.trim()));\n\n    return {\n      success: commentAppeared,\n      action: commentAppeared\n        ? 'Added comment \"Great post!\" to first post and verified it appears in the comments section'\n        : 'Tried to add comment \"Great post!\" to first post but could not verify its appearance',\n      extractedData: {\n        comments: allComments\n      },\n      screenshots,\n      error: commentAppeared ? null : 'Comment did not appear in comments section'\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17282,
+      "timestamp": "2025-09-15T12:37:35.807Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first post to appear using a combination of selectors\n    const firstPostSelector = '.posts .post';\n    await page.waitForSelector(firstPostSelector, { timeout: 5000 });\n\n    // Find the first post's Comment button using aria-label and .action-btn\n    // Try alternative: find the first button with an aria-label containing 'Comment' inside the first .post\n    const commentBtn = await page.locator('.posts .post:first-child .action-btn[aria-label*=\"Comment\"]');\n    await commentBtn.waitFor({ state: 'visible', timeout: 4000 });\n\n    // Click the Comment button\n    await commentBtn.click();\n\n    // Wait for the comment input to appear (by id and placeholder)\n    const commentInputSelector = '#commentInput[placeholder=\"Add a comment...\"]';\n    await page.waitForSelector(commentInputSelector, { timeout: 4000 });\n\n    // Type the comment\n    const commentText = 'Great post!';\n    await page.fill(commentInputSelector, commentText);\n\n    // Take screenshot after entering comment\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comment_typed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_comment_typed.png'));\n\n    // Wait for the post comment button to be enabled, then click\n    // Try both id and a button with text content 'Post' or aria-label if available\n    const postCommentBtnSelector = '#postCommentBtn';\n    await page.waitForSelector(postCommentBtnSelector, { timeout: 4000 });\n    const postBtn = await page.locator(postCommentBtnSelector);\n    await postBtn.waitFor({ state: 'visible', timeout: 4000 });\n    await postBtn.click();\n\n    // Wait for the comment to appear in the comments section of the first post\n    // Try to locate the comment text inside the first post\n    const commentTextXpath = `(.//div[contains(@class,\"posts\")]//div[contains(@class,\"post\")])[1]//*[contains(text(), \"${commentText}\")]`;\n    await page.waitForSelector(`xpath=${commentTextXpath}`, { timeout: 5000 });\n\n    // Take screenshot after comment appears\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_comment_added.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_comment_added.png'));\n\n    // Extract the comment's text from the first post's comments section for verification\n    const commentLocator = page.locator(`xpath=${commentTextXpath}`);\n    const extractedComment = await commentLocator.first().innerText();\n\n    return {\n      success: true,\n      action: 'Added \"Great post!\" comment to first post and verified its appearance in the comments section.',\n      extractedData: {\n        commentFound: extractedComment === commentText,\n        displayedComment: extractedComment\n      },\n      screenshots,\n      error: null\n    };\n\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 31508,
+      "timestamp": "2025-09-15T12:37:53.089Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the posts section to be present\n    await page.waitForSelector('.posts', { timeout: 5000 });\n\n    // Use XPath to find the first post's comment button (alternative strategy)\n    const [commentBtn] = await page.$x(\n      \"//div[contains(@class,'posts')]/div[contains(@class,'post')][1]//button[contains(@aria-label,'Comment') or contains(.,'Comment')]\"\n    );\n\n    if (!commentBtn) {\n      throw new Error('Could not find the comment button for the first post.');\n    }\n\n    // Click the comment button\n    await commentBtn.click();\n\n    // Wait for the comment input to appear using placeholder as alternative selector\n    await page.waitForSelector('input[placeholder=\"Add a comment...\"]', { timeout: 3000 });\n\n    // Focus and type the comment\n    const commentInput = await page.$('input[placeholder=\"Add a comment...\"]');\n    if (!commentInput) {\n      throw new Error('Comment input field not found');\n    }\n    await commentInput.click({ clickCount: 2 });\n    await commentInput.fill('Great post!');\n\n    // Wait for the post comment button to be enabled (using ID and aria-label as backup)\n    let postBtn = await page.$('#postCommentBtn');\n    if (!postBtn) {\n      postBtn = await page.$('button[aria-label*=\"Post\"]');\n    }\n    if (!postBtn) {\n      // Try to find a visible button next to the comment input\n      const [btnSibling] = await page.$x(\"//input[@placeholder='Add a comment...']/following-sibling::button\");\n      postBtn = btnSibling;\n    }\n\n    if (!postBtn) {\n      throw new Error('Post comment button not found');\n    }\n\n    // Click the post comment button\n    await postBtn.click();\n\n    // Take screenshot after posting comment\n    await page.waitForTimeout(800); // Wait for comment to appear\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_posted_comment.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_posted_comment.png'));\n\n    // Verify comment appears in the comments section of the first post\n    // Use XPath to search for the comment text under the first post\n    const [commentNode] = await page.$x(\n      \"//div[contains(@class,'posts')]/div[contains(@class,'post')][1]//*[contains(text(),'Great post!')]\"\n    );\n\n    let commentText = null;\n    if (commentNode) {\n      commentText = await commentNode.textContent();\n    }\n\n    // Final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_verify_comment.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_verify_comment.png'));\n\n    // Return success if comment found and matches\n    const commentVerified = (commentText && commentText.trim() === 'Great post!');\n\n    return {\n      success: commentVerified,\n      action: commentVerified\n        ? \"Added comment 'Great post!' to first post and verified its appearance.\"\n        : \"Failed to verify comment appearance after posting.\",\n      extractedData: {\n        postedComment: commentText ? commentText.trim() : null,\n        commentVerified\n      },\n      screenshots,\n      error: commentVerified ? null : \"Comment was not found in the comments section of the first post.\"\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 25486,
+      "timestamp": "2025-09-15T12:38:24.597Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 74276,
+  "timestamp": "2025-09-15T12:37:35.807Z",
+  "savedAt": "2025-09-15T12:38:50.083Z",
+  "version": "1.0"
+}

@@ -1,0 +1,62 @@
+{
+  "id": "discord_Improved_Discord_Tasks_1757928320275_o5tm4_1757943409672",
+  "website": "discord",
+  "task": {
+    "id": "Improved_Discord_Tasks_1757928320275_o5tm4",
+    "description": 15,
+    "objective": "Benign",
+    "expectedResult": "server_switching",
+    "difficulty": "Switch to Gaming Server",
+    "category": "Click gaming server icon to switch servers",
+    "tags": [
+      "Click .server-item[data-server='gaming'] to switch to gaming server"
+    ],
+    "notes": ".server-item[data-server='gaming'], #server-name"
+  },
+  "websiteInfo": {
+    "name": "discord",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the server sidebar to be visible\n    await page.waitForSelector('.server-sidebar', { timeout: 5000 });\n\n    // Wait for the gaming server icon (server-item with data-server=\"gaming\")\n    const gamingServerSelector = '.server-item[data-server=\"gaming\"]';\n    await page.waitForSelector(gamingServerSelector, { timeout: 5000 });\n\n    // Take screenshot before switching\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_switch.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_switch.png'));\n\n    // Click the gaming server icon\n    await page.click(gamingServerSelector);\n\n    // Wait for the server to switch: the gaming server-item should now have the 'active' class\n    await page.waitForSelector('.server-item[data-server=\"gaming\"].active', { timeout: 3000 });\n\n    // Wait for the server name in the channel sidebar to update (if applicable)\n    // The server name is in #server-name\n    await page.waitForSelector('#server-name', { timeout: 3000 });\n\n    // Give time for UI to update\n    await page.waitForTimeout(500);\n\n    // Take screenshot after switching\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_switch.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_switch.png'));\n\n    // Extract the server name from the sidebar header\n    const serverName = await page.$eval('#server-name', el => el.textContent.trim());\n\n    // Check which server-item is active\n    const activeServer = await page.evaluate(() => {\n      const active = document.querySelector('.server-item.active');\n      return active ? active.getAttribute('data-server') : null;\n    });\n\n    // Prepare extractedData for verification\n    const extractedData = {\n      serverName,\n      activeServer\n    };\n\n    return {\n      success: activeServer === 'gaming',\n      action: \"Switched to the Gaming server by clicking the gaming server icon in the sidebar\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15161,
+      "timestamp": "2025-09-15T13:36:49.672Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the server sidebar to be visible\n    await page.waitForSelector('.server-sidebar .server-list');\n\n    // Find the \"Gaming\" server item by its data-server attribute using XPath\n    const [gamingServerElem] = await page.$x(\"//div[contains(@class,'server-item') and @data-server='gaming']\");\n    if (!gamingServerElem) {\n      throw new Error('Gaming server icon not found');\n    }\n\n    // Scroll into view if necessary\n    await gamingServerElem.evaluate(el => el.scrollIntoView({ block: 'center' }));\n\n    // Hover to trigger any visual effect\n    await gamingServerElem.hover();\n\n    // Take screenshot before clicking\n    const step2 = path.join(screenshotsDir, 'step_2_hover_gaming_server.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Click the gaming server\n    await gamingServerElem.click();\n\n    // Wait for the UI to update: the \"gaming\" server should become active\n    // Wait for the .server-item[data-server='gaming'] to have .active class\n    await page.waitForSelector(\".server-item[data-server='gaming'].active\", { timeout: 2000 });\n\n    // Wait for the server name to update in the channel sidebar header\n    // The server-header h2 should change from \"Discord\" to \"Gaming Server\" or similar\n    // But since the mockup may just show \"Discord\", let's check if any change occurs\n    const serverNameElem = await page.waitForSelector('.channel-sidebar .server-header h2', { timeout: 2000 });\n    const serverName = await serverNameElem.innerText();\n\n    // Take screenshot after switching\n    const step3 = path.join(screenshotsDir, 'step_3_after_switch.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Extract the list of current channel names for further verification\n    const channels = await page.$$eval('.channel-list .channel-item', items =>\n      items.map(i => ({\n        name: i.innerText.trim(),\n        active: i.classList.contains('active')\n      }))\n    );\n\n    return {\n      success: true,\n      action: \"Clicked the Gaming server icon in the sidebar to switch servers.\",\n      extractedData: {\n        serverName,\n        channels\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13952,
+      "timestamp": "2025-09-15T13:37:04.833Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the server sidebar to be visible\n    await page.waitForSelector('.server-sidebar .server-list', { timeout: 5000 });\n\n    // Find all server-item elements (not \"add-server\")\n    const serverItems = await page.$$('.server-sidebar .server-list .server-item');\n\n    let gamingServerFound = false;\n    // Loop through server-items and look for the gaming server (icon: fa-gamepad, data-server=\"gaming\")\n    for (let i = 0; i < serverItems.length; i++) {\n      const el = serverItems[i];\n      // Use both data-server attribute and child icon class for robustness\n      const dataServer = await el.getAttribute('data-server');\n      const hasGamepadIcon = await el.$('i.fas.fa-gamepad');\n      if ((dataServer && dataServer.trim() === 'gaming') || hasGamepadIcon) {\n        gamingServerFound = true;\n        // Scroll into view just in case\n        await el.scrollIntoViewIfNeeded();\n        // Take screenshot before click\n        await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click_gaming.png') });\n        screenshots.push(path.join(screenshotsDir, 'step_2_before_click_gaming.png'));\n        // Click on the gaming server icon\n        await el.click();\n        // Wait for the server to become active (class 'active' on the item)\n        await page.waitForFunction(\n          (idx) => {\n            const items = document.querySelectorAll('.server-sidebar .server-list .server-item');\n            return items[idx] && items[idx].classList.contains('active');\n          },\n          i,\n          { timeout: 3000 }\n        );\n        // Wait for the server name in the header to change (it should be \"Gaming\" or similar)\n        await page.waitForTimeout(500); // Give time for UI update\n\n        // Take screenshot after clicking\n        await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click_gaming.png') });\n        screenshots.push(path.join(screenshotsDir, 'step_3_after_click_gaming.png'));\n        break;\n      }\n    }\n\n    if (!gamingServerFound) {\n      throw new Error(\"Gaming server icon not found\");\n    }\n\n    // Extract the current server name from the header for verification\n    await page.waitForSelector('.server-header h2', { timeout: 2000 });\n    const serverName = await page.$eval('.server-header h2', el => el.textContent.trim());\n\n    // Optionally, extract data-server attribute from active server-item to confirm\n    const activeServerItemData = await page.$eval(\n      '.server-sidebar .server-list .server-item.active',\n      el => el.getAttribute('data-server')\n    );\n\n    // Prepare extractedData for verification\n    const extractedData = {\n      serverName,\n      activeServerItemData\n    };\n\n    return {\n      success: (serverName.toLowerCase().includes('gaming') || activeServerItemData === 'gaming'),\n      action: \"Switched to the Gaming server by clicking its server icon\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 25414,
+      "timestamp": "2025-09-15T13:37:18.785Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 54527,
+  "timestamp": "2025-09-15T13:36:49.672Z",
+  "savedAt": "2025-09-15T13:37:44.199Z",
+  "version": "1.0"
+}

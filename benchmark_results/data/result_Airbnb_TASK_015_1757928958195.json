@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_015_1757928958195",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_015",
+    "description": "General",
+    "objective": "Complete Search Workflow",
+    "expectedResult": "'Gangnam'을 검색하고 luxury 필터 적용 후 jun_2를 선택하여 모달까지 열고 각 단계별 성공 여부 기록하기",
+    "difficulty": "Hard",
+    "category": "#locationInput, .search-btn, [data-filter='luxury'], [data-listing-id='jun_2'], .modal-overlay",
+    "tags": [
+      "Multi-step workflow",
+      "validation"
+    ],
+    "notes": "워크플로우 성공 객체 (예: {search: true, filter: true, selection: true, modal: true})"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Step 1: Input 'Gangnam' into the search field\n    await page.waitForSelector('#locationInput');\n    await page.fill('#locationInput', 'Gangnam');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_input.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_input.png'));\n\n    // Step 2: Click the search button\n    await page.waitForSelector('.search-btn');\n    await page.click('.search-btn');\n    await page.waitForLoadState('networkidle');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_clicked.png'));\n\n    // Step 3: Apply luxury filter\n    await page.waitForSelector(\"[data-filter='luxury']\");\n    await page.click(\"[data-filter='luxury']\");\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_luxury_filter_applied.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_luxury_filter_applied.png'));\n\n    // Step 4: Select the listing with id 'jun_2'\n    await page.waitForSelector(\"[data-listing-id='jun_2']\");\n    await page.click(\"[data-listing-id='jun_2']\");\n    await page.waitForLoadState('networkidle');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_5_listing_selected.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_5_listing_selected.png'));\n\n    // Step 5: Wait for the modal to open\n    await page.waitForSelector('.modal-overlay');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_6_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_6_modal_opened.png'));\n\n    return {\n      success: true,\n      action: \"Successfully searched for 'Gangnam', applied luxury filter, selected listing 'jun_2', and opened the modal.\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17991,
+      "timestamp": "2025-09-15T09:35:58.195Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Step 1: Input 'Gangnam' into the location input field\n    await page.waitForSelector('#locationInput');\n    await page.fill('#locationInput', 'Gangnam');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_location_input.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_location_input.png'));\n\n    // Step 2: Click the search button\n    await page.waitForSelector('.search-btn');\n    await page.click('.search-btn');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_clicked.png'));\n\n    // Step 3: Wait for luxury filter to be visible and click it\n    await page.waitForSelector(\"[data-filter='luxury']\");\n    await page.click(\"[data-filter='luxury']\");\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_luxury_filter_applied.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_luxury_filter_applied.png'));\n\n    // Step 4: Wait for the listing with ID 'jun_2' to be visible and click it\n    await page.waitForSelector(\"[data-listing-id='jun_2']\");\n    await page.click(\"[data-listing-id='jun_2']\");\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_5_listing_jun_2_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_5_listing_jun_2_clicked.png'));\n\n    // Step 5: Wait for the modal to be visible\n    await page.waitForSelector('.modal-overlay');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_6_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_6_modal_opened.png'));\n\n    return {\n      success: true,\n      action: \"Successfully searched for 'Gangnam', applied luxury filter, selected listing 'jun_2', and opened the modal.\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 19718,
+      "timestamp": "2025-09-15T09:36:16.186Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Step 1: Input 'Gangnam' in the location input field\n    await page.waitForSelector('#locationInput');\n    await page.fill('#locationInput', 'Gangnam');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_location_input.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_location_input.png'));\n\n    // Step 2: Click the search button\n    await page.waitForSelector('.search-btn');\n    await page.click('.search-btn');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_clicked.png'));\n\n    // Step 3: Wait for the luxury filter to be available and apply it\n    await page.waitForSelector(\"[data-filter='luxury']\");\n    await page.click(\"[data-filter='luxury']\");\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_luxury_filter_applied.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_luxury_filter_applied.png'));\n\n    // Step 4: Wait for the listing with ID 'jun_2' and click on it\n    await page.waitForSelector(\"[data-listing-id='jun_2']\");\n    await page.click(\"[data-listing-id='jun_2']\");\n    await page.waitForSelector('.modal-overlay'); // wait for the modal to appear\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_5_listing_jun_2_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_5_listing_jun_2_clicked.png'));\n\n    // Step 5: Verify that the modal is open\n    const isModalOpen = await page.isVisible('.modal-overlay');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_6_modal_open_verification.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_6_modal_open_verification.png'));\n\n    return {\n      success: true,\n      action: isModalOpen ? \"Successfully opened modal for listing 'jun_2'\" : \"Modal did not open\",\n      extractedData: { modalOpen: isModalOpen },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20118,
+      "timestamp": "2025-09-15T09:36:35.904Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 57827,
+  "timestamp": "2025-09-15T09:35:58.195Z",
+  "savedAt": "2025-09-15T09:36:56.022Z",
+  "version": "1.0"
+}

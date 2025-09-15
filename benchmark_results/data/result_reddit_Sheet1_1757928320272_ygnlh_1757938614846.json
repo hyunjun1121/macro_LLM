@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928320272_ygnlh_1757938614846",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928320272_ygnlh",
+    "description": 13,
+    "objective": "Regular",
+    "expectedResult": "Toggle saved posts view",
+    "difficulty": "Medium",
+    "category": "Click on Saved Posts button and verify saved posts are displayed",
+    "tags": [
+      ".quick-action-btn[onclick*='showSavedPosts']"
+    ],
+    "notes": "showSavedPosts()"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the \"Saved Posts\" button to be visible (by text and class)\n    const savedPostsBtn = await page.waitForSelector('button.quick-action-btn:text(\"Saved Posts\")', { timeout: 5000 });\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click_saved_posts.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click_saved_posts.png'));\n\n    // Click the \"Saved Posts\" button\n    await savedPostsBtn.click();\n\n    // Wait for the saved posts view to appear\n    // Try to find a heading or container that indicates \"Saved Posts\" are shown\n    // We'll try several strategies to ensure robustness\n\n    // 1. Wait for a heading or label\n    let savedPostsHeader = null;\n    try {\n      savedPostsHeader = await page.waitForSelector('h2:text(\"Saved Posts\"), h3:text(\"Saved Posts\")', { timeout: 3000 });\n    } catch {}\n\n    // 2. Or wait for a container with a specific class or aria-label\n    let savedPostsContainer = null;\n    if (!savedPostsHeader) {\n      try {\n        savedPostsContainer = await page.waitForSelector('[aria-label*=\"Saved Posts\"], .saved-posts-container', { timeout: 3000 });\n      } catch {}\n    }\n\n    // 3. Or check for a post list that is different from the main feed (e.g., by a unique selector or content)\n    // For demo, let's try to extract post titles under the saved posts section\n    let savedPostTitles = [];\n    try {\n      // Wait for posts to load (assuming .post or .saved-post class)\n      await page.waitForTimeout(1000); // Give time for UI to update\n      savedPostTitles = await page.$$eval(\n        '.saved-post, .post',\n        nodes => nodes.map(n => n.querySelector('.post-title')?.innerText || n.querySelector('h4')?.innerText || n.innerText).filter(Boolean)\n      );\n    } catch {}\n\n    // Take screenshot after toggling\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_toggle_saved_posts.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_toggle_saved_posts.png'));\n\n    // Compose extractedData\n    const extractedData = {\n      savedPostsHeader: savedPostsHeader ? await savedPostsHeader.innerText() : null,\n      savedPostsContainerFound: !!savedPostsContainer,\n      savedPostTitles\n    };\n\n    // Determine success based on at least one indicator\n    const success = !!(savedPostsHeader || savedPostsContainer || (savedPostTitles && savedPostTitles.length > 0));\n\n    return {\n      success,\n      action: \"Toggled the Saved Posts view and verified that saved posts are displayed.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17008,
+      "timestamp": "2025-09-15T12:16:54.846Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Take initial screenshot\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // --- Find and click the \"Saved Posts\" button ---\n    // Use role and text selector as a different strategy, fallback to XPath if needed\n\n    // Wait for sidebar or quick actions to be visible\n    // Try to find by button text, but with whitespace handling and role\n    const savedPostsButton = await page.waitForSelector(\n      \"//button[contains(normalize-space(),'Saved Posts')]\",\n      { timeout: 5000 }\n    );\n    await savedPostsButton.click();\n\n    // Wait for saved posts view to be visible\n    // Try to identify a change in the main content area\n    // Let's assume that a heading or label \"Saved Posts\" appears\n    // Wait for a heading, div, or section containing \"Saved Posts\"\n    const savedPostsHeader = await page.waitForSelector(\n      \"//*[self::h2 or self::h1 or self::div or self::section][contains(.,'Saved Posts')]\",\n      { timeout: 4000 }\n    );\n\n    // Take screenshot after toggling saved posts view\n    const savedPostsScreenshot = path.join(screenshotsDir, 'step_2_saved_posts_view.png');\n    await page.screenshot({ path: savedPostsScreenshot });\n    screenshots.push(savedPostsScreenshot);\n\n    // Try to extract the titles of saved posts (if any)\n    // Try to find post titles under the saved posts view\n    // Look for common post title patterns, such as posts with role=\"article\" or class name\n    let postTitles = [];\n    const savedPostsArea = await page.$(\"//*[contains(.,'Saved Posts')]\");\n    if (savedPostsArea) {\n      // Try to get all h3 or h2 within the area\n      postTitles = await page.$$eval(\n        \"h3, h2\",\n        nodes => nodes.map(n => n.innerText.trim()).filter(Boolean)\n      );\n      // Fallback: get all '.post-title' elements if present\n      if (postTitles.length === 0) {\n        postTitles = await page.$$eval(\n          \".post-title\",\n          nodes => nodes.map(n => n.innerText.trim()).filter(Boolean)\n        );\n      }\n    }\n\n    return {\n      success: true,\n      action: 'Clicked \"Saved Posts\" button and verified saved posts view is displayed',\n      extractedData: {\n        savedPostsHeader: await savedPostsHeader.innerText(),\n        savedPostTitles: postTitles\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 25324,
+      "timestamp": "2025-09-15T12:17:11.854Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Take initial screenshot\n    const initialPath = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialPath });\n    screenshots.push(initialPath);\n\n    // Wait for sidebar to render; use role and aria-label for robustness\n    await page.waitForSelector('aside[role=\"complementary\"][aria-label*=\"Sidebar\"]', { timeout: 5000 });\n\n    // Find the \"Saved Posts\" button using text and class\n    // There may be multiple .quick-action-btn buttons, so use text filter\n    const savedPostsBtn = await page.locator('button.quick-action-btn', { hasText: 'Saved Posts' }).first();\n\n    // Ensure the button is visible\n    await savedPostsBtn.waitFor({ state: 'visible', timeout: 5000 });\n\n    // Screenshot before clicking\n    const beforeClickPath = path.join(screenshotsDir, 'step_2_before_click_saved.png');\n    await page.screenshot({ path: beforeClickPath });\n    screenshots.push(beforeClickPath);\n\n    // Click the \"Saved Posts\" button\n    await savedPostsBtn.click();\n\n    // Wait for saved posts view to appear.\n    // Since HTML structure is not fully given, assume that a heading, section, or some indicator of \"Saved Posts\" will appear\n    // Try several strategies:\n    // 1. Wait for a heading or section with \"Saved Posts\"\n    // 2. Wait for a unique container class/id\n    // 3. Fallback: wait for DOM changes and check for \"Saved\" post card(s)\n\n    // Main strategy: look for a heading or element with \"Saved Posts\"\n    let savedPostsLocator = page.locator('h2', { hasText: 'Saved Posts' });\n    let foundSavedPosts = false;\n\n    try {\n      await savedPostsLocator.waitFor({ state: 'visible', timeout: 3000 });\n      foundSavedPosts = true;\n    } catch {\n      // Try fallback: look for a section/aria-label\n      savedPostsLocator = page.locator('section[aria-label*=\"Saved\"]');\n      try {\n        await savedPostsLocator.waitFor({ state: 'visible', timeout: 3000 });\n        foundSavedPosts = true;\n      } catch {\n        // Last resort: look for a post card with some \"Saved\" marker\n        savedPostsLocator = page.locator('div', { hasText: 'Saved' });\n        try {\n          await savedPostsLocator.first().waitFor({ state: 'visible', timeout: 3000 });\n          foundSavedPosts = true;\n        } catch {\n          foundSavedPosts = false;\n        }\n      }\n    }\n\n    // Screenshot after clicking\n    const afterClickPath = path.join(screenshotsDir, 'step_3_after_click_saved.png');\n    await page.screenshot({ path: afterClickPath });\n    screenshots.push(afterClickPath);\n\n    // Extract some data to confirm success\n    let extractedData = {};\n    if (foundSavedPosts) {\n      // Try to get the titles of saved posts (assuming posts have a .post-title or similar)\n      const savedPostTitles = await page.$$eval(\n        'div.post, article.post, div.saved-post',\n        nodes =>\n          nodes.map(n => {\n            const titleElem = n.querySelector('h3, .post-title');\n            return titleElem ? titleElem.innerText : null;\n          }).filter(Boolean)\n      );\n      extractedData = {\n        savedPostsViewVisible: true,\n        savedPostTitles\n      };\n    } else {\n      extractedData = {\n        savedPostsViewVisible: false,\n        savedPostTitles: []\n      };\n    }\n\n    return {\n      success: foundSavedPosts,\n      action: 'Clicked on \"Saved Posts\" button and checked for Saved Posts view',\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 39267,
+      "timestamp": "2025-09-15T12:17:37.178Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 81599,
+  "timestamp": "2025-09-15T12:16:54.846Z",
+  "savedAt": "2025-09-15T12:18:16.446Z",
+  "version": "1.0"
+}

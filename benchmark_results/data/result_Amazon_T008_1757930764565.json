@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T008_1757930764565",
+  "website": "Amazon",
+  "task": {
+    "id": "T008",
+    "description": "Test Mobile Menu Navigation",
+    "objective": "General",
+    "expectedResult": "Medium",
+    "difficulty": "Click the mobile menu button (hamburger icon) to open the mobile navigation menu.",
+    "category": ".nav-menu, #mobileMenuOverlay",
+    "tags": [
+      "1. Click hamburger menu button 2. Wait for mobile menu to appear"
+    ],
+    "notes": "Mobile menu overlay becomes visible, menu contains category links, body overflow is hidden"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the mobile menu button (hamburger icon) to be visible\n    // The mobile menu is likely .nav-menu (based on provided selectors)\n    await page.waitForSelector('.nav-menu', { state: 'visible', timeout: 5000 });\n\n    // Click the mobile menu button (hamburger icon)\n    await page.click('.nav-menu');\n\n    // Wait for the mobile navigation menu overlay to appear\n    // Try both #mobileMenuOverlay and a generic visible nav overlay\n    let overlayAppeared = false;\n    try {\n      await page.waitForSelector('#mobileMenuOverlay', { state: 'visible', timeout: 3000 });\n      overlayAppeared = true;\n    } catch (e) {\n      // Fallback: look for a visible nav or menu overlay\n      const overlays = await page.$$('xpath=//*[contains(@class,\"menu\") or contains(@class,\"overlay\")][not(contains(@style,\"display: none\"))]');\n      if (overlays.length > 0) overlayAppeared = true;\n    }\n\n    // Take screenshot after opening the mobile menu\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_mobile_menu_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_mobile_menu_open.png'));\n\n    // Extract some menu items/text to verify the menu is open\n    let menuItems = [];\n    if (overlayAppeared) {\n      // Try to get visible links in the overlay\n      try {\n        // Prefer #mobileMenuOverlay if present\n        const menuSelector = await page.$('#mobileMenuOverlay');\n        if (menuSelector) {\n          menuItems = await menuSelector.$$eval('a', nodes => nodes.map(n => n.textContent.trim()).filter(Boolean));\n        } else {\n          // Fallback: get links from any visible menu overlay\n          const overlays = await page.$$('xpath=//*[contains(@class,\"menu\") or contains(@class,\"overlay\")][not(contains(@style,\"display: none\"))]');\n          for (const overlay of overlays) {\n            const items = await overlay.$$eval('a', nodes => nodes.map(n => n.textContent.trim()).filter(Boolean));\n            if (items.length > 0) {\n              menuItems = items;\n              break;\n            }\n          }\n        }\n      } catch (e) {\n        // Extraction failed, leave menuItems empty\n      }\n    }\n\n    return {\n      success: overlayAppeared,\n      action: \"Clicked the mobile menu (hamburger icon) and verified the mobile navigation menu opens.\",\n      extractedData: {\n        menuItems\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 43500,
+      "timestamp": "2025-09-15T10:06:04.566Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // --- WEB AUTOMATION LOGIC: Test Mobile Menu Navigation ---\n\n    // The mobile menu (hamburger) is likely represented by .nav-menu with <i class=\"fas fa-bars\">\n    // Try multiple selectors for robustness (first visible nav-menu, then fallback to xpath by icon)\n    // Wait for the nav-menu element to be visible and clickable\n\n    // Try to locate the hamburger icon using text/aria/visible icon\n    let navMenu;\n    try {\n      // Prefer explicit text or icon, but fallback to .nav-menu div\n      navMenu = await page.waitForSelector('.nav-menu', { state: 'visible', timeout: 4000 });\n    } catch (e) {\n      // Try by xpath for fa-bars icon inside nav-menu\n      navMenu = await page.waitForSelector(\"//div[contains(@class, 'nav-menu')]//i[contains(@class, 'fa-bars')]\", { state: 'visible', timeout: 3000 });\n    }\n\n    // Take screenshot before clicking hamburger\n    const beforeMenuShot = path.join(screenshotsDir, 'step_2_before_menu_click.png');\n    await page.screenshot({ path: beforeMenuShot });\n    screenshots.push(beforeMenuShot);\n\n    // Click the mobile menu (hamburger)\n    // Use evaluate to ensure click works even if overlaying elements exist\n    if (navMenu) {\n      await navMenu.click();\n    } else {\n      throw new Error('Mobile menu (hamburger) not found');\n    }\n\n    // Wait for mobile menu overlay to appear\n    // It's likely an overlay with id or class, per task: .nav-menu, #mobileMenuOverlay\n    // Try multiple selectors: id, class, aria, and fallback to XPath for overlay with menu links\n    let menuOverlay;\n    try {\n      // Try by id\n      menuOverlay = await page.waitForSelector('#mobileMenuOverlay, .mobile-menu-overlay, .mobile-menu, .side-menu', { state: 'visible', timeout: 4000 });\n    } catch (e) {\n      // Fallback: look for a visible menu with nav links\n      menuOverlay = await page.waitForSelector(\"//div[contains(@class, 'menu') and (contains(., 'Best Sellers') or contains(., 'Electronics'))]\", { state: 'visible', timeout: 3000 });\n    }\n\n    // Take screenshot after menu is open\n    const menuOpenShot = path.join(screenshotsDir, 'step_3_menu_open.png');\n    await page.screenshot({ path: menuOpenShot });\n    screenshots.push(menuOpenShot);\n\n    // Extract some data from the overlay to verify it opened.\n    // For robustness, try to get all visible links inside the overlay/menu\n    let displayedMenuLinks = [];\n    if (menuOverlay) {\n      try {\n        displayedMenuLinks = await page.$$eval(\n          \"#mobileMenuOverlay a, .mobile-menu-overlay a, .mobile-menu a, .side-menu a, nav a\",\n          els => els.filter(el => el.offsetParent !== null).map(el => el.textContent.trim()).filter(Boolean)\n        );\n      } catch (e) {\n        // fallback: try all <a> visible on page\n        displayedMenuLinks = await page.$$eval(\n          \"a\",\n          els => els.filter(el => el.offsetParent !== null).map(el => el.textContent.trim()).filter(Boolean)\n        );\n      }\n    }\n\n    // Prepare extraction for output\n    const extractedData = {\n      menuLinks: displayedMenuLinks.slice(0, 10), // only first 10 for brevity\n      menuOverlayVisible: !!menuOverlay\n    };\n\n    return {\n      success: true,\n      action: \"Clicked the mobile hamburger menu and verified the mobile menu overlay appeared.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 45766,
+      "timestamp": "2025-09-15T10:06:48.066Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the mobile menu hamburger icon using alternative selector strategies\n    // Try by XPath: looking for an element with class 'nav-menu' containing an <i> with 'fa-bars'\n    const navMenuSelector = '//nav[contains(@class,\"nav-bar\")]//div[contains(@class,\"nav-menu\") and .//i[contains(@class, \"fa-bars\")]]';\n    await page.waitForSelector(navMenuSelector, { timeout: 5000 });\n    const navMenu = await page.$(navMenuSelector);\n\n    // If not found, try a fallback by text \"All\"\n    let hamburgerFound = !!navMenu;\n    let navMenuElem = navMenu;\n    if (!navMenu) {\n      const textNavMenu = await page.$('div.nav-menu:has-text(\"All\")');\n      if (textNavMenu) {\n        navMenuElem = textNavMenu;\n        hamburgerFound = true;\n      }\n    }\n\n    // Click the hamburger/mobile menu icon if found\n    if (!hamburgerFound) {\n      throw new Error('Mobile menu (hamburger) icon not found');\n    }\n    await navMenuElem.click();\n\n    // Wait for mobile menu overlay to appear using ID or class\n    // Try overlay selector by id, class, or aria-modal\n    let overlaySelector = '#mobileMenuOverlay, .mobile-menu-overlay, [aria-modal=\"true\"]';\n    await page.waitForSelector(overlaySelector, { timeout: 5000 });\n\n    // Take screenshot after opening menu\n    const menuOpenedScreenshot = path.join(screenshotsDir, 'step_2_menu_opened.png');\n    await page.screenshot({ path: menuOpenedScreenshot });\n    screenshots.push(menuOpenedScreenshot);\n\n    // Extract data: check if overlay is visible and grab some text from the mobile menu\n    const overlayVisible = await page.$eval(\n      overlaySelector,\n      el => (el.offsetParent !== null) || (window.getComputedStyle(el).display !== 'none')\n    );\n\n    // Try to extract the first 3 menu items from the overlay (if present)\n    let menuItems = [];\n    try {\n      menuItems = await page.$$eval(\n        `${overlaySelector} a`,\n        nodes => nodes.slice(0, 3).map(n => n.innerText.trim()).filter(Boolean)\n      );\n    } catch (e) {\n      // It's possible the overlay does not contain links, so fallback to list items\n      try {\n        menuItems = await page.$$eval(\n          `${overlaySelector} li`,\n          nodes => nodes.slice(0, 3).map(n => n.innerText.trim()).filter(Boolean)\n        );\n      } catch (e2) {\n        menuItems = [];\n      }\n    }\n\n    return {\n      success: true,\n      action: \"Clicked the mobile menu (hamburger) icon and verified that the mobile navigation overlay appeared.\",\n      extractedData: {\n        overlayVisible,\n        menuPreview: menuItems\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 43477,
+      "timestamp": "2025-09-15T10:07:33.833Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 132745,
+  "timestamp": "2025-09-15T10:06:04.565Z",
+  "savedAt": "2025-09-15T10:08:17.310Z",
+  "version": "1.0"
+}

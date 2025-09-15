@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928345667_1kze3_1757935774019",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928345667_1kze3",
+    "description": 15,
+    "objective": "Regular",
+    "expectedResult": "Switch to New tab and verify sorting",
+    "difficulty": "Medium",
+    "category": "Click New tab button and verify posts are sorted by newest first",
+    "tags": [
+      "#new-tab .tab-btn[data-tab='new']"
+    ],
+    "notes": "switchTab('new') renderPosts()"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on the button to create a new post\n    await page.waitForSelector('button.create-post-btn');\n    await page.click('button.create-post-btn');\n    await page.waitForLoadState('networkidle');\n\n    // Take a screenshot after clicking the button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_create_post.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_create_post.png'));\n\n    // Switch to the new tab\n    const newPage = await page.context().waitForEvent('page');\n    await newPage.waitForLoadState('networkidle');\n\n    // Verify that posts are sorted by newest first\n    const posts = await newPage.$$eval('.post', elements => {\n      return elements.map(el => ({\n        title: el.querySelector('.post-title').innerText,\n        time: el.querySelector('.post-time').innerText\n      }));\n    });\n\n    // Check if the posts are sorted by newest first\n    const isSorted = posts.every((post, index) => {\n      if (index === 0) return true; // First element is always true\n      return new Date(post.time) <= new Date(posts[index - 1].time);\n    });\n\n    // Take a screenshot of the sorted posts\n    await newPage.screenshot({ path: path.join(screenshotsDir, 'step_3_sorted_posts.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_sorted_posts.png'));\n\n    return {\n      success: true,\n      action: \"Switched to new tab and verified posts are sorted by newest first\",\n      extractedData: { isSorted },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17095,
+      "timestamp": "2025-09-15T11:29:34.019Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on the button to create a new post\n    await page.waitForSelector('button.create-post-btn');\n    await page.click('button.create-post-btn');\n\n    // Wait for the new tab to open and the content to load\n    await page.waitForTimeout(2000); // Adjust timeout if necessary\n\n    // Verify posts are sorted by newest first\n    const postTimes = await page.$$eval('.post-time-selector', (elements) => {\n      return elements.map(el => new Date(el.textContent)); // Adjust selector based on actual post time element\n    });\n\n    const isSorted = postTimes.every((time, index) => {\n      return index === 0 || time <= postTimes[index - 1];\n    });\n\n    if (isSorted) {\n      console.log('Posts are sorted by newest first.');\n    } else {\n      console.log('Posts are not sorted correctly.');\n    }\n\n    // Take a screenshot after verification\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_sorted_verification.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_sorted_verification.png'));\n\n    return {\n      success: true,\n      action: \"Verified that posts are sorted by newest first\",\n      extractedData: { sorted: isSorted },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16857,
+      "timestamp": "2025-09-15T11:29:51.114Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on the button to create a new post (switch to new tab)\n    await page.waitForSelector('button.create-post-btn');\n    await page.click('button.create-post-btn');\n\n    // Wait for the new tab to open\n    const newTab = await page.waitForEvent('popup');\n\n    // Switch to the new tab and wait for content to load\n    await newTab.waitForLoadState('networkidle');\n\n    // Verify that posts are sorted by newest first\n    const posts = await newTab.$$eval('.post', postElements => {\n      return postElements.map(post => ({\n        title: post.querySelector('.post-title').innerText,\n        time: post.querySelector('.post-time').innerText\n      }));\n    });\n\n    // Check if posts are sorted by newest first\n    const isSorted = posts.every((post, index, arr) => \n      index === 0 || new Date(post.time) <= new Date(arr[index - 1].time)\n    );\n\n    // Take a screenshot of the new tab\n    await newTab.screenshot({ path: path.join(screenshotsDir, 'step_2_new_tab.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_new_tab.png'));\n\n    return {\n      success: true,\n      action: \"Switched to new tab and verified sorting of posts by newest first\",\n      extractedData: { isSorted },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16219,
+      "timestamp": "2025-09-15T11:30:07.971Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 50172,
+  "timestamp": "2025-09-15T11:29:34.019Z",
+  "savedAt": "2025-09-15T11:30:24.191Z",
+  "version": "1.0"
+}

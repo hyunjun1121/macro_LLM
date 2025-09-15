@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_014_1757931490048",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_014",
+    "description": "General",
+    "objective": "Multi-Category Listing Count",
+    "expectedResult": "8개 카테고리 필터를 순차적으로 클릭하며 각 카테고리별 숙소 개수를 기록하여 객체로 반환하기",
+    "difficulty": "Hard",
+    "category": ".filter-btn[data-filter], .listing-card",
+    "tags": [
+      "Filter iteration",
+      "counting"
+    ],
+    "notes": "카테고리별 숙소 개수 객체 (예: {all: 12, beachfront: 3, mountains: 2, city: 4, countryside: 2, luxury: 2, cabin: 1, apartment: 2})"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for filter buttons to load\n    await page.waitForSelector('.filter-btn[data-filter]', { timeout: 10000 });\n\n    // Get all category filter buttons\n    const filterButtons = await page.$$('.filter-btn[data-filter]');\n    \n    // Ensure we have exactly 8 categories as specified\n    if (filterButtons.length !== 8) {\n      throw new Error(`Expected 8 filter buttons but found ${filterButtons.length}`);\n    }\n\n    const categoryCounts = {};\n\n    // Iterate through each filter button\n    for (let i = 0; i < filterButtons.length; i++) {\n      // Re-find buttons to avoid stale elements\n      const currentButtons = await page.$$('.filter-btn[data-filter]');\n      const button = currentButtons[i];\n      \n      // Get category name from data-filter attribute\n      const category = await button.getAttribute('data-filter');\n      \n      // Click the filter button\n      await button.click();\n      \n      // Wait for listings to update\n      await page.waitForTimeout(1000);\n      await page.waitForSelector('.listing-card', { timeout: 5000 });\n      \n      // Count listing cards\n      const listings = await page.$$('.listing-card');\n      categoryCounts[category] = listings.length;\n      \n      // Take screenshot after filter application\n      const screenshotPath = path.join(screenshotsDir, `step_${i+2}_${category}.png`);\n      await page.screenshot({ path: screenshotPath });\n      screenshots.push(screenshotPath);\n    }\n\n    return {\n      success: true,\n      action: \"Clicked through 8 category filters and recorded listing counts\",\n      extractedData: categoryCounts,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    const errorScreenshot = path.join(screenshotsDir, 'error.png');\n    await page.screenshot({ path: errorScreenshot });\n    screenshots.push(errorScreenshot);\n\n    return {\n      success: false,\n      action: \"Failed to complete category filter task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 87967,
+      "timestamp": "2025-09-15T10:18:10.048Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for filter buttons and listing cards to load\n    await page.waitForSelector('.filter-btn[data-filter]', { timeout: 10000 });\n    await page.waitForSelector('.listing-card', { timeout: 10000 });\n\n    // Get all category filter buttons\n    const filterButtons = await page.$$('.filter-btn[data-filter]');\n    \n    // Object to store results\n    const categoryCounts = {};\n\n    // Iterate through each filter button\n    for (let i = 0; i < filterButtons.length; i++) {\n      // Get filter category name\n      const filterName = await filterButtons[i].getAttribute('data-filter');\n      \n      // Click the filter button\n      await filterButtons[i].click();\n      \n      // Wait for content to update\n      await page.waitForTimeout(1000);\n      \n      // Count visible listing cards\n      const listingCards = await page.$$('.listing-card:not([style*=\"display: none\"])');\n      const count = listingCards.length;\n      \n      // Store result\n      categoryCounts[filterName] = count;\n      \n      // Take screenshot after each filter\n      const screenshotPath = path.join(screenshotsDir, `step_2_${filterName}_filter.png`);\n      await page.screenshot({ path: screenshotPath });\n      screenshots.push(screenshotPath);\n    }\n\n    return {\n      success: true,\n      action: \"Clicked all 8 category filters and recorded listing counts\",\n      extractedData: categoryCounts,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 79172,
+      "timestamp": "2025-09-15T10:19:38.016Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for filter buttons to be available\n    await page.waitForSelector('.filter-btn[data-filter]', { timeout: 10000 });\n\n    // Get all filter buttons\n    const filterButtons = await page.$$('.filter-btn[data-filter]');\n    \n    // Initialize result object\n    const categoryCounts = {};\n\n    // Process each filter button sequentially\n    for (let i = 0; i < filterButtons.length; i++) {\n      // Re-locate buttons to avoid stale references\n      const currentButtons = await page.$$('.filter-btn[data-filter]');\n      const button = currentButtons[i];\n      \n      // Get category name from data-filter attribute\n      const category = await button.getAttribute('data-filter');\n      \n      // Click the filter button\n      await button.click();\n      \n      // Wait for content to update - using multiple strategies\n      await page.waitForTimeout(1000); // Brief pause for UI update\n      await page.waitForSelector('.listing-card', { timeout: 5000 }).catch(() => {\n        console.log('No listing cards found, may be empty category');\n      });\n      \n      // Count listing cards\n      const listingCards = await page.$$('.listing-card');\n      const count = listingCards.length;\n      \n      // Store result\n      categoryCounts[category] = count;\n      \n      // Take screenshot after each filter\n      await page.screenshot({ \n        path: path.join(screenshotsDir, `step_2_filter_${i+1}_${category}.png`) \n      });\n      screenshots.push(path.join(screenshotsDir, `step_2_filter_${i+1}_${category}.png`));\n    }\n\n    return {\n      success: true,\n      action: \"Clicked all category filters and recorded accommodation counts\",\n      extractedData: categoryCounts,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 109835,
+      "timestamp": "2025-09-15T10:20:57.188Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 276975,
+  "timestamp": "2025-09-15T10:18:10.048Z",
+  "savedAt": "2025-09-15T10:22:47.023Z",
+  "version": "1.0"
+}

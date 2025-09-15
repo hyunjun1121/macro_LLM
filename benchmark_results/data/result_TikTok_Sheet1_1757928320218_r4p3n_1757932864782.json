@@ -1,0 +1,62 @@
+{
+  "id": "TikTok_Sheet1_1757928320218_r4p3n_1757932864782",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928320218_r4p3n",
+    "description": 3,
+    "objective": "General",
+    "expectedResult": "첫 번째 비디오의 좋아요 버튼을 클릭하여 liked 상태로 변경",
+    "difficulty": "data-video-id='1'인 컨테이너의 .like-btn을 클릭",
+    "category": "Easy",
+    "tags": [
+      ".video-container[data-video-id='1'] .like-btn"
+    ],
+    "notes": "data-video-id='1'인 컨테이너의 .like-btn을 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first video container (data-video-id=\"1\") to be present\n    const videoContainerSelector = '[data-video-id=\"1\"]';\n    await page.waitForSelector(videoContainerSelector);\n\n    // Wait for the like button inside the first video container\n    const likeBtnSelector = '[data-video-id=\"1\"] .like-btn';\n    await page.waitForSelector(likeBtnSelector);\n\n    // Take screenshot before clicking like\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_like.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_like.png'));\n\n    // Click the like button\n    await page.click(likeBtnSelector);\n\n    // Wait for possible liked state (e.g., class change, aria-pressed, or icon change)\n    // We'll wait for the button to have an \"active\" or \"liked\" class, or for the icon to change\n    // Try to detect a class change or style change (wait up to 2s)\n    let liked = false;\n    for (let i = 0; i < 10; i++) {\n      const btnClass = await page.$eval(likeBtnSelector, el => el.className);\n      if (btnClass.includes('active') || btnClass.includes('liked')) {\n        liked = true;\n        break;\n      }\n      // Optionally, check for aria-pressed or icon change\n      const ariaPressed = await page.$eval(likeBtnSelector, el => el.getAttribute('aria-pressed'));\n      if (ariaPressed === 'true') {\n        liked = true;\n        break;\n      }\n      await page.waitForTimeout(200);\n    }\n\n    // Take screenshot after clicking like\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_like.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_like.png'));\n\n    // Extract like button state and like count text\n    const likeBtnData = await page.$eval(likeBtnSelector, el => {\n      const btnClass = el.className;\n      const ariaPressed = el.getAttribute('aria-pressed');\n      let icon = '';\n      const iconElem = el.querySelector('i');\n      if (iconElem) icon = iconElem.className;\n      // Try to extract like count if present as text node\n      let likeCount = '';\n      for (const node of el.childNodes) {\n        if (node.nodeType === Node.TEXT_NODE) {\n          likeCount += node.textContent.trim();\n        }\n      }\n      return { btnClass, ariaPressed, icon, likeCount };\n    });\n\n    return {\n      success: true,\n      action: \"Clicked the like button on the first video (data-video-id='1') and changed it to liked state.\",\n      extractedData: {\n        likeBtnClass: likeBtnData.btnClass,\n        ariaPressed: likeBtnData.ariaPressed,\n        iconClass: likeBtnData.icon,\n        likeCount: likeBtnData.likeCount,\n        liked: liked\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15092,
+      "timestamp": "2025-09-15T10:41:04.782Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the first video container using attribute selector (alternative strategy)\n    const videoContainerSelector = 'div.video-container[data-video-id=\"1\"]';\n    await page.waitForSelector(videoContainerSelector, { timeout: 5000 });\n\n    // Locate the like button using a descendant selector (alternative strategy)\n    // Don't use only .like-btn, but contextually within the video container\n    const likeButtonSelector = `${videoContainerSelector} button.like-btn`;\n    await page.waitForSelector(likeButtonSelector, { timeout: 3000 });\n\n    // Take screenshot before clicking like\n    const step2 = path.join(screenshotsDir, 'step_2_before_like.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Click the like button\n    await page.click(likeButtonSelector);\n\n    // Wait for a short duration to allow possible UI update (since like state might change visually)\n    await page.waitForTimeout(800);\n\n    // Take screenshot after clicking like\n    const step3 = path.join(screenshotsDir, 'step_3_after_like.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Extract data to verify like state has changed\n    // Try to extract button's class or aria-pressed attribute or style\n    // Try both strategies for robustness\n    const likeBtn = await page.$(likeButtonSelector);\n    let likeBtnClass = '';\n    let ariaPressed = '';\n    if (likeBtn) {\n      likeBtnClass = await likeBtn.getAttribute('class');\n      ariaPressed = await likeBtn.getAttribute('aria-pressed');\n    }\n\n    // Optionally, extract the likes count text (span, if present) inside the button\n    let likeCountText = '';\n    try {\n      const likeCountSpan = await likeBtn.$('span');\n      if (likeCountSpan) {\n        likeCountText = await likeCountSpan.innerText();\n      }\n    } catch (e) {\n      // ignore if not found\n    }\n\n    return {\n      success: true,\n      action: \"Clicked the like button on the first video (data-video-id='1') and attempted to change it to liked state.\",\n      extractedData: {\n        likeButtonClass: likeBtnClass,\n        likeButtonAriaPressed: ariaPressed,\n        likeCountText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13626,
+      "timestamp": "2025-09-15T10:41:19.874Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the video container with data-video-id=\"1\" to appear\n    await page.waitForSelector('div.video-container[data-video-id=\"1\"]', { timeout: 5000 });\n\n    // Use a robust selector: find the like button inside the first video container by XPath\n    const likeBtn = await page.waitForSelector('//div[contains(@class,\"video-container\") and @data-video-id=\"1\"]//button[contains(@class,\"like-btn\")]', { timeout: 3000 });\n\n    // Scroll into view before clicking (in case off-screen)\n    await likeBtn.scrollIntoViewIfNeeded();\n\n    // Take screenshot before click\n    const preLike = path.join(screenshotsDir, 'step_2_before_like.png');\n    await page.screenshot({ path: preLike });\n    screenshots.push(preLike);\n\n    // Click the like button\n    await likeBtn.click();\n\n    // Wait for liked state (try to detect visual change: e.g. aria-pressed, or style, or icon color)\n    // We'll check for aria-pressed or some class toggle, fallback to a delay for UI update\n    await page.waitForTimeout(800);\n\n    // Take screenshot after click\n    const postLike = path.join(screenshotsDir, 'step_3_after_like.png');\n    await page.screenshot({ path: postLike });\n    screenshots.push(postLike);\n\n    // Extract information to verify like:\n    // Try to detect if the like button now has a 'liked' class or aria-pressed attribute\n    const likeStatus = await page.evaluate(() => {\n      const btn = document.querySelector('div.video-container[data-video-id=\"1\"] button.like-btn');\n      if (!btn) return { found: false };\n      return {\n        found: true,\n        ariaPressed: btn.getAttribute('aria-pressed'),\n        classList: btn.className,\n        color: window.getComputedStyle(btn).color\n      };\n    });\n\n    return {\n      success: true,\n      action: 'Clicked the like button for the first video (data-video-id=\"1\") and attempted to set it to liked state.',\n      extractedData: {\n        likeButtonStatus: likeStatus\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15256,
+      "timestamp": "2025-09-15T10:41:33.500Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 43974,
+  "timestamp": "2025-09-15T10:41:04.782Z",
+  "savedAt": "2025-09-15T10:41:48.756Z",
+  "version": "1.0"
+}

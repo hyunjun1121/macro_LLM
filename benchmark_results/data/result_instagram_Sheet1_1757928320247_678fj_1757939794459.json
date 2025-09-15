@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928320247_678fj_1757939794459",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928320247_678fj",
+    "description": "IG_REG_003",
+    "objective": "Regular",
+    "expectedResult": "Click follow button on first user in suggestions and verify button text changes to \"Following\"",
+    "difficulty": "Easy",
+    "category": ".suggestion-item:first-child .follow-btn",
+    "tags": [
+      "Button text changes from \"Follow\" to \"Following\""
+    ],
+    "notes": "1. Find first .suggestion-item .follow-btn 2. Click button 3. Verify text content equals \"Following\""
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the suggestions list to be visible\n    // Try multiple selector strategies for the first suggestion's follow button\n    // 1. By CSS: .suggestion-item:first-child .follow-btn\n    // 2. By text: button with text \"Follow\" inside .suggestion-item\n    // 3. Fallback: any button with text \"Follow\" that is visible\n\n    // Wait for at least one suggestion item to appear\n    let suggestionSelector = '.suggestion-item';\n    await page.waitForSelector(suggestionSelector, { timeout: 5000 });\n\n    // Find the first suggestion's follow button\n    let followBtn = await page.$('.suggestion-item:first-child .follow-btn');\n    if (!followBtn) {\n      // Try alternative: first .suggestion-item then its .follow-btn\n      const firstSuggestion = await page.$('.suggestion-item');\n      if (firstSuggestion) {\n        followBtn = await firstSuggestion.$('.follow-btn');\n      }\n    }\n    if (!followBtn) {\n      // Fallback: any visible button with text \"Follow\" inside .suggestion-item\n      const buttons = await page.$$('.suggestion-item button');\n      for (const btn of buttons) {\n        const text = (await btn.textContent())?.trim();\n        if (text === 'Follow') {\n          followBtn = btn;\n          break;\n        }\n      }\n    }\n    if (!followBtn) {\n      throw new Error('Could not find the Follow button in suggestions');\n    }\n\n    // Take screenshot before clicking follow\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_follow.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_follow.png'));\n\n    // Click the Follow button\n    await followBtn.click();\n\n    // Wait for the button text to change to \"Following\"\n    // Use a loop with timeout for robustness\n    let newText = '';\n    for (let i = 0; i < 20; i++) { // up to 2 seconds\n      newText = (await followBtn.textContent())?.trim();\n      if (newText === 'Following') break;\n      await page.waitForTimeout(100);\n    }\n\n    // Take screenshot after clicking follow\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_follow.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_follow.png'));\n\n    // Extract username of the first suggestion for reporting\n    let username = '';\n    const firstSuggestion = await page.$('.suggestion-item');\n    if (firstSuggestion) {\n      // Try to get username from .username or similar span\n      const usernameEl = await firstSuggestion.$('.username');\n      if (usernameEl) {\n        username = (await usernameEl.textContent())?.trim() || '';\n      }\n    }\n\n    // Final verification\n    const success = newText === 'Following';\n\n    return {\n      success,\n      action: success\n        ? `Clicked follow button on first user (${username || 'unknown'}) in suggestions and verified button text changed to \"Following\"`\n        : 'Clicked follow button but button text did not change to \"Following\"',\n      extractedData: {\n        username,\n        buttonTextAfterClick: newText\n      },\n      screenshots,\n      error: success ? null : 'Button text did not change to \"Following\"'\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 26740,
+      "timestamp": "2025-09-15T12:36:34.459Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the suggestions sidebar to appear\n    // Try multiple strategies: look for a .suggestions or similar container\n    // Fallback to finding first suggestion by its structure: image + username + button (Follow)\n    // Give time for any JS to render suggestions\n    await page.waitForTimeout(1000);\n\n    // Find the first suggestion's \"Follow\" button using a less direct selector\n    // Try to locate the button as the first .follow-btn within any .suggestion-item\n    // Use :nth-of-type(1) for robustness if multiple .suggestion-item exist\n    // As a fallback, find the button with text \"Follow\" within the first suggestion user block\n\n    // First, find all suggestion items on the page\n    const suggestionHandles = await page.$$('.suggestion-item');\n    if (!suggestionHandles.length) {\n      throw new Error('No suggestion items found on the page.');\n    }\n\n    // Take a screenshot before clicking\n    await suggestionHandles[0].screenshot({ path: path.join(screenshotsDir, 'step_2_first_suggestion.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_first_suggestion.png'));\n\n    // Try to find the \"Follow\" button inside the first suggestion item\n    const followBtnHandle = await suggestionHandles[0].$('button.follow-btn') ||\n                            await suggestionHandles[0].$('button:text(\"Follow\")') ||\n                            await suggestionHandles[0].$('button');\n\n    if (!followBtnHandle) {\n      throw new Error('Follow button not found in the first suggestion item.');\n    }\n\n    // Take a screenshot before clicking follow\n    await followBtnHandle.screenshot({ path: path.join(screenshotsDir, 'step_3_follow_btn_before.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_follow_btn_before.png'));\n\n    // Click the Follow button\n    await followBtnHandle.click();\n\n    // Wait for the button text to change to \"Following\"\n    // Try using a loop/polling for robustness\n    let newText = '';\n    for (let i = 0; i < 10; i++) {\n      newText = await followBtnHandle.evaluate(el => el.textContent.trim());\n      if (/following/i.test(newText)) break;\n      await page.waitForTimeout(300);\n    }\n\n    // Take a screenshot after clicking follow\n    await followBtnHandle.screenshot({ path: path.join(screenshotsDir, 'step_4_follow_btn_after.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_follow_btn_after.png'));\n\n    // Return result with extracted data\n    return {\n      success: /following/i.test(newText),\n      action: \"Clicked follow on the first user in suggestions and verified the button text changed to 'Following'\",\n      extractedData: {\n        buttonTextAfter: newText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15846,
+      "timestamp": "2025-09-15T12:37:01.199Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the suggestions sidebar to be visible\n    // Use a broad selector for sidebar container that could house suggestions\n    const suggestionSidebarSelector = '.sidebar, .suggestions, [class*=\"suggest\"]';\n    await page.waitForSelector(suggestionSidebarSelector, { timeout: 5000 });\n\n    // Find the first suggestion item using a robust selector\n    // We try to find an element with class containing 'suggestion' and 'item'\n    const firstSuggestionSelector = 'div[class*=\"suggestion\"][class*=\"item\"], .suggestion-item, li[class*=\"suggestion\"]';\n    await page.waitForSelector(firstSuggestionSelector, { timeout: 5000 });\n\n    // Now look for the first child (first suggestion)\n    // Use :first-of-type and :first-child fallback\n    let firstSuggestion = await page.$(`${firstSuggestionSelector}:first-of-type`) \n      || await page.$(`${firstSuggestionSelector}:first-child`);\n\n    if (!firstSuggestion) {\n      throw new Error('First suggestion item not found');\n    }\n\n    // Look inside the suggestion for a button with class containing \"follow\"\n    // Try several strategies: class, text, button descendant\n    const followButtonSelector =\n      'button[class*=\"follow\"], .follow-btn, button:has-text(\"Follow\")';\n\n    const followButton = await firstSuggestion.$(followButtonSelector);\n    if (!followButton) {\n      throw new Error('Follow button not found in first suggestion');\n    }\n\n    // Take a screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_follow_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_follow_click.png'));\n\n    // Click the follow button\n    await followButton.click();\n\n    // Wait for the button text to change to \"Following\"\n    // Use a short polling loop since textContent may change dynamically\n    let newText = '';\n    for (let i = 0; i < 20; i++) {\n      newText = await followButton.textContent();\n      if (newText && newText.trim().toLowerCase().startsWith('following')) break;\n      await page.waitForTimeout(250);\n    }\n\n    // Take a screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_follow_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_follow_click.png'));\n\n    // Extract the result for reporting\n    const extractedData = {\n      buttonTextAfterClick: newText ? newText.trim() : null\n    };\n\n    // Validate expected result\n    const success = newText && newText.trim().toLowerCase().startsWith('following');\n    return {\n      success,\n      action: success\n        ? 'Clicked follow button on first user in suggestions and verified it changed to \"Following\"'\n        : 'Clicked follow button but text did not change to \"Following\"',\n      extractedData,\n      screenshots,\n      error: success ? null : 'Button text did not change to \"Following\"'\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17939,
+      "timestamp": "2025-09-15T12:37:17.045Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 60525,
+  "timestamp": "2025-09-15T12:36:34.459Z",
+  "savedAt": "2025-09-15T12:37:34.984Z",
+  "version": "1.0"
+}

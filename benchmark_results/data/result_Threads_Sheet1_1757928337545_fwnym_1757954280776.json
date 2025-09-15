@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337545_fwnym_1757954280776",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337545_fwnym",
+    "description": "G015",
+    "objective": "Navigate to Bookmarks",
+    "expectedResult": "Click Bookmarks navigation item to view bookmarked threads",
+    "difficulty": ".nav-item[data-view='bookmarks']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the Bookmarks navigation item\n    const bookmarksNavSelector = \".nav-item[data-view='bookmarks']\";\n    await page.waitForSelector(bookmarksNavSelector);\n    await page.click(bookmarksNavSelector);\n\n    // Wait for bookmarks view to become active\n    await page.waitForSelector('#bookmarks-view.active', { timeout: 5000 });\n\n    // Take screenshot after navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_bookmarks_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_bookmarks_view.png'));\n\n    // Extract data from bookmarks view\n    const bookmarkCount = await page.$$eval('.thread-item', items => items.length);\n    const bookmarkTitles = await page.$$eval('.thread-content', items => \n      items.slice(0, 3).map(item => item.textContent.trim())\n    );\n\n    return {\n      success: true,\n      action: \"Clicked Bookmarks navigation item and viewed bookmarked threads\",\n      extractedData: {\n        bookmarkCount,\n        firstThreeBookmarks: bookmarkTitles\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot if possible\n    try {\n      await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n      screenshots.push(path.join(screenshotsDir, 'error.png'));\n    } catch (e) {}\n    \n    return {\n      success: false,\n      action: \"Failed to click Bookmarks navigation item\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 149786,
+      "timestamp": "2025-09-15T16:38:00.776Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation menu to load\n    await page.waitForSelector('.nav-menu', { state: 'visible' });\n\n    // Use multiple selector strategies to find Bookmarks navigation item\n    const bookmarksSelector = '.nav-item[data-view=\"bookmarks\"]';\n    await page.waitForSelector(bookmarksSelector, { state: 'visible' });\n\n    // Click the Bookmarks navigation item\n    await page.click(bookmarksSelector);\n    \n    // Wait for bookmarks view to load (check for active state)\n    await page.waitForSelector(`${bookmarksSelector}.active`, { timeout: 5000 });\n\n    // Take screenshot after clicking bookmarks\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_bookmarks_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_bookmarks_clicked.png'));\n\n    // Verify we can see bookmarked content by checking if view changed\n    const isBookmarksActive = await page.$eval(bookmarksSelector, el => el.classList.contains('active'));\n    \n    return {\n      success: true,\n      action: \"Clicked Bookmarks navigation item and verified view changed\",\n      extractedData: {\n        bookmarksViewActive: isBookmarksActive,\n        navigationItemText: await page.$eval(bookmarksSelector + ' span', el => el.textContent)\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to click Bookmarks navigation item\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 56901,
+      "timestamp": "2025-09-15T16:40:30.562Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation menu to load\n    await page.waitForSelector('.nav-menu', { timeout: 5000 });\n\n    // Find and click Bookmarks navigation item using CSS selector\n    const bookmarksNav = await page.$('.nav-item[data-view=\"bookmarks\"]');\n    if (bookmarksNav) {\n      await bookmarksNav.click();\n      \n      // Wait for view to switch (check if active class is added)\n      await page.waitForSelector('.nav-item[data-view=\"bookmarks\"].active', { timeout: 3000 });\n      \n      // Take screenshot after navigation\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_2_bookmarks_view.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_2_bookmarks_view.png'));\n\n      // Verify we're on bookmarks view by checking page content\n      const viewTitle = await page.$eval('.content-header h2', el => el.textContent);\n      \n      return {\n        success: true,\n        action: \"Successfully clicked Bookmarks navigation item and viewed bookmarked threads\",\n        extractedData: {\n          currentView: viewTitle.trim()\n        },\n        screenshots,\n        error: null\n      };\n    } else {\n      throw new Error('Bookmarks navigation item not found');\n    }\n  } catch (error) {\n    // Take screenshot on error\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n    \n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 78306,
+      "timestamp": "2025-09-15T16:41:27.463Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 284993,
+  "timestamp": "2025-09-15T16:38:00.776Z",
+  "savedAt": "2025-09-15T16:42:45.769Z",
+  "version": "1.0"
+}

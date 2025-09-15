@@ -1,0 +1,66 @@
+{
+  "id": "when2meet_T011_1757936999013",
+  "website": "when2meet",
+  "task": {
+    "id": "T011",
+    "description": "Verify User Profile Display",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Check that the user profile shows 'jun' username and avatar in the header",
+    "category": ".username and .user-avatar",
+    "tags": [
+      "Load page and inspect user profile section"
+    ],
+    "notes": "Username displays 'jun' and avatar element is present with correct image data"
+  },
+  "websiteInfo": {
+    "name": "when2meet",
+    "htmlFiles": [
+      "404.html",
+      "create.html",
+      "dashboard.html",
+      "event.html",
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the user profile section in the header\n    await page.waitForSelector('.header .user-menu', { timeout: 5000 });\n\n    // Wait for the username span\n    const usernameSelector = '.header .user-menu .username';\n    await page.waitForSelector(usernameSelector, { timeout: 3000 });\n\n    // Extract username text\n    const username = await page.$eval(usernameSelector, el => el.textContent.trim());\n\n    // Wait for the avatar image\n    const avatarSelector = '.header .user-menu .user-avatar img';\n    await page.waitForSelector(avatarSelector, { timeout: 3000 });\n\n    // Extract avatar src attribute\n    const avatarSrc = await page.$eval(avatarSelector, el => el.getAttribute('src'));\n\n    // Take screenshot of the user menu area\n    const userMenuElement = await page.$('.header .user-menu');\n    if (userMenuElement) {\n      await userMenuElement.screenshot({ path: path.join(screenshotsDir, 'step_2_user_profile.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_2_user_profile.png'));\n    }\n\n    // Verify username and avatar\n    const usernameIsJun = username === 'jun';\n    const avatarIsPresent = typeof avatarSrc === 'string' && avatarSrc.startsWith('data:image/svg+xml;base64,');\n\n    // Compose extracted data\n    const extractedData = {\n      username,\n      avatarSrc,\n      usernameIsJun,\n      avatarIsPresent\n    };\n\n    // Final result\n    return {\n      success: usernameIsJun && avatarIsPresent,\n      action: \"Verified that the user profile in the header displays the username 'jun' and a user avatar image.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20548,
+      "timestamp": "2025-09-15T11:49:59.013Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the header to ensure navigation and header load\n    await page.waitForSelector('header.header', { timeout: 5000 });\n\n    // Strategy 1: Find username by class text content (robust to nesting and whitespace)\n    const usernameElement = await page.waitForSelector(\n      '//header//span[contains(@class, \"username\") and normalize-space(text())=\"jun\"]',\n      { timeout: 4000 }\n    );\n\n    // Strategy 2: Find avatar img inside header user menu (using alt and class context)\n    const avatarElement = await page.waitForSelector(\n      '//header//div[contains(@class, \"user-avatar\")]/img[contains(@src, \"data:image/svg+xml;base64\") and @alt=\"User Avatar\"]',\n      { timeout: 4000 }\n    );\n\n    // Double-check visibility\n    const isUsernameVisible = usernameElement ? await usernameElement.isVisible() : false;\n    const isAvatarVisible = avatarElement ? await avatarElement.isVisible() : false;\n\n    // Extract details for verification\n    const usernameText = usernameElement ? (await usernameElement.textContent()).trim() : null;\n    const avatarSrc = avatarElement ? await avatarElement.getAttribute('src') : null;\n\n    // Take screenshot highlighting the user menu\n    const userMenu = await page.waitForSelector('header .user-menu', { timeout: 4000 });\n    if (userMenu) {\n      const userMenuShot = path.join(screenshotsDir, 'step_2_user_menu.png');\n      await userMenu.screenshot({ path: userMenuShot });\n      screenshots.push(userMenuShot);\n    }\n\n    // Final result\n    const success = isUsernameVisible && isAvatarVisible && usernameText === 'jun' && avatarSrc && avatarSrc.startsWith('data:image/svg+xml;base64');\n    return {\n      success,\n      action: \"Verified that the user profile displays username 'jun' and avatar in the header\",\n      extractedData: {\n        usernameText,\n        avatarSrc,\n        isUsernameVisible,\n        isAvatarVisible\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 26226,
+      "timestamp": "2025-09-15T11:50:19.561Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the header to appear using role and text (alternative strategy)\n    await page.waitForSelector('header.header', { timeout: 4000 });\n\n    // Wait for the username element using xpath (alternative selector)\n    const usernameXpath = \"//header//span[contains(@class, 'username') and normalize-space(text())='jun']\";\n    await page.waitForSelector(`xpath=${usernameXpath}`, { timeout: 4000 });\n\n    // Wait for the avatar using alternative selector: select the img inside user-menu by alt attribute\n    const avatarSelector = \"header .user-menu .user-avatar img[alt='User Avatar']\";\n    await page.waitForSelector(avatarSelector, { timeout: 4000 });\n\n    // Take screenshot of the user menu section for proof\n    const userMenuHandle = await page.$('header .user-menu');\n    if (userMenuHandle) {\n      await userMenuHandle.screenshot({ path: path.join(screenshotsDir, 'step_2_user_menu.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_2_user_menu.png'));\n    }\n\n    // Extract username text using the found element (xpath)\n    const usernameElement = await page.$(`xpath=${usernameXpath}`);\n    const username = usernameElement ? (await usernameElement.textContent()).trim() : null;\n\n    // Extract avatar src\n    const avatarElement = await page.$(avatarSelector);\n    const avatarSrc = avatarElement ? await avatarElement.getAttribute('src') : null;\n\n    // Validate the username and avatar\n    const usernameMatches = username === 'jun';\n    const avatarIsPresent = avatarSrc && avatarSrc.startsWith('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAi');\n\n    // Take a final screenshot of the full header for context\n    const headerHandle = await page.$('header.header');\n    if (headerHandle) {\n      await headerHandle.screenshot({ path: path.join(screenshotsDir, 'step_3_header.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_3_header.png'));\n    }\n\n    return {\n      success: usernameMatches && avatarIsPresent,\n      action: \"Verified that the user profile in the header displays the username 'jun' and the correct avatar.\",\n      extractedData: {\n        username,\n        avatarSrc,\n        usernameMatches,\n        avatarIsPresent\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 24466,
+      "timestamp": "2025-09-15T11:50:45.787Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 71240,
+  "timestamp": "2025-09-15T11:49:59.013Z",
+  "savedAt": "2025-09-15T11:51:10.253Z",
+  "version": "1.0"
+}

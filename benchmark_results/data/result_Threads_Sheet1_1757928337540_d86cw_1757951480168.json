@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337540_d86cw_1757951480168",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337540_d86cw",
+    "description": "G009",
+    "objective": "Change Theme Setting",
+    "expectedResult": "Open settings, go to Appearance tab, and change theme to Light",
+    "difficulty": "#settings-btn, .tab-btn[data-tab='appearance'], #theme-select",
+    "category": 2,
+    "tags": [
+      "15 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click settings button\n    await page.waitForSelector('#settings-btn');\n    await page.click('#settings-btn');\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_settings_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_settings_clicked.png'));\n\n    // Wait for and click Appearance tab\n    await page.waitForSelector('.tab-btn[data-tab=\"appearance\"]');\n    await page.click('.tab-btn[data-tab=\"appearance\"]');\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_appearance_tab.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_appearance_tab.png'));\n\n    // Change theme to Light\n    await page.waitForSelector('#theme-select');\n    await page.selectOption('#theme-select', 'light');\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_theme_changed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_theme_changed.png'));\n\n    // Verify theme change\n    const themeValue = await page.$eval('#theme-select', select => select.value);\n    const bodyClass = await page.$eval('body', body => body.className);\n\n    return {\n      success: true,\n      action: \"Opened settings, navigated to Appearance tab, and changed theme to Light\",\n      extractedData: {\n        selectedTheme: themeValue,\n        bodyClass: bodyClass\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 122018,
+      "timestamp": "2025-09-15T15:51:20.169Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click settings button using CSS selector\n    await page.waitForSelector('#settings-btn');\n    await page.click('#settings-btn');\n    await page.waitForTimeout(1000); // Wait for settings modal to open\n\n    // Take screenshot after opening settings\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_settings_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_settings_opened.png'));\n\n    // Click Appearance tab using attribute selector\n    await page.waitForSelector('.tab-btn[data-tab=\"appearance\"]');\n    await page.click('.tab-btn[data-tab=\"appearance\"]');\n    await page.waitForTimeout(1000); // Wait for appearance tab to load\n\n    // Take screenshot after opening appearance tab\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_appearance_tab.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_appearance_tab.png'));\n\n    // Select Light theme from dropdown\n    await page.waitForSelector('#theme-select');\n    await page.selectOption('#theme-select', 'light');\n    await page.waitForTimeout(1000); // Wait for theme change to apply\n\n    // Verify theme change by checking if body has light-theme class\n    const themeClass = await page.$eval('body', el => el.className);\n    const isLightTheme = themeClass.includes('light-theme');\n\n    // Take final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_theme_changed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_theme_changed.png'));\n\n    return {\n      success: true,\n      action: \"Opened settings, navigated to Appearance tab, and changed theme to Light\",\n      extractedData: {\n        themeApplied: isLightTheme,\n        themeClass: themeClass\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 86636,
+      "timestamp": "2025-09-15T15:53:22.187Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click settings button using CSS selector\n    await page.waitForSelector('#settings-btn');\n    await page.click('#settings-btn');\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_settings_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_settings_opened.png'));\n\n    // Click Appearance tab using CSS attribute selector\n    await page.waitForSelector('.tab-btn[data-tab=\"appearance\"]');\n    await page.click('.tab-btn[data-tab=\"appearance\"]');\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_appearance_tab.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_appearance_tab.png'));\n\n    // Change theme to Light using select dropdown\n    await page.waitForSelector('#theme-select');\n    await page.selectOption('#theme-select', 'light');\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_theme_changed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_theme_changed.png'));\n\n    // Verify theme was changed successfully\n    const currentTheme = await page.$eval('#theme-select', select => select.value);\n    const isLightTheme = currentTheme === 'light';\n\n    return {\n      success: isLightTheme,\n      action: \"Opened settings, navigated to Appearance tab, and changed theme to Light\",\n      extractedData: {\n        currentTheme: currentTheme,\n        themeChanged: isLightTheme\n      },\n      screenshots,\n      error: isLightTheme ? null : \"Failed to change theme to Light\"\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 67504,
+      "timestamp": "2025-09-15T15:54:48.823Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 276159,
+  "timestamp": "2025-09-15T15:51:20.168Z",
+  "savedAt": "2025-09-15T15:55:56.327Z",
+  "version": "1.0"
+}

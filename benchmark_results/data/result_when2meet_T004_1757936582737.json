@@ -1,0 +1,66 @@
+{
+  "id": "when2meet_T004_1757936582737",
+  "website": "when2meet",
+  "task": {
+    "id": "T004",
+    "description": "Search for Team Events",
+    "objective": "General",
+    "expectedResult": "Medium",
+    "difficulty": "Enter 'team' in the search input and click search button to find team-related events",
+    "category": "#eventSearchInput and .search-btn",
+    "tags": [
+      "1. Type 'team' in search input 2. Click search button"
+    ],
+    "notes": "Search results container becomes visible and contains 'Weekly Team Standup' event"
+  },
+  "websiteInfo": {
+    "name": "when2meet",
+    "htmlFiles": [
+      "404.html",
+      "create.html",
+      "dashboard.html",
+      "event.html",
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the search input to be visible\n    await page.waitForSelector('#eventSearchInput', { state: 'visible', timeout: 5000 });\n\n    // Focus and type 'team' into the search input\n    const searchInput = await page.$('#eventSearchInput');\n    await searchInput.click({ clickCount: 3 });\n    await searchInput.fill('team');\n\n    // Screenshot after entering search term\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_entered_team.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_entered_team.png'));\n\n    // Wait for the search button to be visible and clickable\n    // Try both class and button text strategies\n    let searchBtn = await page.$('button.search-btn');\n    if (!searchBtn) {\n      // Fallback: try by text\n      searchBtn = await page.$('//button[contains(text(), \"Search\")]');\n    }\n    if (!searchBtn) {\n      throw new Error('Search button not found');\n    }\n    await searchBtn.click();\n\n    // Wait for results to update (assume results container or event cards update)\n    // Try to wait for a result that contains \"team\" in the title or tag\n    // We'll wait for any event card/list item to appear\n    await page.waitForTimeout(800); // allow JS to filter results\n\n    // Try to find event cards or list items (by class or role)\n    let teamEvents = [];\n    // Try common selectors for event results\n    const eventCards = await page.$$('.event-card, .event-list-item, [data-testid=\"event-card\"]');\n    for (const card of eventCards) {\n      const text = (await card.textContent()) || '';\n      if (/team/i.test(text)) {\n        teamEvents.push(text.trim());\n      }\n    }\n    // Fallback: try generic list items\n    if (teamEvents.length === 0) {\n      const listItems = await page.$$('li');\n      for (const li of listItems) {\n        const text = (await li.textContent()) || '';\n        if (/team/i.test(text)) {\n          teamEvents.push(text.trim());\n        }\n      }\n    }\n\n    // Screenshot after search\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_search.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_search.png'));\n\n    // Prepare extracted data for verification\n    const extractedData = {\n      foundTeamEvents: teamEvents,\n      foundCount: teamEvents.length\n    };\n\n    return {\n      success: true,\n      action: \"Searched for 'team' events using the search input and button; extracted team-related event results.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20459,
+      "timestamp": "2025-09-15T11:43:02.737Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the search input using placeholder as selector (alternative to ID)\n    const searchInputSelector = 'input[placeholder*=\"title, creator\"], input#eventSearchInput';\n    await page.waitForSelector(searchInputSelector, { state: 'visible', timeout: 5000 });\n\n    // Focus and type 'team'\n    const searchInput = await page.$(searchInputSelector);\n    await searchInput.click({ clickCount: 3 });\n    await page.keyboard.type('team');\n\n    // Take screenshot after typing\n    const afterTypeShot = path.join(screenshotsDir, 'step_2_typed_team.png');\n    await page.screenshot({ path: afterTypeShot });\n    screenshots.push(afterTypeShot);\n\n    // Try to locate the search button using alternative strategies:\n    // - Class: .search-btn\n    // - Text content: XPath containing 'search' (case-insensitive)\n    let searchBtn = await page.$('.search-btn');\n    if (!searchBtn) {\n      // Try XPath with button containing 'search'\n      searchBtn = await page.$('//button[contains(translate(.,\"SEARCH\",\"search\"),\"search\")]');\n    }\n    if (!searchBtn) {\n      // Try by role and name\n      searchBtn = await page.getByRole('button', { name: /search/i }).elementHandle().catch(() => null);\n    }\n    if (!searchBtn) {\n      throw new Error('Search button not found with any selector');\n    }\n\n    // Click the search button\n    await searchBtn.click();\n\n    // Wait for possible search results update: look for event cards or result area (divs with .event-list, .event-card, or similar)\n    // Wait up to 5s for content change that indicates search has run\n    let resultsSelector = '.event-list, .event-card, .search-results, .events-list';\n    await page.waitForTimeout(1000); // Brief wait for search JS to trigger\n\n    // Take screenshot after search\n    const afterSearchShot = path.join(screenshotsDir, 'step_3_after_search.png');\n    await page.screenshot({ path: afterSearchShot });\n    screenshots.push(afterSearchShot);\n\n    // Try to extract event titles visible after search that contain the word 'team'\n    let events = [];\n    // Try two possible selectors\n    const eventCards = await page.$$('.event-card, .event-list .event-title, .search-results .event-title, .events-list .event-title');\n    for (const card of eventCards) {\n      const text = (await card.innerText()).trim();\n      if (/team/i.test(text)) {\n        events.push(text);\n      }\n    }\n\n    // If above didn't work, try generic text search for 'team' occurrences in visible elements\n    if (events.length === 0) {\n      const allText = await page.evaluate(() => document.body.innerText);\n      const teamMatches = allText.match(/.{0,30}team.{0,30}/gi) || [];\n      events = teamMatches.map(s => s.trim());\n    }\n\n    return {\n      success: true,\n      action: \"Searched for team-related events using search input and button with alternative selectors.\",\n      extractedData: {\n        foundEvents: events\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17676,
+      "timestamp": "2025-09-15T11:43:23.196Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Step 1: Initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Step 2: Focus and fill the search input (alternative: use [placeholder] selector)\n    const searchInputSelector = 'input[placeholder*=\"Search events\"]';\n    await page.waitForSelector(searchInputSelector, { state: 'visible', timeout: 5000 });\n    await page.click(searchInputSelector);\n    await page.fill(searchInputSelector, 'team');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_filled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_filled.png'));\n\n    // Step 3: Locate and click the search button (alternative: use visible .search-btn button)\n    // Try multiple strategies to ensure robustness\n    let searchBtn;\n    try {\n      // Try by role and label first (if accessible)\n      searchBtn = await page.waitForSelector('button.search-btn', { state: 'visible', timeout: 2000 });\n    } catch {\n      // Fallback to XPath by text or similar\n      searchBtn = await page.waitForSelector('//button[contains(@class,\"search-btn\")]', { state: 'visible', timeout: 3000 });\n    }\n    await searchBtn.click();\n\n    // Wait for results to update (simulate with a short wait and/or look for a result container)\n    // Try to detect a result container that updates, fallback to a delay if needed\n    let resultsSelector = '.event-list, .search-results, [data-testid=\"event-list\"]';\n    let foundResults = false;\n    try {\n      await page.waitForSelector(resultsSelector, { state: 'visible', timeout: 3000 });\n      foundResults = true;\n    } catch {\n      // If not found, wait a bit to allow any update\n      await page.waitForTimeout(1500);\n    }\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_results.png'));\n\n    // Step 4: Extract event result titles that contain \"team\"\n    // Try to find event cards or titles in the result area\n    let eventTitles = [];\n    // Try to find elements likely to be event titles containing the word \"team\"\n    const possibleTitleSelectors = [\n      '.event-title', \n      '.event-list .event-card h3', \n      '.search-results .event-title', \n      '//h3[contains(translate(text(),\"TEAM\",\"team\"),\"team\")]',\n      '//div[contains(@class,\"event-card\")]//h3'\n    ];\n    for (const sel of possibleTitleSelectors) {\n      let elements;\n      try {\n        if (sel.startsWith('//')) {\n          elements = await page.$x(sel);\n        } else {\n          elements = await page.$$(sel);\n        }\n        if (elements && elements.length > 0) {\n          for (let el of elements) {\n            const text = await (await el.getProperty('innerText')).jsonValue();\n            if (text && text.toLowerCase().includes('team')) {\n              eventTitles.push(text.trim());\n            }\n          }\n        }\n      } catch {}\n      if (eventTitles.length > 0) break;\n    }\n\n    return {\n      success: true,\n      action: \"Entered 'team' in the search input and clicked the search button to find team-related events. Event titles containing 'team' were extracted.\",\n      extractedData: {\n        foundResults,\n        eventTitles\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18104,
+      "timestamp": "2025-09-15T11:43:40.873Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 56240,
+  "timestamp": "2025-09-15T11:43:02.737Z",
+  "savedAt": "2025-09-15T11:43:58.977Z",
+  "version": "1.0"
+}

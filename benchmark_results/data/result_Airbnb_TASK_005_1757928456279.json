@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_005_1757928456279",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_005",
+    "description": "General",
+    "objective": "Listing Card Image Navigation",
+    "expectedResult": "첫 번째 숙소 카드의 이미지 갤러리에서 '다음' 버튼을 3번 클릭하고 현재 이미지 인덱스 확인하기",
+    "difficulty": "Medium",
+    "category": ".listing-gallery .gallery-nav.next, .listing-gallery-images",
+    "tags": [
+      "Gallery navigation",
+      "style inspection"
+    ],
+    "notes": "이미지 갤러리의 transform 값 또는 현재 이미지 인덱스"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first listing gallery to be visible\n    await page.waitForSelector('.listing-gallery');\n\n    // Click the 'next' button three times\n    for (let i = 0; i < 3; i++) {\n      await page.click('.listing-gallery .gallery-nav.next');\n      await page.waitForTimeout(500); // Wait for the transition to complete\n    }\n\n    // Extract the current image index\n    const currentIndex = await page.evaluate(() => {\n      const activeImage = document.querySelector('.listing-gallery-images .active');\n      return Array.from(document.querySelectorAll('.listing-gallery-images img')).indexOf(activeImage);\n    });\n\n    // Take final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_final.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_final.png'));\n\n    return {\n      success: true,\n      action: \"Clicked 'next' button 3 times and retrieved current image index\",\n      extractedData: { currentIndex },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13351,
+      "timestamp": "2025-09-15T09:27:36.279Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first listing card to be visible\n    await page.waitForSelector('.listing-gallery', { timeout: 5000 });\n\n    // Click the 'next' button 3 times\n    for (let i = 0; i < 3; i++) {\n      await page.click('.listing-gallery .gallery-nav.next');\n      await page.waitForTimeout(1000); // Wait for the transition to complete\n    }\n\n    // Extract the current image index\n    const currentIndex = await page.evaluate(() => {\n      const galleryImages = document.querySelectorAll('.listing-gallery-images img');\n      return Array.from(galleryImages).findIndex(img => img.classList.contains('active'));\n    });\n\n    // Take a screenshot after clicking 'next' buttons\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_clicks.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_clicks.png'));\n\n    return {\n      success: true,\n      action: \"Clicked 'next' button 3 times and retrieved current image index.\",\n      extractedData: { currentIndex },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12130,
+      "timestamp": "2025-09-15T09:27:49.630Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first listing's image gallery to load\n    await page.waitForSelector('.listing-gallery');\n\n    // Click the 'next' button 3 times\n    for (let i = 0; i < 3; i++) {\n      await page.waitForSelector('.gallery-nav.next');\n      await page.click('.gallery-nav.next');\n      // Optional: Take a screenshot after each click\n      await page.screenshot({ path: path.join(screenshotsDir, `step_2_gallery_click_${i + 1}.png`) });\n      screenshots.push(path.join(screenshotsDir, `step_2_gallery_click_${i + 1}.png`));\n    }\n\n    // Extract the current image index after clicking 'next' 3 times\n    const currentIndex = await page.evaluate(() => {\n      const galleryImages = document.querySelectorAll('.listing-gallery-images img');\n      return Array.from(galleryImages).findIndex(img => img.classList.contains('active'));\n    });\n\n    return {\n      success: true,\n      action: \"Clicked 'next' button 3 times in the gallery and retrieved current image index\",\n      extractedData: { currentIndex },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13351,
+      "timestamp": "2025-09-15T09:28:01.760Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 38832,
+  "timestamp": "2025-09-15T09:27:36.279Z",
+  "savedAt": "2025-09-15T09:28:15.111Z",
+  "version": "1.0"
+}

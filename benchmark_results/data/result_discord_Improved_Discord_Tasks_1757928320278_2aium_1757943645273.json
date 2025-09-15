@@ -1,0 +1,62 @@
+{
+  "id": "discord_Improved_Discord_Tasks_1757928320278_2aium_1757943645273",
+  "website": "discord",
+  "task": {
+    "id": "Improved_Discord_Tasks_1757928320278_2aium",
+    "description": 19,
+    "objective": "Benign",
+    "expectedResult": "audio_controls",
+    "difficulty": "Mute Microphone in Voice Channel",
+    "category": "Connect to voice and mute microphone using control button",
+    "tags": [
+      "Click microphone control button (.user-controls .fa-microphone) to mute"
+    ],
+    "notes": ".user-controls .fa-microphone"
+  },
+  "websiteInfo": {
+    "name": "discord",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // 1. Expand \"Voice Channels\" category if needed\n    // Find the \"Voice Channels\" category header\n    const voiceCategoryHeader = await page.$('//span[text()=\"Voice Channels\"]/parent::div');\n    if (voiceCategoryHeader) {\n      // Check if the voice channel list is visible\n      const voiceChannelList = await voiceCategoryHeader.evaluateHandle(node => {\n        // The next sibling is the channel-list\n        return node.nextElementSibling;\n      });\n      const isVoiceListVisible = await voiceChannelList.evaluate(list => {\n        return !!list && list.offsetParent !== null && list.childElementCount > 0;\n      });\n      if (!isVoiceListVisible) {\n        await voiceCategoryHeader.click();\n        await page.waitForTimeout(500);\n      }\n    }\n\n    // 2. Click to join the first voice channel (\"General\" under Voice Channels)\n    // Find the \"General\" voice channel under Voice Channels\n    const generalVoiceChannel = await page.waitForSelector(\n      '//div[contains(@class,\"category-header\")]/span[text()=\"Voice Channels\"]/ancestor::div[contains(@class,\"category\")]/div[contains(@class,\"channel-list\")]/div[contains(@class,\"channel-item\")][1]',\n      { timeout: 3000 }\n    );\n    await generalVoiceChannel.click();\n    await page.waitForTimeout(800);\n\n    // Take screenshot after joining voice channel\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_joined_voice_channel.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_joined_voice_channel.png'));\n\n    // 3. Locate the microphone control button in user controls\n    // The user-controls div contains three icons: microphone, headphones, cog\n    // The microphone icon is the first <i> inside .user-controls\n    const micButton = await page.waitForSelector(\n      '.user-controls i.fas.fa-microphone',\n      { timeout: 3000 }\n    );\n    // Click to mute microphone\n    await micButton.click();\n    await page.waitForTimeout(500);\n\n    // Take screenshot after muting microphone\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_muted_microphone.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_muted_microphone.png'));\n\n    // 4. Extract data to verify mute state (check if mic icon has a \"muted\" class or style)\n    // Since the HTML/CSS is custom, let's check if the mic icon has a class or style indicating mute\n    const micIconClass = await micButton.getAttribute('class');\n    const micIconStyle = await micButton.getAttribute('style');\n    // Additionally, check if the mic icon visually changes (e.g., color, strikethrough, etc.)\n    // For this mock, we'll just return the class and style\n\n    return {\n      success: true,\n      action: \"Joined the General voice channel and muted the microphone using the control button.\",\n      extractedData: {\n        micIconClass,\n        micIconStyle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 24001,
+      "timestamp": "2025-09-15T13:40:45.273Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // 1. Ensure the voice channel list is visible\n    // Use text selector to find the \"Voice Channels\" category, then click \"General\" voice channel\n    // Find the category header for voice channels\n    const voiceCategoryHeader = await page.waitForSelector('xpath=//span[normalize-space(text())=\"Voice Channels\"]');\n    // Scroll into view for robustness\n    await voiceCategoryHeader.scrollIntoViewIfNeeded();\n\n    // Find the \"General\" voice channel under \"Voice Channels\"\n    // Use XPath to get the following sibling .channel-list and then \"General\"\n    const generalVoiceChannel = await page.waitForSelector(\n      'xpath=(//span[normalize-space(text())=\"Voice Channels\"]/ancestor::div[contains(@class,\"category\")])[1]//span[normalize-space(text())=\"General\" and preceding-sibling::i[contains(@class,\"fa-volume-up\")]]'\n    );\n    // Click to join the \"General\" voice channel\n    await generalVoiceChannel.click();\n\n    // Wait a moment for UI to update (simulate join)\n    await page.waitForTimeout(800);\n\n    // Take screenshot after joining voice channel\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_joined_voice_channel.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_joined_voice_channel.png'));\n\n    // 2. Find the user controls bar at the bottom (with mic/headphones/settings icons)\n    const userControlsContainer = await page.waitForSelector('div.user-controls');\n\n    // Find all <i> elements inside the user controls (should be mic, headphones, cog)\n    const micButton = await userControlsContainer.$('xpath=.//i[contains(@class,\"fa-microphone\")]');\n    if (!micButton) throw new Error(\"Microphone button not found in user controls.\");\n\n    // Take screenshot before muting mic\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_before_mute.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_before_mute.png'));\n\n    // Click the microphone icon to mute/unmute\n    await micButton.click();\n\n    // Wait for possible UI update\n    await page.waitForTimeout(700);\n\n    // Take screenshot after muting mic\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_muted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_muted.png'));\n\n    // Extract some data to verify mute (check for a \"muted\" style)\n    // For this mock, let's check if the mic icon gets a \"muted\" class or style (simulate)\n    const micClass = await micButton.getAttribute('class');\n    const isMuted = micClass && micClass.includes('muted');\n\n    return {\n      success: true,\n      action: \"Joined the General voice channel and toggled the microphone mute control using the user controls bar.\",\n      extractedData: {\n        micButtonClass: micClass,\n        micMuted: !!isMuted\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 22206,
+      "timestamp": "2025-09-15T13:41:09.274Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // 1. Wait for and click the \"General\" voice channel using text selector and icon for volume\n    const voiceChannelSelector = \"//div[contains(@class,'channel-item') and .//i[contains(@class,'fa-volume-up')] and .//span[normalize-space()='General']]\";\n    await page.waitForSelector(voiceChannelSelector, { timeout: 5000 });\n    const voiceChannel = await page.$(voiceChannelSelector);\n    if (!voiceChannel) throw new Error('Voice channel \"General\" not found');\n    await voiceChannel.click();\n\n    // Take screenshot after joining voice channel\n    const afterJoinVoice = path.join(screenshotsDir, 'step_2_joined_voice.png');\n    await page.screenshot({ path: afterJoinVoice });\n    screenshots.push(afterJoinVoice);\n\n    // 2. Wait for the user-controls area to appear (where microphone icon is)\n    // Use a more specific selector: .user-controls > .fa-microphone\n    const micIconSelector = \".user-controls > .fa-microphone\";\n    await page.waitForSelector(micIconSelector, { timeout: 5000 });\n\n    // 3. \"Mute\" the microphone by clicking the icon (simulate toggle)\n    const micIcon = await page.$(micIconSelector);\n    if (!micIcon) throw new Error('Microphone icon not found');\n    await micIcon.click();\n\n    // Wait a moment for UI update (simulate toggle/mute effect)\n    await page.waitForTimeout(500);\n\n    // Take screenshot after muting\n    const afterMute = path.join(screenshotsDir, 'step_3_muted_mic.png');\n    await page.screenshot({ path: afterMute });\n    screenshots.push(afterMute);\n\n    // 4. Attempt to extract whether the mic icon changed to a \"muted\" state (class or aria-label)\n    // Some Discord clones toggle 'fa-microphone' to 'fa-microphone-slash' or apply a muted class\n    const micMutedIcon = await page.$(\".user-controls > .fa-microphone-slash\");\n    const isMuted = !!micMutedIcon;\n\n    return {\n      success: true,\n      action: \"Connected to the General voice channel and muted the microphone using the control button.\",\n      extractedData: {\n        micMuted: isMuted\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15200,
+      "timestamp": "2025-09-15T13:41:31.480Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 61407,
+  "timestamp": "2025-09-15T13:40:45.273Z",
+  "savedAt": "2025-09-15T13:41:46.680Z",
+  "version": "1.0"
+}

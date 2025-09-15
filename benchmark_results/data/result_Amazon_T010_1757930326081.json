@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T010_1757930326081",
+  "website": "Amazon",
+  "task": {
+    "id": "T010",
+    "description": "Add Product to Wishlist",
+    "objective": "General",
+    "expectedResult": "Medium",
+    "difficulty": "Open a product detail modal and click the 'Add to Wish List' button.",
+    "category": ".product-card:first-child, .add-to-wishlist",
+    "tags": [
+      "1. Click product card to open modal 2. Click 'Add to Wish List' button"
+    ],
+    "notes": "Success notification appears, wishlist localStorage is updated, button state may change"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first product card to be visible and click it to open the product detail modal\n    await page.waitForSelector('.product-card:first-child');\n    await page.click('.product-card:first-child');\n\n    // Wait for the modal to load\n    await page.waitForSelector('.modal-content'); // Assuming .modal-content is the selector for the modal\n\n    // Take a screenshot of the product detail modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_product_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_product_modal.png'));\n\n    // Click the 'Add to Wish List' button\n    await page.waitForSelector('.add-to-wishlist');\n    await page.click('.add-to-wishlist');\n\n    // Take a screenshot after adding to wishlist\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_added_to_wishlist.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_added_to_wishlist.png'));\n\n    // Extract confirmation message or any relevant data\n    const confirmationMessage = await page.evaluate(() => {\n      return document.querySelector('.wishlist-confirmation').innerText; // Assuming there's a confirmation message\n    });\n\n    return {\n      success: true,\n      action: \"Product added to wishlist successfully\",\n      extractedData: { confirmationMessage },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 45643,
+      "timestamp": "2025-09-15T09:58:46.081Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first product card to be visible\n    await page.waitForSelector('.product-card:first-child');\n    \n    // Click on the first product card to open the product detail modal\n    await page.click('.product-card:first-child');\n\n    // Wait for the modal to appear\n    await page.waitForSelector('.modal-product-details', { visible: true });\n\n    // Take a screenshot of the product modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_product_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_product_modal.png'));\n\n    // Click the 'Add to Wish List' button\n    await page.waitForSelector('.add-to-wishlist');\n    await page.click('.add-to-wishlist');\n\n    // Verify if the item has been added to the wishlist\n    const successMessage = await page.waitForSelector('.wishlist-success-message', { timeout: 5000 });\n    const message = await successMessage.evaluate(el => el.textContent);\n\n    // Take a final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_wishlist_confirmation.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_wishlist_confirmation.png'));\n\n    return {\n      success: true,\n      action: \"Successfully added product to wishlist\",\n      extractedData: { message },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 41787,
+      "timestamp": "2025-09-15T09:59:31.724Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first product card to be visible\n    await page.waitForSelector('.product-card:first-child');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_product_card.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_product_card.png'));\n\n    // Click on the first product card to open the product detail modal\n    await page.click('.product-card:first-child');\n    await page.waitForLoadState('networkidle');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_product_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_product_modal.png'));\n\n    // Wait for the 'Add to Wish List' button to be visible and click it\n    await page.waitForSelector('.add-to-wishlist');\n    await page.click('.add-to-wishlist');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_added_to_wishlist.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_added_to_wishlist.png'));\n\n    // Return success with extracted data\n    return {\n      success: true,\n      action: \"Product added to wishlist successfully\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 42481,
+      "timestamp": "2025-09-15T10:00:13.511Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 129911,
+  "timestamp": "2025-09-15T09:58:46.081Z",
+  "savedAt": "2025-09-15T10:00:55.992Z",
+  "version": "1.0"
+}

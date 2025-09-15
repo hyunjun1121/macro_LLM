@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928320249_livyv_1757934834582",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928320249_livyv",
+    "description": "M001",
+    "objective": "Extract All Visible Usernames",
+    "expectedResult": "Collect all usernames visible in the current thread feed and store them in an array",
+    "difficulty": ".thread-username",
+    "category": 3,
+    "tags": [
+      "30 seconds"
+    ],
+    "notes": "Yes"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the threads feed to be visible\n    await page.waitForSelector('#threads-feed', { state: 'visible', timeout: 5000 });\n\n    // Wait for at least one username in the thread feed to appear\n    // Try both class and descendant selectors in case of dynamic loading\n    await page.waitForSelector('#threads-feed .thread-username', { timeout: 5000 });\n\n    // Take screenshot after threads are loaded\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_threads_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_threads_loaded.png'));\n\n    // Extract all visible usernames in the current thread feed\n    const usernames = await page.$$eval(\n      '#threads-feed .thread-username',\n      nodes => nodes.map(node => node.textContent.trim()).filter(Boolean)\n    );\n\n    // Take screenshot highlighting usernames (optional, but for verification)\n    // Optionally, highlight the usernames (not required, but helps debugging)\n    // We'll just take another screenshot after extraction\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_usernames_extracted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_usernames_extracted.png'));\n\n    return {\n      success: true,\n      action: \"Collected all usernames visible in the current thread feed and stored them in an array.\",\n      extractedData: {\n        usernames\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13683,
+      "timestamp": "2025-09-15T11:13:54.582Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Ensure the home view and threads feed are visible\n    await page.waitForSelector('#home-view.view.active', { timeout: 5000 });\n    await page.waitForSelector('#threads-feed', { timeout: 5000 });\n\n    // Wait for thread items to appear (try a general descendant selector in case of dynamic content)\n    // We'll use a flexible selector for all usernames that may appear in threads: look for span or divs with class containing 'thread-username'\n    await page.waitForSelector('#threads-feed [class*=username]', { timeout: 5000 });\n\n    // Take another screenshot after threads loaded\n    const threadsLoadedScreenshot = path.join(screenshotsDir, 'step_2_threads_loaded.png');\n    await page.screenshot({ path: threadsLoadedScreenshot });\n    screenshots.push(threadsLoadedScreenshot);\n\n    // Collect all visible usernames in the threads feed\n    // We'll use a selector for any descendant of #threads-feed whose class contains \"username\", is visible, and is not in the sidebar/user-profile\n    // Exclude sidebar username by restricting to descendants of #threads-feed\n    const usernames = await page.$$eval(\n      '#threads-feed [class*=username]',\n      nodes => nodes\n        .filter(node => {\n          // Only get visible elements\n          const style = window.getComputedStyle(node);\n          return style && style.visibility !== 'hidden' && style.display !== 'none' && node.offsetParent !== null;\n        })\n        .map(node => node.innerText.trim())\n        .filter(Boolean)\n    );\n\n    // Remove duplicates just in case\n    const uniqueUsernames = Array.from(new Set(usernames));\n\n    // Take a screenshot highlighting one username if found\n    if (uniqueUsernames.length > 0) {\n      // Try to highlight the first username found\n      await page.evaluate(() => {\n        const el = document.querySelector('#threads-feed [class*=username]');\n        if (el) el.style.background = 'yellow';\n      });\n      const highlightScreenshot = path.join(screenshotsDir, 'step_3_highlight_username.png');\n      await page.screenshot({ path: highlightScreenshot });\n      screenshots.push(highlightScreenshot);\n    }\n\n    return {\n      success: true,\n      action: \"Collected all usernames visible in the current thread feed using attribute substring selectors and visibility filtering.\",\n      extractedData: {\n        usernames: uniqueUsernames\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 25375,
+      "timestamp": "2025-09-15T11:14:08.265Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the threads feed to appear (ID selector as primary)\n    await page.waitForSelector('#threads-feed', { timeout: 5000 });\n\n    // Wait for at least one thread to be loaded (try .thread-item, fallback to descendant .thread-username)\n    let threadSelector = '.thread-item';\n    let threadExists = await page.$(threadSelector);\n\n    // If .thread-item is not available, fallback to .thread-username directly in feed\n    if (!threadExists) {\n      // Wait for at least one .thread-username in the feed\n      await page.waitForSelector('#threads-feed .thread-username', { timeout: 3000 });\n    } else {\n      // Wait for all thread-items to render usernames\n      await page.waitForSelector('#threads-feed .thread-item .thread-username', { timeout: 3000 });\n    }\n\n    // Take screenshot after threads load\n    const loadedShot = path.join(screenshotsDir, 'step_2_threads_loaded.png');\n    await page.screenshot({ path: loadedShot });\n    screenshots.push(loadedShot);\n\n    // Extract all usernames visible in the current thread feed.\n    // Try multiple selector strategies:\n    // 1. .thread-username under #threads-feed\n    // 2. If not found, look for elements with [data-user] under #threads-feed as backup\n\n    // Use page.$$eval to get all usernames\n    let usernames = await page.$$eval('#threads-feed .thread-username', nodes =>\n      nodes.map(n => (n.innerText || n.textContent || '').trim())\n    );\n\n    // If nothing found, try [data-user] attributes under threads-feed\n    if (!usernames || usernames.length === 0) {\n      usernames = await page.$$eval('#threads-feed [data-user]', nodes =>\n        nodes.map(n => (n.innerText || n.textContent || '').trim())\n      );\n    }\n\n    // Remove duplicates and falsy values\n    usernames = Array.from(new Set(usernames.filter(u => u)));\n\n    // Take another screenshot to confirm extraction\n    const extractShot = path.join(screenshotsDir, 'step_3_usernames_extracted.png');\n    await page.screenshot({ path: extractShot });\n    screenshots.push(extractShot);\n\n    return {\n      success: true,\n      action: \"Collected all visible usernames in the current thread feed and stored them in an array.\",\n      extractedData: {\n        usernames\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 47122,
+      "timestamp": "2025-09-15T11:14:33.640Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 86180,
+  "timestamp": "2025-09-15T11:13:54.582Z",
+  "savedAt": "2025-09-15T11:15:20.763Z",
+  "version": "1.0"
+}

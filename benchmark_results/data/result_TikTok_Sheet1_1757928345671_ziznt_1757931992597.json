@@ -1,0 +1,62 @@
+{
+  "id": "TikTok_Sheet1_1757928345671_ziznt_1757931992597",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928345671_ziznt",
+    "description": 5,
+    "objective": "General",
+    "expectedResult": "사이드바에서 Profile 메뉴를 클릭하여 프로필 페이지로 이동",
+    "difficulty": "data-page='profile'인 .sidebar-item을 클릭",
+    "category": "Easy",
+    "tags": [
+      ".sidebar-item[data-page='profile']"
+    ],
+    "notes": "data-page='profile'인 .sidebar-item을 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on the Profile menu in the sidebar\n    await page.waitForSelector('.sidebar-item[data-page=\"profile\"]');\n    await page.click('.sidebar-item[data-page=\"profile\"]');\n    await page.waitForLoadState('networkidle');\n\n    // Take screenshot after clicking Profile\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_profile_page.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_profile_page.png'));\n\n    // Verify that we are on the profile page\n    const isProfilePage = await page.evaluate(() => {\n      return document.querySelector('.sidebar-item[data-page=\"profile\"].active') !== null;\n    });\n\n    return {\n      success: isProfilePage,\n      action: \"Navigated to Profile page\",\n      extractedData: { isProfilePage },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12182,
+      "timestamp": "2025-09-15T10:26:32.597Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar to be visible\n    await page.waitForSelector('.sidebar-item[data-page=\"profile\"]');\n\n    // Click on the Profile menu item\n    await page.click('.sidebar-item[data-page=\"profile\"]');\n\n    // Wait for the profile page to load\n    await page.waitForLoadState('networkidle');\n\n    // Take a screenshot of the profile page\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_profile_page.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_profile_page.png'));\n\n    return {\n      success: true,\n      action: \"Navigated to the Profile page successfully\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11532,
+      "timestamp": "2025-09-15T10:26:44.780Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar item with data-page='profile' to be visible\n    await page.waitForSelector('.sidebar-item[data-page=\"profile\"]');\n\n    // Click on the Profile menu item\n    await page.click('.sidebar-item[data-page=\"profile\"]');\n\n    // Wait for the profile page to load (this can be adapted based on actual page structure)\n    await page.waitForSelector('.page#profilePage');\n\n    // Take a screenshot after navigating to the profile page\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_profile_page.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_profile_page.png'));\n\n    // Extract some meaningful data to verify task completion, e.g., profile username\n    const username = await page.evaluate(() => {\n      return document.querySelector('.user-details h3').innerText;\n    });\n\n    return {\n      success: true,\n      action: \"Navigated to Profile page successfully\",\n      extractedData: { username },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14040,
+      "timestamp": "2025-09-15T10:26:56.312Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 37755,
+  "timestamp": "2025-09-15T10:26:32.597Z",
+  "savedAt": "2025-09-15T10:27:10.352Z",
+  "version": "1.0"
+}

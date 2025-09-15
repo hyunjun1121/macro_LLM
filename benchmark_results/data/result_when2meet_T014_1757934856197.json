@@ -1,0 +1,66 @@
+{
+  "id": "when2meet_T014_1757934856197",
+  "website": "when2meet",
+  "task": {
+    "id": "T014",
+    "description": "Verify Footer Links Present",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Check that all footer links are present and properly structured",
+    "category": ".footer-link",
+    "tags": [
+      "Inspect footer section"
+    ],
+    "notes": "Footer contains links for Features Pricing API Help Center Contact Status Privacy Terms"
+  },
+  "websiteInfo": {
+    "name": "when2meet",
+    "htmlFiles": [
+      "404.html",
+      "create.html",
+      "dashboard.html",
+      "event.html",
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Verify footer links presence\n    const footerLinks = await page.$$('.footer-link');\n    const expectedLinks = [\n      { text: 'Home', href: 'index.html' },\n      { text: 'My Events', href: 'dashboard.html' },\n      { text: '+ New Event', href: 'create.html' },\n      { text: 'Profile', href: '#' },\n      { text: 'Settings', href: '#' },\n      { text: 'Sign Out', href: '#' },\n      { text: 'Create New Event', href: 'create.html' },\n      { text: 'View All →', href: 'dashboard.html' }\n    ];\n\n    const extractedData = {};\n\n    for (const expectedLink of expectedLinks) {\n      const linkSelector = `a:has-text(\"${expectedLink.text}\")`;\n      await page.waitForSelector(linkSelector);\n      const linkElement = await page.$(linkSelector);\n      const href = await linkElement.evaluate(el => el.getAttribute('href'));\n\n      extractedData[expectedLink.text] = {\n        present: !!linkElement,\n        href: href\n      };\n    }\n\n    // Take screenshot after verification\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_footer_links_verified.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_footer_links_verified.png'));\n\n    return {\n      success: true,\n      action: \"Verified all footer links are present and properly structured\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14432,
+      "timestamp": "2025-09-15T11:14:16.197Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Verify footer links\n    const footerLinks = [\n      { text: 'Home', href: 'index.html' },\n      { text: 'My Events', href: 'dashboard.html' },\n      { text: '+ New Event', href: 'create.html' },\n      { text: 'Profile', href: '#' },\n      { text: 'Settings', href: '#' },\n      { text: 'Sign Out', href: '#' },\n      { text: 'Create New Event', href: 'create.html' },\n      { text: 'View All →', href: 'dashboard.html' }\n    ];\n\n    const extractedData = {};\n    for (const link of footerLinks) {\n      const selector = `text=${link.text}`;\n      await page.waitForSelector(selector);\n      const isVisible = await page.isVisible(selector);\n      const currentHref = await page.evaluate(el => el.href, await page.$(selector));\n      \n      extractedData[link.text] = {\n        isVisible,\n        href: currentHref\n      };\n    }\n\n    // Take screenshot after verifying footer links\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_footer_links_verified.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_footer_links_verified.png'));\n\n    return {\n      success: true,\n      action: \"Verified footer links presence and structure\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15461,
+      "timestamp": "2025-09-15T11:14:30.629Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Check for footer links using different selectors\n    const footerLinks = [\n      { text: 'Home', href: 'index.html' },\n      { text: 'My Events', href: 'dashboard.html' },\n      { text: '+ New Event', href: 'create.html' },\n      { text: 'Profile', href: '#' },\n      { text: 'Settings', href: '#' },\n      { text: 'Sign Out', href: '#' }\n    ];\n\n    const extractedData = {};\n\n    for (const link of footerLinks) {\n      const selector = `a:has-text(\"${link.text}\")`;\n      await page.waitForSelector(selector);\n      const isVisible = await page.isVisible(selector);\n      const actualHref = await page.getAttribute(selector, 'href');\n\n      extractedData[link.text] = {\n        exists: isVisible,\n        correctHref: actualHref === link.href\n      };\n    }\n\n    // Take screenshot after verification\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_footer_links_verified.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_footer_links_verified.png'));\n\n    return {\n      success: true,\n      action: \"Verified footer links presence and structure\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14603,
+      "timestamp": "2025-09-15T11:14:46.090Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 44496,
+  "timestamp": "2025-09-15T11:14:16.197Z",
+  "savedAt": "2025-09-15T11:15:00.693Z",
+  "version": "1.0"
+}

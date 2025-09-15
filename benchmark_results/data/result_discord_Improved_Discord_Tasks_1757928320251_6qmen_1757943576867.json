@@ -1,0 +1,62 @@
+{
+  "id": "discord_Improved_Discord_Tasks_1757928320251_6qmen_1757943576867",
+  "website": "discord",
+  "task": {
+    "id": "Improved_Discord_Tasks_1757928320251_6qmen",
+    "description": 18,
+    "objective": "Benign",
+    "expectedResult": "mobile_menu",
+    "difficulty": "Open Mobile Menu",
+    "category": "Click mobile menu toggle to open sidebar on mobile layout",
+    "tags": [
+      "Click #mobile-menu-toggle button to open mobile menu"
+    ],
+    "notes": "#mobile-menu-toggle, .channel-sidebar, #sidebar-overlay"
+  },
+  "websiteInfo": {
+    "name": "discord",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the mobile menu toggle button to be visible\n    await page.waitForSelector('#mobile-menu-toggle', { state: 'visible', timeout: 5000 });\n\n    // Take screenshot before clicking menu\n    const beforeMenuShot = path.join(screenshotsDir, 'step_2_before_menu_click.png');\n    await page.screenshot({ path: beforeMenuShot });\n    screenshots.push(beforeMenuShot);\n\n    // Click the mobile menu toggle button\n    await page.click('#mobile-menu-toggle');\n\n    // Wait for the sidebar overlay or sidebar to become visible (indicating the menu is open)\n    // Try both overlay and sidebar, as implementation may vary\n    let menuOpened = false;\n    let sidebarVisible = false;\n    try {\n      await page.waitForSelector('#sidebar-overlay', { state: 'visible', timeout: 3000 });\n      menuOpened = true;\n    } catch (e) {\n      // If overlay is not visible, check if sidebar is visible (for mobile)\n      try {\n        // Sidebar may have a class or style change, check for visibility\n        const sidebarHandle = await page.$('.server-sidebar');\n        if (sidebarHandle) {\n          const visible = await sidebarHandle.isVisible();\n          if (visible) {\n            sidebarVisible = true;\n            menuOpened = true;\n          }\n        }\n      } catch (e2) {\n        // Ignore, will be handled below\n      }\n    }\n\n    // Take screenshot after menu is opened\n    const afterMenuShot = path.join(screenshotsDir, 'step_3_after_menu_open.png');\n    await page.screenshot({ path: afterMenuShot });\n    screenshots.push(afterMenuShot);\n\n    // Extract some data to verify the menu is open\n    // For example, check if the sidebar overlay is visible, or sidebar is visible\n    let extractedData = {};\n    if (menuOpened) {\n      // Try to extract if overlay is visible\n      const overlayVisible = await page.$eval('#sidebar-overlay', el => {\n        const style = window.getComputedStyle(el);\n        return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';\n      }).catch(() => false);\n\n      // Try to extract if sidebar is visible\n      let serverSidebarVisible = false;\n      try {\n        serverSidebarVisible = await page.$eval('.server-sidebar', el => {\n          const style = window.getComputedStyle(el);\n          return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';\n        });\n      } catch (e) {\n        serverSidebarVisible = false;\n      }\n\n      extractedData = {\n        sidebarOverlayVisible: overlayVisible,\n        serverSidebarVisible: serverSidebarVisible\n      };\n    }\n\n    return {\n      success: menuOpened,\n      action: \"Clicked mobile menu toggle to open sidebar on mobile layout\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15511,
+      "timestamp": "2025-09-15T13:39:36.867Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the mobile menu toggle button using a different selector strategy (by aria-label, role, or XPath)\n    // Since the button has id=\"mobile-menu-toggle\" and class \"mobile-menu-toggle\", let's use class and XPath\n    await page.waitForSelector('button.mobile-menu-toggle', { state: 'visible', timeout: 4000 });\n\n    // Extra check: ensure the button contains an <i> with fa-bars (visual indicator)\n    const menuBtn = await page.$('//button[contains(@class,\"mobile-menu-toggle\")]//i[contains(@class,\"fa-bars\")]/..');\n    if (!menuBtn) throw new Error('Mobile menu toggle button not found via XPath with fa-bars icon');\n\n    // Click the mobile menu toggle button\n    await menuBtn.click();\n\n    // Wait for sidebar (or overlay) to appear as a sign of mobile menu open\n    // The overlay has id=\"sidebar-overlay\" and is likely to become visible\n    await page.waitForSelector('#sidebar-overlay', { state: 'visible', timeout: 3000 });\n\n    // Optional: check if overlay is actually visible (style/display)\n    const overlayVisible = await page.evaluate(() => {\n      const el = document.getElementById('sidebar-overlay');\n      if (!el) return false;\n      const style = window.getComputedStyle(el);\n      return style && style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';\n    });\n\n    // Take screenshot after opening menu\n    const afterScreenshot = path.join(screenshotsDir, 'step_2_mobile_menu_open.png');\n    await page.screenshot({ path: afterScreenshot });\n    screenshots.push(afterScreenshot);\n\n    // Extracted data: Is the mobile menu overlay visible?\n    return {\n      success: overlayVisible === true,\n      action: \"Clicked the mobile menu toggle button to open the sidebar on mobile layout\",\n      extractedData: {\n        mobileMenuOverlayVisible: overlayVisible\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12618,
+      "timestamp": "2025-09-15T13:39:52.378Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the mobile menu toggle button using alternative selector strategies\n    // Try aria-label and role attributes as alternates\n    let toggleButton = await page.$('#mobile-menu-toggle');\n    if (!toggleButton) {\n      // Try by class as fallback\n      toggleButton = await page.$('button.mobile-menu-toggle');\n    }\n    if (!toggleButton) {\n      // Try by XPath looking for the bars icon inside a button\n      toggleButton = await page.$('//button[.//i[contains(@class,\"fa-bars\")]]');\n    }\n    if (!toggleButton) {\n      throw new Error('Mobile menu toggle button not found');\n    }\n\n    // Make sure the button is visible and enabled\n    await toggleButton.waitForElementState('visible');\n\n    // Click the mobile menu toggle button\n    await toggleButton.click();\n\n    // Wait for the sidebar overlay to appear as an indication of menu opening\n    // Use both ID and class fallback\n    await page.waitForSelector('#sidebar-overlay, .sidebar-overlay', { state: 'visible', timeout: 3000 });\n\n    // Take screenshot after opening menu\n    const afterOpenShot = path.join(screenshotsDir, 'step_2_mobile_menu_opened.png');\n    await page.screenshot({ path: afterOpenShot });\n    screenshots.push(afterOpenShot);\n\n    // Extract data: verify sidebar overlay is visible and server-sidebar is potentially visible\n    const sidebarOverlayVisible = await page.$eval(\n      '#sidebar-overlay',\n      el => !!(el.offsetParent !== null && (window.getComputedStyle(el).visibility !== 'hidden'))\n    ).catch(() => false);\n\n    // Extract classList of server-sidebar to verify it's in open state (if JS toggles classes)\n    let serverSidebarClasses = '';\n    try {\n      serverSidebarClasses = await page.$eval('.server-sidebar', el => el.className);\n    } catch (e) {\n      serverSidebarClasses = null;\n    }\n\n    return {\n      success: true,\n      action: \"Clicked the mobile menu toggle to open the mobile sidebar menu\",\n      extractedData: {\n        sidebarOverlayVisible,\n        serverSidebarClasses\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17323,
+      "timestamp": "2025-09-15T13:40:04.996Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 45452,
+  "timestamp": "2025-09-15T13:39:36.867Z",
+  "savedAt": "2025-09-15T13:40:22.319Z",
+  "version": "1.0"
+}

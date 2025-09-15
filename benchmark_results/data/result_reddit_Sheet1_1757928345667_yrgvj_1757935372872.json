@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928345667_yrgvj_1757935372872",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928345667_yrgvj",
+    "description": 6,
+    "objective": "Regular",
+    "expectedResult": "Show comments on first post",
+    "difficulty": "Easy",
+    "category": "Click the comments button on first post to toggle comments display",
+    "tags": [
+      ".post:first-child .comment-toggle .comments-section"
+    ],
+    "notes": "showComments() toggleComments()"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first post's comments button to be visible and click it\n    await page.waitForSelector('button:has-text(\"View Comments\")', { timeout: 5000 });\n    await page.click('button:has-text(\"View Comments\")');\n\n    // Wait for comments to load\n    await page.waitForSelector('.comment', { timeout: 5000 });\n\n    // Take a screenshot after comments are displayed\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comments_displayed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_comments_displayed.png'));\n\n    // Extract comments data (assuming comments have a class of 'comment')\n    const comments = await page.$$eval('.comment', elements => elements.map(el => el.innerText));\n\n    return {\n      success: true,\n      action: \"Displayed comments on the first post\",\n      extractedData: { comments },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11910,
+      "timestamp": "2025-09-15T11:22:52.873Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on the first post to reveal comments\n    await page.waitForSelector('.main-container .community-item'); // Wait for the first post to load\n    const firstPostSelector = '.main-container .community-item:first-child'; // Select the first post\n    await page.click(firstPostSelector); // Click to open the post\n\n    // Wait for comments button to appear\n    await page.waitForSelector('.comments-button'); // Adjust selector as needed\n\n    // Click on comments button to toggle comments display\n    await page.click('.comments-button'); // Click the comments button\n\n    // Take screenshot after clicking the comments button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comments_toggled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_comments_toggled.png'));\n\n    // Extract meaningful data to verify task completion\n    const commentsVisible = await page.evaluate(() => {\n      const commentsSection = document.querySelector('.comments-section'); // Adjust selector as needed\n      return commentsSection ? commentsSection.innerText : null;\n    });\n\n    return {\n      success: true,\n      action: \"Displayed comments on the first post\",\n      extractedData: { commentsVisible },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13236,
+      "timestamp": "2025-09-15T11:23:04.783Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first post's comments button to be visible and click it\n    await page.waitForSelector('button:has-text(\"View comments\")');\n    await page.click('button:has-text(\"View comments\")');\n\n    // Take a screenshot after clicking to view comments\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comments_visible.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_comments_visible.png'));\n\n    // Extract the comments section data to verify task completion\n    const comments = await page.evaluate(() => {\n      return Array.from(document.querySelectorAll('.comment')).map(comment => comment.innerText);\n    });\n\n    return {\n      success: true,\n      action: \"Displayed comments on the first post\",\n      extractedData: { comments },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13316,
+      "timestamp": "2025-09-15T11:23:18.019Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 38463,
+  "timestamp": "2025-09-15T11:22:52.873Z",
+  "savedAt": "2025-09-15T11:23:31.335Z",
+  "version": "1.0"
+}

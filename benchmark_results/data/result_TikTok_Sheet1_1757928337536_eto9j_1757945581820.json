@@ -1,0 +1,63 @@
+{
+  "id": "TikTok_Sheet1_1757928337536_eto9j_1757945581820",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928337536_eto9j",
+    "description": 8,
+    "objective": "General",
+    "expectedResult": "첫 번째 비디오의 댓글 버튼을 클릭하여 댓글 모달 열기",
+    "difficulty": "data-video-id='1'인 컨테이너의 .comment-btn을 클릭",
+    "category": "Easy",
+    "tags": [
+      ".video-container[data-video-id='1'] .comment-btn",
+      "#commentsModal"
+    ],
+    "notes": "data-video-id='1'인 컨테이너의 .comment-btn을 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for video container with data-video-id='1' to load\n    await page.waitForSelector('[data-video-id=\"1\"]', { timeout: 5000 });\n    \n    // Wait for comment button inside the container\n    await page.waitForSelector('[data-video-id=\"1\"] .comment-btn', { timeout: 5000 });\n    \n    // Click the comment button\n    await page.click('[data-video-id=\"1\"] .comment-btn');\n    \n    // Wait for comment modal to appear (assuming it has an ID of commentModal)\n    await page.waitForSelector('#commentModal', { timeout: 3000, state: 'visible' })\n      .catch(() => console.log('Comment modal might not have specific ID, checking for comment input instead'));\n    \n    // Alternative check for comment input field\n    await page.waitForSelector('#commentInput', { timeout: 3000, state: 'visible' });\n\n    // Take screenshot after opening comments\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comments_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_comments_opened.png'));\n\n    return {\n      success: true,\n      action: \"Successfully clicked comment button on first video and opened comment modal\",\n      extractedData: {\n        videoId: '1',\n        commentButtonText: await page.textContent('[data-video-id=\"1\"] .comment-btn')\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take screenshot on error\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 58575,
+      "timestamp": "2025-09-15T14:13:01.820Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first video container with data-video-id='1'\n    await page.waitForSelector('div.video-container[data-video-id=\"1\"]');\n    \n    // Wait for the comment button to be visible\n    const commentBtn = await page.waitForSelector('div.video-container[data-video-id=\"1\"] button.comment-btn', {\n      state: 'visible'\n    });\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Click the comment button\n    await commentBtn.click();\n    \n    // Wait a moment for the modal to open\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after clicking to show modal opened\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    // Verify the comment modal is open by checking for comment input\n    const commentInput = await page.$('#commentInput');\n    const isModalOpen = commentInput !== null;\n\n    return {\n      success: true,\n      action: \"Clicked comment button on first video (data-video-id='1') to open comment modal\",\n      extractedData: {\n        modalOpened: isModalOpen,\n        videoId: '1'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 59399,
+      "timestamp": "2025-09-15T14:14:00.395Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the comment button of the first video\n    await page.waitForSelector('[data-video-id=\"1\"]');\n    const commentBtn = await page.$('[data-video-id=\"1\"] button.comment-btn');\n    \n    if (commentBtn) {\n      await commentBtn.click();\n      // Wait for comment modal to appear\n      await page.waitForSelector('#commentInput', { timeout: 5000 });\n      \n      // Take screenshot after opening comments\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comments_open.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_2_comments_open.png'));\n      \n      // Extract comment input placeholder to verify modal opened\n      const commentPlaceholder = await page.$eval('#commentInput', el => el.placeholder);\n      \n      return {\n        success: true,\n        action: \"Successfully opened comment modal for first video\",\n        extractedData: {\n          commentInputPlaceholder: commentPlaceholder\n        },\n        screenshots,\n        error: null\n      };\n    } else {\n      throw new Error('Comment button not found for first video');\n    }\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to open comment modal for first video\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 83868,
+      "timestamp": "2025-09-15T14:14:59.794Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 201842,
+  "timestamp": "2025-09-15T14:13:01.820Z",
+  "savedAt": "2025-09-15T14:16:23.662Z",
+  "version": "1.0"
+}

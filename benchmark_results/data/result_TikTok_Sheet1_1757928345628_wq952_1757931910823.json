@@ -1,0 +1,62 @@
+{
+  "id": "TikTok_Sheet1_1757928345628_wq952_1757931910823",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928345628_wq952",
+    "description": 3,
+    "objective": "General",
+    "expectedResult": "첫 번째 비디오의 좋아요 버튼을 클릭하여 liked 상태로 변경",
+    "difficulty": "data-video-id='1'인 컨테이너의 .like-btn을 클릭",
+    "category": "Easy",
+    "tags": [
+      ".video-container[data-video-id='1'] .like-btn"
+    ],
+    "notes": "data-video-id='1'인 컨테이너의 .like-btn을 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the like button to be visible and click it\n    await page.waitForSelector('div.video-container[data-video-id=\"1\"] .like-btn');\n    await page.click('div.video-container[data-video-id=\"1\"] .like-btn');\n\n    // Take a screenshot after clicking the like button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_like_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_like_clicked.png'));\n\n    // Verify that the like button is now in the liked state\n    const isLiked = await page.evaluate(() => {\n      const likeButton = document.querySelector('div.video-container[data-video-id=\"1\"] .like-btn');\n      return likeButton.classList.contains('liked'); // Assuming 'liked' is the class added when liked\n    });\n\n    return {\n      success: true,\n      action: \"Clicked the like button on the first video, changing its state to liked.\",\n      extractedData: { isLiked },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14500,
+      "timestamp": "2025-09-15T10:25:10.823Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first video container to be loaded\n    await page.waitForSelector('.video-container[data-video-id=\"1\"]');\n\n    // Click the like button within the first video container\n    const likeButton = await page.$('.video-container[data-video-id=\"1\"] .like-btn');\n    if (likeButton) {\n      await likeButton.click();\n      await page.waitForTimeout(500); // Wait to ensure the like action is processed\n    }\n\n    // Take a screenshot after clicking the like button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_like_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_like_clicked.png'));\n\n    // Verify that the like button is now in a liked state (you might need to adjust the selector based on the actual change)\n    const isLiked = await likeButton.evaluate(el => el.classList.contains('liked'));\n    \n    return {\n      success: true,\n      action: \"Clicked the like button on the first video, changing its state to liked.\",\n      extractedData: { isLiked },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14406,
+      "timestamp": "2025-09-15T10:25:25.323Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the video container with data-video-id='1' to be visible\n    await page.waitForSelector('div.video-container[data-video-id=\"1\"]');\n\n    // Click the like button inside the video container\n    await page.click('div.video-container[data-video-id=\"1\"] .like-btn');\n\n    // Take a screenshot after clicking the like button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_like.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_like.png'));\n\n    // Verify if the like button's state is changed (can be checked by class or attribute)\n    const isLiked = await page.evaluate(() => {\n      const likeButton = document.querySelector('div.video-container[data-video-id=\"1\"] .like-btn');\n      return likeButton.classList.contains('liked'); // Assuming 'liked' class indicates the liked state\n    });\n\n    return {\n      success: true,\n      action: \"Clicked the like button on the first video successfully\",\n      extractedData: { isLiked },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13697,
+      "timestamp": "2025-09-15T10:25:39.730Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 42604,
+  "timestamp": "2025-09-15T10:25:10.823Z",
+  "savedAt": "2025-09-15T10:25:53.427Z",
+  "version": "1.0"
+}

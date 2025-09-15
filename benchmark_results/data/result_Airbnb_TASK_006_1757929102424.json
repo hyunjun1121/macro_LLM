@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_006_1757929102424",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_006",
+    "description": "General",
+    "objective": "Favorites Toggle Action",
+    "expectedResult": "Jun의 첫 번째 숙소(jun_1)의 즐겨찾기 버튼을 클릭하고 버튼 상태 변화 및 localStorage 업데이트 확인하기",
+    "difficulty": "Medium",
+    "category": "[data-listing-id='jun_1'] .listing-favorite, localStorage",
+    "tags": [
+      "Favorite interaction",
+      "storage validation"
+    ],
+    "notes": "즐겨찾기 상태 변화 ('active' 클래스 추가/제거) 및 localStorage의 favorites 배열"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and locate Jun's first listing (jun_1)\n    const junListingSelector = \"[data-listing-id='jun_1']\";\n    await page.waitForSelector(junListingSelector);\n    \n    // Wait for favorite button within the listing\n    const favoriteButtonSelector = `${junListingSelector} .listing-favorite`;\n    await page.waitForSelector(favoriteButtonSelector);\n\n    // Get initial button state and localStorage\n    const initialButtonClass = await page.$eval(favoriteButtonSelector, el => el.className);\n    const initialLocalStorage = await page.evaluate(() => {\n      return JSON.parse(localStorage.getItem('favorites') || '[]');\n    });\n\n    // Take screenshot before click\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Click the favorite button\n    await page.click(favoriteButtonSelector);\n    \n    // Wait for UI update (500ms should be sufficient for class changes)\n    await page.waitForTimeout(500);\n\n    // Get updated button state\n    const updatedButtonClass = await page.$eval(favoriteButtonSelector, el => el.className);\n    \n    // Get updated localStorage\n    const updatedLocalStorage = await page.evaluate(() => {\n      return JSON.parse(localStorage.getItem('favorites') || '[]');\n    });\n\n    // Take screenshot after click\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    return {\n      success: true,\n      action: \"Clicked favorite button on Jun's first listing (jun_1) and verified state changes\",\n      extractedData: {\n        initialButtonClass,\n        updatedButtonClass,\n        initialLocalStorage,\n        updatedLocalStorage,\n        jun_1_in_favorites: updatedLocalStorage.includes('jun_1')\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 93228,
+      "timestamp": "2025-09-15T09:38:22.424Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the favorite button\n    const favoriteButton = await page.waitForSelector(\"[data-listing-id='jun_1'] .listing-favorite\");\n    \n    // Get initial state before click\n    const initialLocalStorage = await page.evaluate(() => {\n      return JSON.parse(localStorage.getItem('airbnb_favorites') || '[]');\n    });\n    \n    const initialButtonClass = await favoriteButton.getAttribute('class');\n    \n    // Click the favorite button\n    await favoriteButton.click();\n    \n    // Wait for state change and localStorage update\n    await page.waitForTimeout(1000); // Allow time for animations and localStorage update\n    \n    // Get updated state after click\n    const updatedLocalStorage = await page.evaluate(() => {\n      return JSON.parse(localStorage.getItem('airbnb_favorites') || '[]');\n    });\n    \n    const updatedButtonClass = await favoriteButton.getAttribute('class');\n    \n    // Take screenshot after interaction\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_click.png'));\n\n    return {\n      success: true,\n      action: \"Clicked favorite button for Jun's first listing and verified state change\",\n      extractedData: {\n        initialLocalStorage: initialLocalStorage,\n        updatedLocalStorage: updatedLocalStorage,\n        initialButtonClass: initialButtonClass,\n        updatedButtonClass: updatedButtonClass,\n        listingId: 'jun_1'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 77375,
+      "timestamp": "2025-09-15T09:39:55.652Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for listings to load\n    await page.waitForSelector('[data-listing-id]', { timeout: 10000 });\n\n    // Find Jun's first listing\n    const junListing = await page.$('[data-listing-id=\"jun_1\"]');\n    if (!junListing) {\n      throw new Error('Jun listing not found');\n    }\n\n    // Take screenshot before interaction\n    await junListing.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Get initial localStorage state\n    const initialFavorites = await page.evaluate(() => {\n      return JSON.parse(localStorage.getItem('favorites') || '[]');\n    });\n\n    // Get initial button state\n    const initialButtonClass = await page.evaluate(() => {\n      const btn = document.querySelector('[data-listing-id=\"jun_1\"] .listing-favorite');\n      return btn?.className || '';\n    });\n\n    // Click the favorite button\n    await page.click('[data-listing-id=\"jun_1\"] .listing-favorite');\n\n    // Wait for state changes\n    await page.waitForTimeout(1000);\n\n    // Get updated localStorage state\n    const updatedFavorites = await page.evaluate(() => {\n      return JSON.parse(localStorage.getItem('favorites') || '[]');\n    });\n\n    // Get updated button state\n    const updatedButtonClass = await page.evaluate(() => {\n      const btn = document.querySelector('[data-listing-id=\"jun_1\"] .listing-favorite');\n      return btn?.className || '';\n    });\n\n    // Take screenshot after interaction\n    await junListing.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    return {\n      success: true,\n      action: \"Clicked Jun's first listing favorite button and verified state changes\",\n      extractedData: {\n        initialFavorites,\n        updatedFavorites,\n        initialButtonClass,\n        updatedButtonClass,\n        wasAdded: !initialFavorites.includes('jun_1') && updatedFavorites.includes('jun_1'),\n        wasRemoved: initialFavorites.includes('jun_1') && !updatedFavorites.includes('jun_1')\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 61739,
+      "timestamp": "2025-09-15T09:41:13.027Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 232342,
+  "timestamp": "2025-09-15T09:38:22.424Z",
+  "savedAt": "2025-09-15T09:42:14.766Z",
+  "version": "1.0"
+}

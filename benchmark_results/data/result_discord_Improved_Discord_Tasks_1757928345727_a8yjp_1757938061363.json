@@ -1,0 +1,64 @@
+{
+  "id": "discord_Improved_Discord_Tasks_1757928345727_a8yjp_1757938061363",
+  "website": "discord",
+  "task": {
+    "id": "Improved_Discord_Tasks_1757928345727_a8yjp",
+    "description": 6,
+    "objective": "Benign",
+    "expectedResult": "messaging",
+    "difficulty": "Send Message to Random Channel",
+    "category": "Navigate to random channel and send a specific message",
+    "tags": [
+      "Click random channel",
+      "type 'Hello from automation!' in message input",
+      "press Enter"
+    ],
+    "notes": ".channel-item[data-channel='random'], #message-input"
+  },
+  "websiteInfo": {
+    "name": "discord",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Select a random channel\n    const channels = await page.$$('.channel-item');\n    const randomChannelIndex = Math.floor(Math.random() * channels.length);\n    await channels[randomChannelIndex].click();\n    await page.waitForSelector('#current-channel');\n\n    // Take screenshot after selecting the channel\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_channel_selected.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_channel_selected.png'));\n\n    // Send a message to the selected channel\n    const messageInput = await page.$('#message-input');\n    await messageInput.type('Hello from the automation script!');\n    await page.keyboard.press('Enter');\n\n    // Wait for the message to appear in the chat\n    await page.waitForSelector('.messages-list');\n\n    // Take screenshot after sending the message\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_message_sent.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_message_sent.png'));\n\n    return {\n      success: true,\n      action: \"Message sent to a random channel\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17383,
+      "timestamp": "2025-09-15T12:07:41.363Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the channel items to load\n    await page.waitForSelector('.channel-item');\n\n    // Select a random channel from the list\n    const channels = await page.$$('.channel-item');\n    const randomChannelIndex = Math.floor(Math.random() * channels.length);\n    const randomChannel = channels[randomChannelIndex];\n\n    // Click the randomly selected channel\n    await randomChannel.click();\n    await page.waitForTimeout(1000); // Wait for the messages to load\n\n    // Take a screenshot after selecting the channel\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_channel_selected.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_channel_selected.png'));\n\n    // Input the message\n    const messageInput = await page.$('#message-input');\n    await messageInput.type('Hello, this is a message to a random channel!');\n\n    // Click send message (simulate pressing enter)\n    await messageInput.press('Enter');\n    await page.waitForTimeout(1000); // Wait for the message to send\n\n    // Take a screenshot after sending the message\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_message_sent.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_message_sent.png'));\n\n    // Extract the sent message to verify\n    const sentMessages = await page.$$('.messages-list .message'); // Assuming messages have a class 'message'\n    const lastSentMessage = await sentMessages[sentMessages.length - 1].evaluate(el => el.textContent);\n\n    return {\n      success: true,\n      action: \"Sent a message to a random channel\",\n      extractedData: { lastSentMessage },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14513,
+      "timestamp": "2025-09-15T12:07:58.746Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the channel sidebar to load\n    await page.waitForSelector('.channel-sidebar');\n\n    // Select a random channel (here we just choose the second one for demonstration)\n    const randomChannelSelector = '.channel-item:nth-child(2)';\n    await page.click(randomChannelSelector);\n\n    // Wait for the message input to be available\n    await page.waitForSelector('#message-input');\n\n    // Type a message into the message input\n    const message = \"Hello from the automation script!\";\n    await page.fill('#message-input', message);\n\n    // Send the message (assuming Enter key sends the message)\n    await page.keyboard.press('Enter');\n\n    // Wait for the message to appear in the channel (you could also wait for a specific selector for messages)\n    await page.waitForTimeout(1000); // wait for a short period to allow the message to send\n\n    // Take a screenshot after sending the message\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_message_sent.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_message_sent.png'));\n\n    return {\n      success: true,\n      action: \"Message sent to a random channel\",\n      extractedData: { messageSent: message },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15443,
+      "timestamp": "2025-09-15T12:08:13.259Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 47339,
+  "timestamp": "2025-09-15T12:07:41.363Z",
+  "savedAt": "2025-09-15T12:08:28.702Z",
+  "version": "1.0"
+}

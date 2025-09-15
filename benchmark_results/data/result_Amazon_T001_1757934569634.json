@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T001_1757934569634",
+  "website": "Amazon",
+  "task": {
+    "id": "T001",
+    "description": "Navigate to Electronics Category",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Click on the 'Electronics' link in the navigation menu to navigate to the electronics category page.",
+    "category": ".nav-links a[onclick*='electronics'], .category-card[onclick*='electronics']",
+    "tags": [
+      "1. Locate electronics navigation link 2. Click the electronics link 3. Wait for page to load"
+    ],
+    "notes": "URL contains '/electronics' OR page heading shows 'Electronics', products grid is populated with electronics items"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation menu to load\n    await page.waitForSelector('.nav-links', { timeout: 5000 });\n\n    // Click on Electronics link using multiple selector strategies\n    const electronicsLink = await page.waitForSelector('.nav-links a[onclick*=\"electronics\"]', { timeout: 3000 })\n        .catch(() => page.waitForSelector('text=Electronics', { timeout: 3000 }));\n    \n    await electronicsLink.click();\n    \n    // Wait for page to update after navigation\n    await page.waitForLoadState('networkidle');\n    await page.waitForTimeout(1000); // Additional wait for UI updates\n\n    // Take screenshot after navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_electronics_category.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_electronics_category.png'));\n\n    // Extract data to verify successful navigation\n    const extractedData = {\n      currentUrl: page.url(),\n      pageTitle: await page.title(),\n      categoryHeading: await page.$eval('h1, h2, h3', el => el.textContent).catch(() => 'Not found')\n    };\n\n    return {\n      success: true,\n      action: \"Successfully navigated to Electronics category\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot if available\n    try {\n      await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n      screenshots.push(path.join(screenshotsDir, 'error.png'));\n    } catch (e) {}\n    \n    return {\n      success: false,\n      action: \"Failed to navigate to Electronics category\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 147288,
+      "timestamp": "2025-09-15T11:09:29.634Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation menu to load\n    await page.waitForSelector('.nav-links', { timeout: 5000 });\n\n    // Use multiple selector strategies to find Electronics link\n    const electronicsLink = await page.$('.nav-links a[onclick*=\"electronics\"]') || \n                           await page.$('text=Electronics');\n\n    if (!electronicsLink) {\n      throw new Error('Electronics link not found');\n    }\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Click the Electronics link\n    await electronicsLink.click();\n\n    // Wait for page to update after navigation\n    await page.waitForLoadState('networkidle');\n    await page.waitForTimeout(2000); // Additional wait for any animations\n\n    // Take screenshot after navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_navigation.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_navigation.png'));\n\n    // Verify navigation by checking if we're on electronics page\n    const pageTitle = await page.title();\n    const extractedData = {\n      pageTitle: pageTitle,\n      url: page.url()\n    };\n\n    return {\n      success: true,\n      action: \"Successfully navigated to Electronics category\",\n      extractedData: extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    const errorScreenshot = path.join(screenshotsDir, 'error.png');\n    await page.screenshot({ path: errorScreenshot });\n    \n    return {\n      success: false,\n      action: \"Failed to navigate to Electronics category\",\n      extractedData: {},\n      screenshots: [errorScreenshot],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 214906,
+      "timestamp": "2025-09-15T11:11:56.923Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation menu and click Electronics link\n    await page.waitForSelector('.nav-links');\n    \n    // Try multiple selector strategies for Electronics link\n    const electronicsSelectors = [\n      'a[onclick*=\"electronics\"]',\n      'text=Electronics',\n      '.nav-links >> text=Electronics'\n    ];\n\n    let electronicsClicked = false;\n    for (const selector of electronicsSelectors) {\n      try {\n        await page.click(selector);\n        electronicsClicked = true;\n        break;\n      } catch (error) {\n        console.log(`Selector ${selector} failed, trying next`);\n      }\n    }\n\n    if (!electronicsClicked) {\n      throw new Error('Could not find Electronics link with any selector');\n    }\n\n    // Wait for page to update after navigation\n    await page.waitForTimeout(1000);\n    await page.waitForLoadState('networkidle');\n\n    // Take screenshot after navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_electronics_category.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_electronics_category.png'));\n\n    // Verify navigation by checking if electronics content is visible\n    const electronicsContent = await page.evaluate(() => {\n      const content = document.body.textContent;\n      return content.includes('Electronics') || content.includes('electronics');\n    });\n\n    if (!electronicsContent) {\n      throw new Error('Failed to verify navigation to Electronics category');\n    }\n\n    return {\n      success: true,\n      action: \"Successfully navigated to Electronics category by clicking navigation link\",\n      extractedData: {\n        category: \"Electronics\",\n        navigationVerified: true\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to navigate to Electronics category\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 203043,
+      "timestamp": "2025-09-15T11:15:31.828Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 565237,
+  "timestamp": "2025-09-15T11:09:29.634Z",
+  "savedAt": "2025-09-15T11:18:54.871Z",
+  "version": "1.0"
+}

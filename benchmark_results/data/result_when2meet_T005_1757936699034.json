@@ -1,0 +1,66 @@
+{
+  "id": "when2meet_T005_1757936699034",
+  "website": "when2meet",
+  "task": {
+    "id": "T005",
+    "description": "Display User Statistics",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Verify that the homepage displays the correct user statistics for jun in the stat cards",
+    "category": ".stat-number",
+    "tags": [
+      "Load homepage and read all stat card numbers"
+    ],
+    "notes": "Stat cards show: Events Created: 12, Total Participants: 48, Active Events: 7, Completed: 5"
+  },
+  "websiteInfo": {
+    "name": "when2meet",
+    "htmlFiles": [
+      "404.html",
+      "create.html",
+      "dashboard.html",
+      "event.html",
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the quick stats section to be visible\n    await page.waitForSelector('.quick-stats .stats-grid', { timeout: 5000 });\n\n    // Wait for all stat cards to be rendered\n    await page.waitForSelector('.stat-card', { timeout: 5000 });\n\n    // Extract all stat numbers and their labels\n    const statData = await page.$$eval('.stat-card', cards => {\n      return cards.map(card => {\n        const number = card.querySelector('.stat-number')?.textContent?.trim();\n        const label = card.querySelector('.stat-label')?.textContent?.trim();\n        return { number, label };\n      });\n    });\n\n    // Take screenshot of the stats section\n    const statsSection = await page.$('.quick-stats');\n    if (statsSection) {\n      await statsSection.screenshot({ path: path.join(screenshotsDir, 'step_2_stats_section.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_2_stats_section.png'));\n    }\n\n    // Prepare extracted data in a more accessible format\n    const extractedData = {};\n    for (const stat of statData) {\n      if (stat.label && stat.number) {\n        extractedData[stat.label] = stat.number;\n      }\n    }\n\n    // Expected values for user \"jun\"\n    const expectedStats = {\n      \"Events Created\": \"12\",\n      \"Total Participants\": \"48\",\n      \"Active Events\": \"7\",\n      \"Completed Events\": \"5\"\n    };\n\n    // Verify that all expected stat cards are present and correct\n    let allStatsCorrect = true;\n    for (const [label, value] of Object.entries(expectedStats)) {\n      if (extractedData[label] !== value) {\n        allStatsCorrect = false;\n        break;\n      }\n    }\n\n    return {\n      success: allStatsCorrect,\n      action: allStatsCorrect\n        ? \"Verified that the homepage displays the correct user statistics for jun in the stat cards\"\n        : \"Homepage stat cards do not display the correct statistics for jun\",\n      extractedData,\n      screenshots,\n      error: allStatsCorrect ? null : \"Stat card values do not match expected values\"\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 10992,
+      "timestamp": "2025-09-15T11:44:59.034Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Initial screenshot of homepage\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the hero welcome message to ensure correct user (jun) is loaded\n    await page.waitForSelector('h2.hero-title');\n    const heroTitle = await page.textContent('h2.hero-title');\n    if (!heroTitle || !heroTitle.toLowerCase().includes('jun')) {\n      throw new Error('User jun not detected in hero title.');\n    }\n\n    // Wait for the stats grid to appear (robust selector by section and structure)\n    await page.waitForSelector('section.quick-stats .stats-grid');\n    // Ensure at least four stat cards are present\n    const statCards = await page.$$('section.quick-stats .stats-grid .stat-card');\n    if (statCards.length < 4) {\n      throw new Error('Not enough stat cards found.');\n    }\n\n    // Extract the stat numbers and labels using a combination of selectors\n    const statsData = [];\n    for (let i = 0; i < statCards.length; i++) {\n      // Use XPath for robustness in case class names vary\n      const statNumberHandle = await statCards[i].$x('.//*[contains(@class, \"stat-number\")]');\n      const statLabelHandle = await statCards[i].$x('.//*[contains(@class, \"stat-label\")]');\n      let statNumber = null;\n      let statLabel = null;\n      if (statNumberHandle.length > 0) {\n        statNumber = (await statNumberHandle[0].textContent()).trim();\n      }\n      if (statLabelHandle.length > 0) {\n        statLabel = (await statLabelHandle[0].textContent()).trim();\n      }\n      statsData.push({ statLabel, statNumber });\n    }\n\n    // Take screenshot of the stats section only for clarity\n    const statsSection = await page.$('section.quick-stats');\n    if (statsSection) {\n      await statsSection.screenshot({ path: path.join(screenshotsDir, 'step_2_stats_section.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_2_stats_section.png'));\n    }\n\n    // Verify that stats match expected for jun (from data.js):\n    // eventsCreated: 12, totalParticipants: 48, activeEvents: 7, completedEvents: 5\n    const expectedStats = {\n      \"Events Created\": \"12\",\n      \"Total Participants\": \"48\",\n      \"Active Events\": \"7\",\n      \"Completed Events\": \"5\"\n    };\n    let allMatch = true;\n    let statResults = {};\n    for (const { statLabel, statNumber } of statsData) {\n      if (statLabel && expectedStats.hasOwnProperty(statLabel)) {\n        const matches = statNumber === expectedStats[statLabel];\n        statResults[statLabel] = { value: statNumber, expected: expectedStats[statLabel], matches };\n        if (!matches) allMatch = false;\n      }\n    }\n\n    return {\n      success: allMatch,\n      action: \"Verified homepage displays correct user statistics for jun in stat cards\",\n      extractedData: { statsExtracted: statsData, statResults },\n      screenshots,\n      error: allMatch ? null : \"One or more stat numbers did not match expected values\"\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 21519,
+      "timestamp": "2025-09-15T11:45:10.026Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the stat cards to be visible using a different selector strategy\n    // The .stat-number elements are inside .stat-card within .quick-stats\n    await page.waitForSelector('.quick-stats .stat-card .stat-number', { timeout: 5000 });\n\n    // Use XPath to select all stat-number elements (alternative to previous attempts)\n    const statNumberHandles = await page.$$('//section[contains(@class, \"quick-stats\")]//div[contains(@class, \"stat-card\")]//div[contains(@class, \"stat-number\")]');\n\n    // Wait for the username to be visible to confirm we are on jun's homepage\n    await page.waitForSelector('span.username', { timeout: 3000 });\n    const username = await page.textContent('span.username');\n\n    // Extract the numbers and their labels using another strategy: first get all stat-card elements, then within them get .stat-number and .stat-label\n    const statCards = await page.$$('.quick-stats .stat-card');\n    const statsExtracted = {};\n    for (let card of statCards) {\n      const numberEl = await card.$('.stat-number');\n      const labelEl = await card.$('.stat-label');\n      const number = numberEl ? (await numberEl.textContent()).trim() : null;\n      const label = labelEl ? (await labelEl.textContent()).trim() : null;\n      if (label && number !== null) {\n        statsExtracted[label] = number;\n      }\n    }\n\n    // Take screenshot of just the stats section\n    const quickStatsSection = await page.$('section.quick-stats');\n    if (quickStatsSection) {\n      const statsShot = path.join(screenshotsDir, 'step_2_stats_section.png');\n      await quickStatsSection.screenshot({ path: statsShot });\n      screenshots.push(statsShot);\n    }\n\n    // Verify that the username is \"jun\" and the correct stats are displayed\n    const expectedStats = {\n      \"Events Created\": \"12\",\n      \"Total Participants\": \"48\",\n      \"Active Events\": \"7\",\n      \"Completed Events\": \"5\"\n    };\n\n    // For success, ensure all expected labels and values match\n    let allMatch = username.trim().toLowerCase() === 'jun';\n    for (let label in expectedStats) {\n      if (statsExtracted[label] !== expectedStats[label]) {\n        allMatch = false;\n        break;\n      }\n    }\n\n    return {\n      success: allMatch,\n      action: \"Verified homepage displays correct user statistics for jun in the stat cards using stat-card and stat-number elements.\",\n      extractedData: {\n        username: username.trim(),\n        stats: statsExtracted\n      },\n      screenshots,\n      error: allMatch ? null : \"Stat card values do not match expected for user 'jun'\"\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 19999,
+      "timestamp": "2025-09-15T11:45:31.545Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 52510,
+  "timestamp": "2025-09-15T11:44:59.034Z",
+  "savedAt": "2025-09-15T11:45:51.544Z",
+  "version": "1.0"
+}

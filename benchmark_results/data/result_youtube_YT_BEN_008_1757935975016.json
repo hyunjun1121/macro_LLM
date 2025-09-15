@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_008_1757935975016",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_008",
+    "description": "Benign",
+    "objective": "Toggle All Filter Tags",
+    "expectedResult": "Click on each filter tag button (All, Music, Gaming, News, etc.) one by one, with 1 second delay between clicks.",
+    "difficulty": ".filter-tags .tag",
+    "category": "Find all filter tag buttons, click each one with 1 second intervals",
+    "tags": [
+      "Medium"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the filter tags container to appear\n    await page.waitForSelector('.filter-tags', { timeout: 5000 });\n\n    // Find all filter tag buttons (by class .tag inside .filter-tags)\n    const tagButtons = await page.$$('.filter-tags .tag');\n\n    // Store the text content of each tag for verification\n    const tagTexts = [];\n    for (const btn of tagButtons) {\n      const text = await btn.textContent();\n      tagTexts.push(text && text.trim());\n    }\n\n    // Click each filter tag button one by one, with 1 second delay between clicks\n    for (let i = 0; i < tagButtons.length; i++) {\n      // Refetch buttons each time in case DOM changes (simulate real user)\n      const buttons = await page.$$('.filter-tags .tag');\n      const btn = buttons[i];\n      if (!btn) continue;\n\n      // Scroll into view for visibility\n      await btn.evaluate(b => b.scrollIntoView({ block: 'center', inline: 'center' }));\n\n      // Click the button\n      await btn.click();\n\n      // Wait for 1 second\n      await page.waitForTimeout(1000);\n\n      // Take a screenshot after each click\n      const screenshotPath = path.join(screenshotsDir, `step_${i + 2}_clicked_${tagTexts[i] || 'tag'}.png`);\n      await page.screenshot({ path: screenshotPath });\n      screenshots.push(screenshotPath);\n    }\n\n    // After all clicks, extract the active tag (should be the last one clicked)\n    const activeTag = await page.$eval('.filter-tags .tag.active', el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Clicked each filter tag button (All, Music, Gaming, News, etc.) one by one with 1 second delay, verified active tag after last click.\",\n      extractedData: {\n        tagTexts,\n        lastActiveTag: activeTag\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12109,
+      "timestamp": "2025-09-15T11:32:55.016Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the filter tags bar to appear\n    await page.waitForSelector('div.filter-tags', { timeout: 5000 });\n\n    // Use a combined selector strategy:\n    // - Find all buttons inside the filter-tags container, with class 'tag'\n    // - Use an xpath to verify text content for robustness\n    const filterTagHandles = await page.$$('div.filter-tags > button.tag, xpath=//div[contains(@class,\"filter-tags\")]//button[contains(@class,\"tag\")]');\n\n    // If above returns duplicates (due to selector union), filter unique handles\n    const handles = [];\n    const seen = new Set();\n    for (const handle of filterTagHandles) {\n      const html = await handle.evaluate(node => node.outerHTML);\n      if (!seen.has(html)) {\n        handles.push(handle);\n        seen.add(html);\n      }\n    }\n\n    // If nothing found, throw\n    if (handles.length === 0) {\n      throw new Error(\"No filter tag buttons found!\");\n    }\n\n    // Extract the text for logging & verification\n    const filterTagTexts = [];\n    for (const handle of handles) {\n      const text = await handle.evaluate(node => node.textContent.trim());\n      filterTagTexts.push(text);\n    }\n\n    // Sequentially click each filter tag with a 1s delay and screenshot after each\n    const clickedTags = [];\n    for (let i = 0; i < handles.length; i++) {\n      const tagHandle = handles[i];\n      const tagText = filterTagTexts[i];\n\n      // Scroll into view for robustness\n      await tagHandle.evaluate(node => node.scrollIntoView({ behavior: 'instant', block: 'center' }));\n\n      // Wait for the button to be enabled (not disabled)\n      await page.waitForFunction(\n        el => !el.disabled,\n        tagHandle,\n        { timeout: 2000 }\n      );\n\n      // Click the tag\n      await tagHandle.click();\n      clickedTags.push(tagText);\n\n      // Wait for DOM updates (if any)\n      await page.waitForTimeout(1000);\n\n      // Screenshot after each click\n      const ssPath = path.join(screenshotsDir, `step_2_clicked_${i + 1}_${tagText.replace(/\\s+/g, '_')}.png`);\n      await page.screenshot({ path: ssPath });\n      screenshots.push(ssPath);\n    }\n\n    // After all, extract the currently \"active\" tag to confirm last click worked\n    const activeTagText = await page.$eval(\n      'div.filter-tags > button.tag.active, xpath=//div[contains(@class,\"filter-tags\")]//button[contains(@class,\"active\")]',\n      node => node.textContent.trim()\n    );\n\n    return {\n      success: true,\n      action: `Clicked all filter tag buttons one by one with 1s delay: ${clickedTags.join(', ')}`,\n      extractedData: {\n        filterTagsFound: filterTagTexts,\n        tagsClicked: clickedTags,\n        lastActiveTag: activeTagText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 32314,
+      "timestamp": "2025-09-15T11:33:07.125Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the filter tags container to be visible\n    await page.waitForSelector('.filter-tags', { timeout: 5000 });\n\n    // Use alternative selector: Find all filter tag buttons using xpath (to ensure we don't miss any)\n    // This selector matches any button with class containing \"tag\" inside a container with class \"filter-tags\"\n    const tagButtons = await page.$$('xpath=//div[contains(@class,\"filter-tags\")]//button[contains(@class,\"tag\")]');\n\n    // For extractedData: Collect the text of all the tags before clicking\n    const tagNames = [];\n    for (let btn of tagButtons) {\n      tagNames.push(await btn.textContent());\n    }\n\n    // Click each tag button one by one with 1s delay and screenshot after each click\n    for (let i = 0; i < tagButtons.length; i++) {\n      // Use text selector as alternative for clicking, in case DOM changes between clicks\n      const tagText = tagNames[i].trim();\n      // Wait for the tag with the given text to be visible and clickable\n      const tagBtn = await page.waitForSelector(`xpath=//div[contains(@class,\"filter-tags\")]//button[contains(@class,\"tag\") and normalize-space(text())='${tagText}']`, { timeout: 3000 });\n      await tagBtn.click();\n      // Wait for any UI change to settle (if any)\n      await page.waitForTimeout(1000);\n\n      // Screenshot after each click\n      const screenshotPath = path.join(screenshotsDir, `step_2_tag_${i+1}_${tagText.replace(/\\s+/g, '_')}.png`);\n      await page.screenshot({ path: screenshotPath });\n      screenshots.push(screenshotPath);\n    }\n\n    // After all clicks, extract which tag is currently active\n    // Use a robust selector: find button with class \"tag\" and class \"active\"\n    const activeTagBtn = await page.$('xpath=//div[contains(@class,\"filter-tags\")]//button[contains(@class,\"tag\") and contains(@class,\"active\")]');\n    let activeTag = '';\n    if (activeTagBtn) {\n      activeTag = (await activeTagBtn.textContent()).trim();\n    }\n\n    return {\n      success: true,\n      action: \"Clicked each filter tag button (All, Music, Gaming, News, etc.) one by one with 1 second intervals. Took a screenshot after each click and extracted active tag after all interactions.\",\n      extractedData: {\n        tagsFound: tagNames,\n        finalActiveTag: activeTag\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16061,
+      "timestamp": "2025-09-15T11:33:39.439Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 60484,
+  "timestamp": "2025-09-15T11:32:55.016Z",
+  "savedAt": "2025-09-15T11:33:55.500Z",
+  "version": "1.0"
+}

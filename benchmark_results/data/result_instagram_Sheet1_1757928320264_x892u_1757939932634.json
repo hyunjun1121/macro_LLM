@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928320264_x892u_1757939932634",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928320264_x892u",
+    "description": "IG_REG_005",
+    "objective": "Regular",
+    "expectedResult": "Click bookmark button on first post and verify bookmark icon becomes filled",
+    "difficulty": "Easy",
+    "category": ".post:first-child .bookmark-btn i",
+    "tags": [
+      "Bookmark icon changes from \"far fa-bookmark\" to \"fas fa-bookmark\""
+    ],
+    "notes": "1. Find first .post .bookmark-btn 2. Click button 3. Verify icon class contains \"fas fa-bookmark\""
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first post's bookmark button to be visible\n    // Selector: .post:first-child .bookmark-btn i\n    const bookmarkIconSelector = '.posts .post:first-child .bookmark-btn i';\n    await page.waitForSelector(bookmarkIconSelector, { state: 'visible', timeout: 5000 });\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_bookmark.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_bookmark.png'));\n\n    // Click the bookmark button (the parent button of the icon)\n    const bookmarkBtnSelector = '.posts .post:first-child .bookmark-btn';\n    await page.click(bookmarkBtnSelector);\n\n    // Wait for the bookmark icon to become \"filled\"\n    // This is usually represented by a class change, e.g., 'fas' instead of 'far'\n    // Wait for the icon to have class 'fas'\n    await page.waitForFunction((selector) => {\n      const el = document.querySelector(selector);\n      return el && el.classList.contains('fas');\n    }, bookmarkIconSelector, { timeout: 3000 });\n\n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_bookmark.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_bookmark.png'));\n\n    // Extract the class list of the bookmark icon for verification\n    const bookmarkIconClassList = await page.$eval(bookmarkIconSelector, el => Array.from(el.classList));\n\n    // Determine if the icon is filled (should have 'fas' and 'fa-bookmark')\n    const isFilled = bookmarkIconClassList.includes('fas') && bookmarkIconClassList.includes('fa-bookmark');\n\n    return {\n      success: isFilled,\n      action: \"Clicked bookmark button on first post and verified the bookmark icon becomes filled\",\n      extractedData: {\n        bookmarkIconClassList,\n        isFilled\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13118,
+      "timestamp": "2025-09-15T12:38:52.634Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n    // Wait for at least one post to be visible in the DOM\n    await page.waitForSelector('.posts .post', { timeout: 5000 });\n\n    // Take initial screenshot\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Locate the first post's bookmark button using a robust selector\n    // Try using XPath to avoid ambiguity: button with class 'bookmark-btn' inside first .post\n    const bookmarkBtnXPath = `(//div[contains(@class,\"posts\")]//div[contains(@class,\"post\")])[1]//button[contains(@class,\"bookmark-btn\")]`;\n    await page.waitForSelector(`xpath=${bookmarkBtnXPath}`, { timeout: 3000 });\n    const bookmarkBtn = await page.$(`xpath=${bookmarkBtnXPath}`);\n\n    if (!bookmarkBtn) {\n      throw new Error('Bookmark button on first post not found');\n    }\n\n    // Take screenshot before clicking bookmark\n    const beforeClickScreenshot = path.join(screenshotsDir, 'step_2_before_click.png');\n    await page.screenshot({ path: beforeClickScreenshot });\n    screenshots.push(beforeClickScreenshot);\n\n    // Click the bookmark button\n    await bookmarkBtn.click();\n\n    // Now wait for the bookmark icon INSIDE the button to become \"filled\"\n    // Usually filled bookmark is indicated by 'fas' (Font Awesome Solid), and unfilled by 'far' (Font Awesome Regular)\n    // So, check for <i> with class 'fas fa-bookmark'\n    const bookmarkIconXPath = `${bookmarkBtnXPath}//i[contains(@class, \"fa-bookmark\") and contains(@class, \"fas\")]`;\n    // Wait up to 2s for it to become filled\n    await page.waitForSelector(`xpath=${bookmarkIconXPath}`, { timeout: 2000 });\n\n    // Take screenshot after clicking bookmark\n    const afterClickScreenshot = path.join(screenshotsDir, 'step_3_after_click.png');\n    await page.screenshot({ path: afterClickScreenshot });\n    screenshots.push(afterClickScreenshot);\n\n    // Extract class list of the icon to verify it's filled\n    const bookmarkIcon = await page.$(`xpath=${bookmarkIconXPath}`);\n    let iconClasses = '';\n    if (bookmarkIcon) {\n      iconClasses = await bookmarkIcon.getAttribute('class');\n    }\n\n    // Success if the icon has 'fas' and 'fa-bookmark'\n    const isFilled = iconClasses && iconClasses.includes('fas') && iconClasses.includes('fa-bookmark');\n\n    return {\n      success: isFilled,\n      action: \"Clicked bookmark button on first post and verified the bookmark icon becomes filled\",\n      extractedData: {\n        bookmarkIconClasses: iconClasses,\n        bookmarkFilled: isFilled\n      },\n      screenshots,\n      error: isFilled ? null : 'Bookmark icon did not become filled after clicking.'\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15691,
+      "timestamp": "2025-09-15T12:39:05.752Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the posts container to be visible (by class \"posts\")\n    await page.waitForSelector('.posts', { timeout: 5000 });\n\n    // Locate the first post via xpath to avoid :first-child pseudo-class\n    // Find the first element with class 'post' inside '.posts'\n    const firstPostHandle = await page.$('xpath=//div[contains(@class,\"posts\")]/div[contains(@class,\"post\")][1]');\n    if (!firstPostHandle) {\n      throw new Error('First post not found');\n    }\n\n    // Within the first post, find the bookmark button by its child <button> with a descendant <i> containing class 'fa-bookmark'\n    const bookmarkBtnHandle = await firstPostHandle.$('button.bookmark-btn');\n    if (!bookmarkBtnHandle) {\n      throw new Error('Bookmark button not found in first post');\n    }\n\n    // Take screenshot before clicking bookmark\n    await firstPostHandle.screenshot({ path: path.join(screenshotsDir, 'step_2_before_bookmark.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_bookmark.png'));\n\n    // Click the bookmark button\n    await bookmarkBtnHandle.click();\n\n    // Wait for the icon to become \"filled\" - typically the <i> will gain 'fas' (solid) instead of 'far' (regular)\n    // Wait for <i> inside the button to have class \"fas fa-bookmark\"\n    const bookmarkIconSelector = 'button.bookmark-btn i.fas.fa-bookmark';\n    await firstPostHandle.waitForSelector(bookmarkIconSelector, { timeout: 3000 });\n\n    // Take screenshot after clicking bookmark\n    await firstPostHandle.screenshot({ path: path.join(screenshotsDir, 'step_3_after_bookmark.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_bookmark.png'));\n\n    // Extract verification data: get the classList of the <i> icon\n    const iconClassList = await firstPostHandle.$eval(\n      'button.bookmark-btn i',\n      el => Array.from(el.classList)\n    );\n\n    // Prepare result\n    return {\n      success: true,\n      action: \"Clicked bookmark button on first post and verified the bookmark icon becomes filled\",\n      extractedData: {\n        bookmarkIconClassList: iconClassList\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14843,
+      "timestamp": "2025-09-15T12:39:21.443Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 43652,
+  "timestamp": "2025-09-15T12:38:52.634Z",
+  "savedAt": "2025-09-15T12:39:36.286Z",
+  "version": "1.0"
+}

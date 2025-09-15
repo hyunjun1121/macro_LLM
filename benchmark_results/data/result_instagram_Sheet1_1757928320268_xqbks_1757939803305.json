@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928320268_xqbks_1757939803305",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928320268_xqbks",
+    "description": "IG_REG_002",
+    "objective": "Regular",
+    "expectedResult": "Enter \"travel\" in main search input and verify search dropdown appears",
+    "difficulty": "Easy",
+    "category": "#mainSearchInput, .search-results",
+    "tags": [
+      "Search results container becomes visible after typing"
+    ],
+    "notes": "1. Click #mainSearchInput 2. Type \"travel\" 3. Verify .search-results element is displayed"
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the main search input to be visible\n    await page.waitForSelector('#mainSearchInput', { state: 'visible', timeout: 5000 });\n\n    // Focus and type \"travel\" into the main search input\n    const mainSearchInput = await page.$('#mainSearchInput');\n    if (!mainSearchInput) throw new Error('Main search input (#mainSearchInput) not found');\n    await mainSearchInput.click();\n    await mainSearchInput.fill('');\n    await mainSearchInput.type('travel', { delay: 100 });\n\n    // Take screenshot after typing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_typed_travel.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_typed_travel.png'));\n\n    // Wait for the search dropdown to appear\n    // Try both class and visible check, as dropdowns may be dynamic\n    await page.waitForSelector('.search-results', { state: 'visible', timeout: 5000 });\n\n    // Take screenshot of the dropdown\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_dropdown.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_dropdown.png'));\n\n    // Extract some data from the dropdown to verify\n    const dropdownVisible = await page.$eval('.search-results', el => {\n      const style = window.getComputedStyle(el);\n      return style && style.display !== 'none' && style.visibility !== 'hidden' && el.offsetHeight > 0;\n    });\n\n    // Optionally, extract the first username in the dropdown if present\n    let firstUsername = null;\n    try {\n      firstUsername = await page.$eval('.search-results .username', el => el.textContent.trim());\n    } catch (e) {\n      firstUsername = null;\n    }\n\n    return {\n      success: dropdownVisible === true,\n      action: 'Entered \"travel\" in main search input and verified search dropdown appears',\n      extractedData: {\n        dropdownVisible,\n        firstUsername\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17924,
+      "timestamp": "2025-09-15T12:36:43.305Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('domcontentloaded');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the main search input to be visible\n    // Try ID first, fallback to attribute and input[type=text] with placeholder\n    let mainSearchInput = await page.waitForSelector('#mainSearchInput', { timeout: 3000 }).catch(async () => {\n      // Try by placeholder as fallback\n      return await page.waitForSelector('input[placeholder=\"Search\"]', { timeout: 3000 });\n    });\n\n    // Focus and type 'travel'\n    await mainSearchInput.focus();\n    await mainSearchInput.fill('');\n    await mainSearchInput.type('travel', { delay: 80 });\n\n    // Take screenshot after typing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_typed_travel.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_typed_travel.png'));\n\n    // Wait for dropdown to appear — try .search-results, then a more generic XPath for visible dropdown\n    let dropdownSelector = '.search-results';\n    let dropdownAppeared = false;\n    try {\n      await page.waitForSelector(dropdownSelector, { state: 'visible', timeout: 3000 });\n      dropdownAppeared = true;\n    } catch {\n      // Try alternative: any div with class containing 'search' and visible\n      const alt = await page.waitForSelector('xpath=//div[contains(@class,\"search\") and not(contains(@style,\"display: none\"))]', { timeout: 2000 }).catch(() => null);\n      dropdownAppeared = !!alt;\n    }\n\n    // Take screenshot after dropdown should appear\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_dropdown.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_dropdown.png'));\n\n    // Extract info from the dropdown if visible\n    let dropdownContent = null;\n    if (dropdownAppeared) {\n      dropdownContent = await page.$eval(dropdownSelector, el => el.innerText).catch(() => null);\n    }\n\n    return {\n      success: dropdownAppeared,\n      action: 'Entered \"travel\" in main search input and checked for search dropdown (.search-results) appearing',\n      extractedData: {\n        dropdownAppeared,\n        dropdownContent: dropdownContent || null\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 37379,
+      "timestamp": "2025-09-15T12:37:01.229Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for main search input using multiple selector strategies\n    // Try by placeholder, then by ID, then by CSS\n    const mainSearchSelector = 'input[placeholder=\"Search\"]#mainSearchInput, #mainSearchInput, input[placeholder=\"Search\"]';\n\n    await page.waitForSelector(mainSearchSelector, { state: 'visible', timeout: 5000 });\n\n    // Focus and type \"travel\" (clear any existing text first)\n    const mainSearchInput = await page.$(mainSearchSelector);\n    await mainSearchInput.click({ clickCount: 3 });\n    await mainSearchInput.fill('travel');\n\n    // Screenshot after typing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_typed_travel.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_typed_travel.png'));\n\n    // Wait for the search dropdown to appear\n    // Try by class, then by text content, then XPath fallback\n    let searchResultsVisible = false;\n    let searchResultsElement = null;\n    // Try class selector\n    try {\n      await page.waitForSelector('.search-results', { state: 'visible', timeout: 3000 });\n      searchResultsVisible = true;\n      searchResultsElement = await page.$('.search-results');\n    } catch {\n      // Try XPath for a div containing 'Recent' as a backup\n      try {\n        const [el] = await page.$x(\"//div[contains(@class,'search-results') or .//h3[text()='Recent']]\");\n        if (el) {\n          searchResultsVisible = true;\n          searchResultsElement = el;\n        }\n      } catch {}\n    }\n\n    // Screenshot of dropdown\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_dropdown.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_dropdown.png'));\n\n    // Extract result: is dropdown visible, and optional: how many search items shown?\n    let searchItemCount = 0;\n    if (searchResultsVisible && searchResultsElement) {\n      // Count .search-item children if present\n      const items = await searchResultsElement.$$('.search-item');\n      searchItemCount = items.length;\n    }\n\n    return {\n      success: searchResultsVisible,\n      action: `Entered \"travel\" in main search input and verified search dropdown${searchResultsVisible ? '' : ' NOT'} appeared`,\n      extractedData: {\n        searchDropdownVisible: searchResultsVisible,\n        searchItemCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 22776,
+      "timestamp": "2025-09-15T12:37:38.608Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 78079,
+  "timestamp": "2025-09-15T12:36:43.305Z",
+  "savedAt": "2025-09-15T12:38:01.384Z",
+  "version": "1.0"
+}

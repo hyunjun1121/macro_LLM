@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_003_1757928345674",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_003",
+    "description": "General",
+    "objective": "Guest Counter Interaction",
+    "expectedResult": "게스트 선택 메뉴를 열고 성인 2명, 아동 1명을 선택한 후 게스트 표시 텍스트 변화 확인하기",
+    "difficulty": "Medium",
+    "category": ".guest-selector, #guestMenu, [onclick*='updateGuests'], #guestCount",
+    "tags": [
+      "Menu interaction",
+      "counter manipulation"
+    ],
+    "notes": "'2 guests, 1 infant' 형태의 게스트 표시 텍스트"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open guest selection menu\n    await page.waitForSelector('.guest-selector');\n    await page.click('.guest-selector');\n    await page.waitForSelector('#guestMenu');\n\n    // Select 2 adults\n    await page.waitForSelector('button:contains(\"+\")', { timeout: 5000 });\n    for (let i = 0; i < 2; i++) {\n      await page.click('button:contains(\"+\")'); // Click the \"+\" button for adults\n    }\n\n    // Select 1 child\n    await page.waitForSelector('button:contains(\"+\")', { timeout: 5000 });\n    await page.click('button:contains(\"+\")'); // Click the \"+\" button for children\n\n    // Verify guest count display\n    const guestCountText = await page.$eval('#guestCount', el => el.innerText);\n    if (guestCountText.includes('2 adults') && guestCountText.includes('1 child')) {\n      console.log('Guest selection updated successfully.');\n    } else {\n      console.log('Guest selection did not update as expected.');\n    }\n\n    // Take final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_guest_selection.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_guest_selection.png'));\n\n    return {\n      success: true,\n      action: \"Selected 2 adults and 1 child in the guest menu\",\n      extractedData: { guestCountText },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18935,
+      "timestamp": "2025-09-15T09:25:45.675Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open guest selection menu\n    await page.waitForSelector('.guest-selector');\n    await page.click('.guest-selector');\n    await page.waitForSelector('#guestMenu');\n\n    // Add 2 adults\n    await page.waitForSelector('button:contains(\"-\")'); // Wait for the decrement button for adults\n    await page.click('button:contains(\"+\")'); // Click to add an adult\n    await page.click('button:contains(\"+\")'); // Click to add another adult\n\n    // Add 1 child\n    await page.waitForSelector('button:contains(\"-\")'); // Wait for the decrement button for children\n    await page.click('button:contains(\"+\")'); // Click to add a child\n\n    // Verify the guest count display text\n    const guestCountText = await page.$eval('#guestCount', el => el.textContent);\n    const expectedText = '2 adults, 1 child'; // Expected text after selection\n\n    // Take a screenshot after making selections\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_guest_selection.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_guest_selection.png'));\n\n    // Return the result of the operation\n    return {\n      success: guestCountText === expectedText,\n      action: \"Selected 2 adults and 1 child in the guest menu\",\n      extractedData: { guestCountText },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14646,
+      "timestamp": "2025-09-15T09:26:04.611Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open guest selection menu\n    await page.waitForSelector('.guest-selector');\n    await page.click('.guest-selector');\n\n    // Increase adults count to 2\n    await page.waitForSelector('#guestMenu');\n    await page.waitForSelector('button:contains(\"+\")'); // Select the first \"+\" button for adults\n    for (let i = 0; i < 2; i++) {\n      await page.click('button:contains(\"+\")'); // Click \"+\" for adults\n    }\n\n    // Increase children count to 1\n    await page.waitForSelector('button:contains(\"+\")'); // Select the first \"+\" button for children\n    await page.click('button:contains(\"+\")'); // Click \"+\" for children\n\n    // Take screenshot after selections\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_guest_selection.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_guest_selection.png'));\n\n    // Verify the guest count text\n    const guestCountText = await page.$eval('#guestCount', el => el.textContent);\n    \n    // Construct expected guest count text\n    const expectedGuestCountText = '2 adults, 1 child';\n\n    // Take final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_final.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_final.png'));\n\n    return {\n      success: guestCountText === expectedGuestCountText,\n      action: \"Selected 2 adults and 1 child in the guest menu\",\n      extractedData: { guestCountText },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 23746,
+      "timestamp": "2025-09-15T09:26:19.257Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 57329,
+  "timestamp": "2025-09-15T09:25:45.674Z",
+  "savedAt": "2025-09-15T09:26:43.004Z",
+  "version": "1.0"
+}

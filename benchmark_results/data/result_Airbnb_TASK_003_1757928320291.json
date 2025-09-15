@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_003_1757928320291",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_003",
+    "description": "General",
+    "objective": "Guest Counter Interaction",
+    "expectedResult": "게스트 선택 메뉴를 열고 성인 2명, 아동 1명을 선택한 후 게스트 표시 텍스트 변화 확인하기",
+    "difficulty": "Medium",
+    "category": ".guest-selector, #guestMenu, [onclick*='updateGuests'], #guestCount",
+    "tags": [
+      "Menu interaction",
+      "counter manipulation"
+    ],
+    "notes": "'2 guests, 1 infant' 형태의 게스트 표시 텍스트"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the guest selector button and click it to open the guest menu\n    await page.waitForSelector('button.guest-selector');\n    await page.click('button.guest-selector');\n\n    // Wait for the guest menu to appear\n    await page.waitForSelector('#guestMenu', { state: 'visible' });\n\n    // Take screenshot after opening guest menu\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_guest_menu_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_guest_menu_open.png'));\n\n    // Set Adults to 2\n    // Wait for adults counter\n    await page.waitForSelector('#adults');\n    // Get current adults count\n    let adultsCount = await page.$eval('#adults', el => parseInt(el.textContent.trim(), 10));\n    // Increase adults to 2\n    while (adultsCount < 2) {\n      // The \"+\" button for adults is the first .guest-counter button with text \"+\"\n      const adultsPlus = await page.$x(\"//div[@id='guestMenu']//div[contains(@class,'guest-option')][.//strong[text()='Adults']]//button[normalize-space(text())='+']\");\n      if (adultsPlus.length > 0) {\n        await adultsPlus[0].click();\n      }\n      // Wait for the count to update\n      await page.waitForTimeout(200);\n      adultsCount = await page.$eval('#adults', el => parseInt(el.textContent.trim(), 10));\n    }\n\n    // Set Children to 1\n    await page.waitForSelector('#children');\n    let childrenCount = await page.$eval('#children', el => parseInt(el.textContent.trim(), 10));\n    while (childrenCount < 1) {\n      // The \"+\" button for children is the second .guest-option's \"+\" button\n      const childrenPlus = await page.$x(\"//div[@id='guestMenu']//div[contains(@class,'guest-option')][.//strong[text()='Children']]//button[normalize-space(text())='+']\");\n      if (childrenPlus.length > 0) {\n        await childrenPlus[0].click();\n      }\n      await page.waitForTimeout(200);\n      childrenCount = await page.$eval('#children', el => parseInt(el.textContent.trim(), 10));\n    }\n\n    // Take screenshot after setting guests\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_guests_selected.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_guests_selected.png'));\n\n    // Click outside to close the guest menu (click the guest-selector button again)\n    await page.click('button.guest-selector');\n    await page.waitForTimeout(300);\n\n    // Wait for guest count text to update\n    await page.waitForFunction(() => {\n      const el = document.getElementById('guestCount');\n      return el && el.textContent && el.textContent.trim() !== 'Add guests';\n    }, { timeout: 2000 });\n\n    // Take screenshot of updated guest count\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_guest_count_updated.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_guest_count_updated.png'));\n\n    // Extract the guest count display text\n    const guestCountText = await page.$eval('#guestCount', el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Opened guest selector, set Adults to 2 and Children to 1, verified guest count display text updated.\",\n      extractedData: {\n        guestCountText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18443,
+      "timestamp": "2025-09-15T09:25:20.291Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // 1. Open the guest selector menu using a robust selector\n    // Use button text content as selector alternative\n    const guestSelectorBtn = await page.waitForSelector(\"button.guest-selector, button:has-text('Add guests')\");\n    await guestSelectorBtn.click();\n\n    // Wait for the guest menu to be visible by checking for its ID and role as a fallback\n    await page.waitForSelector(\"#guestMenu\", { state: 'visible', timeout: 3000 });\n\n    // Take screenshot after opening guest selector\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_guest_menu_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_guest_menu_open.png'));\n\n    // 2. Set Adults to 2\n    // Find the adults count span using its ID\n    const adultsCountSelector = \"#guestMenu span#adults\";\n    // Get current value\n    let adultsCount = await page.$eval(adultsCountSelector, el => Number(el.textContent.trim()));\n    // Click \"+\" as needed\n    for (let i = adultsCount; i < 2; i++) {\n      // Use xpath to find the \"+\" button for adults\n      const plusBtn = await page.waitForSelector('//div[@id=\"guestMenu\"]//strong[contains(text(),\"Adults\")]/../../div[contains(@class,\"guest-counter\")]/button[normalize-space()=\"+\"]');\n      await plusBtn.click();\n      await page.waitForTimeout(200); // allow DOM to update\n    }\n\n    // 3. Set Children to 1\n    const childrenCountSelector = \"#guestMenu span#children\";\n    let childrenCount = await page.$eval(childrenCountSelector, el => Number(el.textContent.trim()));\n    for (let i = childrenCount; i < 1; i++) {\n      // Use xpath to find the \"+\" button for children\n      const plusBtn = await page.waitForSelector('//div[@id=\"guestMenu\"]//strong[contains(text(),\"Children\")]/../../div[contains(@class,\"guest-counter\")]/button[normalize-space()=\"+\"]');\n      await plusBtn.click();\n      await page.waitForTimeout(200);\n    }\n\n    // Take screenshot after setting guests\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_guest_counts.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_guest_counts.png'));\n\n    // 4. Close the guest menu by clicking outside (click the \"Who\" label as a safe spot)\n    // Or click the guest selector button again to close if toggled\n    await guestSelectorBtn.click();\n    await page.waitForTimeout(500);\n\n    // 5. Extract the guest count display text\n    // This is in the span#guestCount\n    await page.waitForSelector('span#guestCount', { state: 'visible' });\n    const guestDisplayText = await page.$eval('span#guestCount', el => el.textContent.trim());\n\n    // Take screenshot of the updated guest display\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_guest_display_updated.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_guest_display_updated.png'));\n\n    // Return results\n    return {\n      success: true,\n      action: \"Opened guest selector, set adults to 2 and children to 1, verified guest display text updated.\",\n      extractedData: {\n        guestDisplayText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 23166,
+      "timestamp": "2025-09-15T09:25:38.734Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the guest selector button by class and text (using XPath for robustness)\n    const guestSelectorXPath = \"//button[contains(@class, 'guest-selector') and .//span[contains(text(),'Add guests') or contains(text(),'게스트')]]\";\n    await page.waitForSelector(guestSelectorXPath, { timeout: 5000 });\n\n    // Click the guest selector to open the guest menu\n    const guestSelectorBtn = await page.$(guestSelectorXPath);\n    await guestSelectorBtn.click();\n\n    // Wait for the guest menu to appear (by id)\n    await page.waitForSelector('#guestMenu', { state: 'visible', timeout: 3000 });\n\n    // Take screenshot after opening guest menu\n    const step2 = path.join(screenshotsDir, 'step_2_guest_menu_opened.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Selectors for guest counters by label text (use XPath for resilience)\n    // Find the \"+\" button for adults\n    const adultPlusBtnXPath = \"//div[@id='guestMenu']//div[contains(.,'Adults')]//button[normalize-space(text())='+']\";\n    // Find the \"+\" button for children\n    const childPlusBtnXPath = \"//div[@id='guestMenu']//div[contains(.,'Children')]//button[normalize-space(text())='+']\";\n\n    // Wait for adult plus button and click twice (for 2 adults)\n    await page.waitForSelector(adultPlusBtnXPath, { timeout: 3000 });\n    const adultPlusBtn = await page.$(adultPlusBtnXPath);\n    await adultPlusBtn.click();\n    await page.waitForTimeout(300); // Wait for DOM update\n    await adultPlusBtn.click();\n    await page.waitForTimeout(500);\n\n    // Wait for children plus button and click once (for 1 child)\n    await page.waitForSelector(childPlusBtnXPath, { timeout: 3000 });\n    const childPlusBtn = await page.$(childPlusBtnXPath);\n    await childPlusBtn.click();\n    await page.waitForTimeout(500);\n\n    // Take screenshot after selecting guests\n    const step3 = path.join(screenshotsDir, 'step_3_guests_selected.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Optionally: close the guest menu by clicking outside or the button again (for this UI, clicking button toggles)\n    await guestSelectorBtn.click();\n    await page.waitForTimeout(500);\n\n    // Take screenshot after closing guest menu\n    const step4 = path.join(screenshotsDir, 'step_4_guest_menu_closed.png');\n    await page.screenshot({ path: step4 });\n    screenshots.push(step4);\n\n    // Extract the guest count display text\n    // This is inside <span id=\"guestCount\">\n    await page.waitForSelector('#guestCount', { timeout: 2000 });\n    const guestCountText = await page.$eval('#guestCount', el => el.innerText.trim());\n\n    // Extract the individual guest counts as well (for verification)\n    const adultsCount = await page.$eval('#adults', el => el.innerText.trim());\n    const childrenCount = await page.$eval('#children', el => el.innerText.trim());\n\n    // Compose result\n    return {\n      success: true,\n      action: \"Opened guest selector, selected 2 adults and 1 child, verified guest count display.\",\n      extractedData: {\n        guestCountText,\n        adultsCount,\n        childrenCount\n      },\n      screenshots,\n      error: null\n    };\n\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 26653,
+      "timestamp": "2025-09-15T09:26:01.900Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 68262,
+  "timestamp": "2025-09-15T09:25:20.291Z",
+  "savedAt": "2025-09-15T09:26:28.554Z",
+  "version": "1.0"
+}

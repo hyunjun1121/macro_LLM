@@ -1,0 +1,62 @@
+{
+  "id": "discord_Improved_Discord_Tasks_1757928320278_h6mz7_1757943540792",
+  "website": "discord",
+  "task": {
+    "id": "Improved_Discord_Tasks_1757928320278_h6mz7",
+    "description": 17,
+    "objective": "Benign",
+    "expectedResult": "notifications",
+    "difficulty": "Trigger Voice Connection Notification",
+    "category": "Connect to voice channel to generate notification",
+    "tags": [
+      "Click general voice channel to trigger connection notification"
+    ],
+    "notes": ".channel-item[data-channel='general-voice'], .notification"
+  },
+  "websiteInfo": {
+    "name": "discord",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the channel sidebar to appear\n    await page.waitForSelector('.channel-sidebar', { timeout: 5000 });\n\n    // Scroll to Voice Channels category if needed\n    const voiceCategoryHeader = await page.$('//span[contains(text(), \"Voice Channels\")]/..');\n    if (voiceCategoryHeader) {\n      await voiceCategoryHeader.scrollIntoViewIfNeeded();\n    }\n\n    // Wait for the General voice channel item to be visible\n    const generalVoiceSelector = '.channel-item[data-channel=\"general-voice\"]';\n    await page.waitForSelector(generalVoiceSelector, { timeout: 5000 });\n\n    // Click the General voice channel to connect\n    await page.click(generalVoiceSelector);\n\n    // Wait for a notification or visual indicator of voice connection\n    // Let's assume a notification appears, or the channel item gets an 'active' class\n    // Wait for the 'active' class on the voice channel item\n    await page.waitForTimeout(500); // Give time for UI update\n    const isActive = await page.evaluate(() => {\n      const el = document.querySelector('.channel-item[data-channel=\"general-voice\"]');\n      return el && el.classList.contains('active');\n    });\n\n    // Take screenshot after joining voice channel\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_voice_connected.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_voice_connected.png'));\n\n    // Try to detect a notification element (simulate notification extraction)\n    // We'll look for any element with class \"notification\" or similar\n    let notificationText = null;\n    const notificationSelector = '.notification, .toast, .alert';\n    const notificationEl = await page.$(notificationSelector);\n    if (notificationEl) {\n      notificationText = await notificationEl.textContent();\n    }\n\n    // Compose extractedData\n    const extractedData = {\n      voiceChannelActive: !!isActive,\n      notificationText: notificationText ? notificationText.trim() : null\n    };\n\n    return {\n      success: !!isActive,\n      action: \"Connected to voice channel and checked for notification\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12736,
+      "timestamp": "2025-09-15T13:39:00.792Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the \"Voice Channels\" category header using its span text and icon (use xpath)\n    const voiceCategoryHeaderXPath = \"//span[normalize-space()='Voice Channels']/preceding-sibling::i[contains(@class, 'fa-chevron-down')]/parent::div\";\n    await page.waitForXPath(voiceCategoryHeaderXPath, { timeout: 5000 });\n\n    // Expand Voice Channels if needed (click category header if not expanded)\n    // We'll check if the \"General\" voice channel is visible, otherwise click to expand\n    let generalVoiceVisible = false;\n    try {\n      await page.waitForSelector(\"div.channel-item[data-channel='general-voice']\", { timeout: 2000 });\n      generalVoiceVisible = true;\n    } catch (e) {\n      // Not visible yet, will click to expand\n    }\n\n    if (!generalVoiceVisible) {\n      const [categoryHeader] = await page.$x(voiceCategoryHeaderXPath);\n      if (categoryHeader) {\n        await categoryHeader.click();\n        // Wait for the General voice channel to appear\n        await page.waitForSelector(\"div.channel-item[data-channel='general-voice']\", { timeout: 3000 });\n      }\n    }\n\n    // Click the \"General\" voice channel using the data-channel attribute selector\n    const generalVoiceSelector = \"div.channel-item[data-channel='general-voice']\";\n    await page.waitForSelector(generalVoiceSelector, { timeout: 4000 });\n    await page.click(generalVoiceSelector);\n\n    // Wait for a notification or UI change to confirm connection\n    // Heuristic: after clicking, check for a notification element or a change in the sidebar (e.g., user-info area, or new element in DOM)\n    // We'll look for \"Voice Connected\" or similar text, or a UI highlight\n    // Since the HTML is a mockup, try to detect any .active class move or visual change\n\n    // Small wait to allow UI to update\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after connection attempt\n    const afterConnectScreenshot = path.join(screenshotsDir, 'step_2_after_voice_connect.png');\n    await page.screenshot({ path: afterConnectScreenshot });\n    screenshots.push(afterConnectScreenshot);\n\n    // Try to extract notification or connection status\n    // Heuristic: look for a notification div, or check if the user-info panel has a voice indicator, or if the channel-item got an 'active' class\n    // Check if the clicked voice channel now has the class 'active'\n    const isActive = await page.$eval(\n      \"div.channel-item[data-channel='general-voice']\",\n      el => el.classList.contains('active')\n    );\n\n    // Optionally, check for notification text\n    let notificationText = null;\n    try {\n      notificationText = await page.$eval('.notification, .voice-notification', el => el.innerText);\n    } catch (e) {\n      // Notification element may not exist, that's fine\n      notificationText = null;\n    }\n\n    return {\n      success: isActive,\n      action: \"Clicked the 'General' voice channel under Voice Channels and verified connection notification/state.\",\n      extractedData: {\n        voiceChannelActive: isActive,\n        notificationText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 23047,
+      "timestamp": "2025-09-15T13:39:13.528Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the \"Voice Channels\" category header to be visible\n    // Using text selector to locate the right section, different from previous attempts\n    const voiceCategoryHeader = await page.waitForSelector('xpath=//span[contains(text(),\"Voice Channels\")]', { timeout: 5000 });\n\n    // Get the closest parent '.category' for \"Voice Channels\"\n    const categoryEl = await voiceCategoryHeader.evaluateHandle(node => node.closest('.category'));\n\n    // Find the first voice channel: \"General\" under Voice Channels\n    // Use the volume-up icon to locate the voice channel uniquely\n    const generalVoiceChannel = await categoryEl.$('xpath=.//div[contains(@class,\"channel-item\")][.//span[text()=\"General\"] and .//i[contains(@class,\"fa-volume-up\")]]');\n\n    if (!generalVoiceChannel) {\n      throw new Error('Could not find the \"General\" voice channel');\n    }\n\n    // Take screenshot before clicking voice channel\n    const beforeJoinShot = path.join(screenshotsDir, 'step_2_before_join_voice.png');\n    await page.screenshot({ path: beforeJoinShot });\n    screenshots.push(beforeJoinShot);\n\n    // Click the \"General\" voice channel\n    await generalVoiceChannel.click();\n\n    // Wait for a notification or some indicator that we are connected to the voice channel\n    // Since the exact notification is not described, let's try to detect a DOM change:\n    // For example, maybe the channel-item gets an 'active' class, or a new notification div appears.\n    // We'll wait for the \"General\" voice channel item to get the 'active' class.\n\n    // Wait up to 4 seconds for the class to change\n    let joined = false;\n    for (let i = 0; i < 8; i++) {\n      const className = await generalVoiceChannel.getAttribute('class');\n      if (className && className.includes('active')) {\n        joined = true;\n        break;\n      }\n      await page.waitForTimeout(500);\n    }\n\n    // Take screenshot after attempting to join voice channel\n    const afterJoinShot = path.join(screenshotsDir, 'step_3_after_join_voice.png');\n    await page.screenshot({ path: afterJoinShot });\n    screenshots.push(afterJoinShot);\n\n    // Attempt to extract notification or state change\n    let notificationText = null;\n    // Try to find a notification element (simulate, as the HTML does not specify one)\n    // We'll look for any element containing \"connected\" or \"voice\" that appears after join\n    const possibleNotif = await page.$('xpath=//*[contains(translate(text(),\"ABCDEFGHIJKLMNOPQRSTUVWXYZ\",\"abcdefghijklmnopqrstuvwxyz\"),\"connected\") or contains(translate(text(),\"ABCDEFGHIJKLMNOPQRSTUVWXYZ\",\"abcdefghijklmnopqrstuvwxyz\"),\"voice\")]');\n    if (possibleNotif) {\n      notificationText = await possibleNotif.textContent();\n    }\n\n    // If not found, fallback to confirming the \"active\" class presence\n    let extractedData = {};\n    if (joined) {\n      extractedData = {\n        joinedVoice: true,\n        notification: notificationText ? notificationText.trim() : null\n      };\n    } else {\n      extractedData = {\n        joinedVoice: false,\n        notification: null\n      };\n    }\n\n    return {\n      success: joined,\n      action: joined\n        ? 'Clicked \"General\" voice channel and triggered voice connection notification/state'\n        : 'Attempted to join \"General\" voice channel but no state change detected',\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 19862,
+      "timestamp": "2025-09-15T13:39:36.575Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 55645,
+  "timestamp": "2025-09-15T13:39:00.792Z",
+  "savedAt": "2025-09-15T13:39:56.437Z",
+  "version": "1.0"
+}

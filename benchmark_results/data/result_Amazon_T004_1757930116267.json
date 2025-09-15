@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T004_1757930116267",
+  "website": "Amazon",
+  "task": {
+    "id": "T004",
+    "description": "Open Shopping Cart Modal",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Click on the shopping cart icon in the header to open the cart modal.",
+    "category": ".cart, #cartModal",
+    "tags": [
+      "1. Click cart icon in header 2. Wait for cart modal to appear"
+    ],
+    "notes": "Cart modal becomes visible, cart modal displays current cart contents, modal overlay is present"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the cart icon in the header to be visible\n    // Try multiple selector strategies for robustness\n    let cartSelector = '.cart';\n    let cartElement = await page.waitForSelector(cartSelector, { timeout: 4000 });\n\n    // Take screenshot before clicking cart\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_cart_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_cart_click.png'));\n\n    // Click the cart icon to open the cart modal\n    await cartElement.click();\n\n    // Wait for the cart modal to appear\n    // Try multiple selectors: #cartModal, .cart-modal, or modal with text \"Cart\"\n    let modalHandle = null;\n    try {\n      modalHandle = await page.waitForSelector('#cartModal', { timeout: 3000 });\n    } catch {\n      try {\n        modalHandle = await page.waitForSelector('.cart-modal', { timeout: 2000 });\n      } catch {\n        // Fallback: look for modal/dialog with \"Cart\" text\n        const possibleModal = await page.waitForSelector('xpath=//*[contains(@class,\"modal\") or contains(@id,\"cart\")][.//text()[contains(., \"Cart\")]]', { timeout: 2000 });\n        if (possibleModal) modalHandle = possibleModal;\n      }\n    }\n\n    // Take screenshot after modal appears\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_cart_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_cart_modal_open.png'));\n\n    // Extract some data from the modal to verify it's open\n    let modalTitle = null;\n    let modalVisible = false;\n    if (modalHandle) {\n      modalVisible = await modalHandle.isVisible();\n      // Try to extract the modal title or a key element\n      try {\n        modalTitle = await modalHandle.$eval('h2, .modal-title, .cart-title', el => el.textContent.trim());\n      } catch {\n        // Fallback: try to get any text content from the modal\n        modalTitle = await modalHandle.evaluate(el => el.textContent.slice(0, 100));\n      }\n    }\n\n    return {\n      success: modalVisible,\n      action: \"Clicked the shopping cart icon in the header and opened the cart modal.\",\n      extractedData: {\n        modalVisible,\n        modalTitle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 52925,
+      "timestamp": "2025-09-15T09:55:16.267Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for header to be present\n    await page.waitForSelector('header.header', { timeout: 4000 });\n\n    // Wait for the cart icon using a different strategy: use XPath for the cart icon (shopping cart icon in header)\n    // The cart has class=\"cart\" and contains an <i> with class \"fa-shopping-cart\"\n    const cartXPath = \"//div[contains(@class,'cart')]//i[contains(@class,'fa-shopping-cart')]\";\n    await page.waitForSelector('xpath=' + cartXPath, { timeout: 4000 });\n\n    // Scroll cart icon into view just in case\n    const cartHandle = await page.$('xpath=' + cartXPath);\n    if (cartHandle) {\n      await cartHandle.scrollIntoViewIfNeeded();\n      // Click on the parent .cart div directly (to ensure the click event fires correctly)\n      const cartDivHandle = await cartHandle.evaluateHandle(node => node.closest('.cart'));\n      await cartDivHandle.click();\n    } else {\n      throw new Error('Cart icon not found via XPath');\n    }\n\n    // Wait for the cart modal to appear.\n    // Try multiple strategies for robustness:\n    // - Modal may have id=\"cartModal\" or class containing \"cart-modal\" or class \"modal\" and be visible\n    let cartModalSelector = '#cartModal, .cart-modal, .modal:has(.cart-items), .modal[style*=\"display: block\"]';\n    await page.waitForSelector(cartModalSelector, { timeout: 4000, state: 'visible' });\n\n    // Take screenshot after cart modal is open\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_cart_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_cart_modal_open.png'));\n\n    // Extract meaningful data to verify modal opened\n    // For example, check for the presence of the modal, its title, and the number of items in cart\n    const modalVisible = await page.$eval(\n      cartModalSelector,\n      el => !!(el.offsetParent || window.getComputedStyle(el).display !== 'none')\n    );\n\n    // Attempt to extract cart count (from header) and modal title/content\n    let cartCount = null;\n    try {\n      cartCount = await page.$eval('#cartCount', el => el.innerText.trim());\n    } catch { /* ignore */ }\n\n    let modalTitle = null;\n    try {\n      modalTitle = await page.$eval(\n        '#cartModal h2, .cart-modal h2, .modal h2',\n        el => el.innerText.trim()\n      );\n    } catch { /* ignore */ }\n\n    return {\n      success: true,\n      action: \"Opened the shopping cart modal by clicking the cart icon in the header using alternative selectors.\",\n      extractedData: {\n        modalVisible,\n        cartCount,\n        modalTitle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 43598,
+      "timestamp": "2025-09-15T09:56:09.192Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the cart icon using a robust selector (header .cart with a shopping cart icon)\n    await page.waitForSelector('header .cart i.fas.fa-shopping-cart', { timeout: 5000 });\n\n    // Try clicking the parent cart div using XPath to avoid ambiguity\n    const cartDiv = await page.$('//header//div[contains(@class,\"cart\") and .//i[contains(@class,\"fa-shopping-cart\")]]');\n    if (!cartDiv) {\n      throw new Error('Cart icon not found');\n    }\n\n    // Click the cart div to open the cart modal\n    await cartDiv.click();\n\n    // Wait for the cart modal to appear using multiple selector strategies\n    // Try by id, then by class, then by role if present\n    let cartModal = null;\n    try {\n      await page.waitForSelector('#cartModal, .cart-modal, [role=\"dialog\"]', { timeout: 4000 });\n      cartModal = await page.$('#cartModal') ||\n                  await page.$('.cart-modal') ||\n                  await page.$('[role=\"dialog\"]');\n    } catch (e) {\n      throw new Error('Cart modal did not appear after clicking cart icon');\n    }\n\n    // Take screenshot after modal opens\n    const modalShot = path.join(screenshotsDir, 'step_2_cart_modal_opened.png');\n    await page.screenshot({ path: modalShot });\n    screenshots.push(modalShot);\n\n    // Extract some data to verify that modal is open: e.g., check for a heading or button inside modal\n    let modalHeading = '';\n    let checkoutButtonExists = false;\n    if (cartModal) {\n      // Try to get modal heading text\n      const headingEl = await cartModal.$('h2, h3, .cart-title');\n      if (headingEl) {\n        modalHeading = (await headingEl.innerText()).trim();\n      }\n      // Check for a \"Proceed to Checkout\" or \"Checkout\" button inside the modal\n      checkoutButtonExists = !!(await cartModal.$('button:has-text(\"Checkout\"), button:has-text(\"Proceed to Checkout\")'));\n    }\n\n    return {\n      success: true,\n      action: \"Opened the shopping cart modal by clicking the cart icon in the header and verified modal appearance.\",\n      extractedData: {\n        modalHeading,\n        checkoutButtonExists\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 58490,
+      "timestamp": "2025-09-15T09:56:52.790Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 155013,
+  "timestamp": "2025-09-15T09:55:16.267Z",
+  "savedAt": "2025-09-15T09:57:51.280Z",
+  "version": "1.0"
+}

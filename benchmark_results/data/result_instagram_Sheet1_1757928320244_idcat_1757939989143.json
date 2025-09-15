@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928320244_idcat_1757939989143",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928320244_idcat",
+    "description": "IG_REG_006",
+    "objective": "Regular",
+    "expectedResult": "Click \"Your story\" button and verify create story modal opens",
+    "difficulty": "Easy",
+    "category": ".story.add-story, #createStoryModal",
+    "tags": [
+      "Create story modal becomes visible"
+    ],
+    "notes": "1. Click .story.add-story button 2. Verify #createStoryModal has style display:block or visible class"
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the \"Your story\" button in the stories bar\n    // Try multiple selector strategies: class, text, xpath\n    let yourStoryButton = null;\n    // Try by class and text\n    yourStoryButton = await page.waitForSelector('.story.add-story', { timeout: 5000 });\n    // Double check it contains \"Your story\" text\n    const yourStoryText = await yourStoryButton.textContent();\n    if (!/your story/i.test(yourStoryText || '')) {\n      // Fallback: find by text\n      yourStoryButton = await page.waitForSelector('xpath=//div[contains(@class,\"story\") and contains(.,\"Your story\")]', { timeout: 5000 });\n    }\n\n    // Highlight and click \"Your story\"\n    await yourStoryButton.scrollIntoViewIfNeeded();\n    await yourStoryButton.hover();\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_your_story_button.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_your_story_button.png'));\n\n    await yourStoryButton.click();\n\n    // Wait for the create story modal to appear\n    // Modal id: #createStoryModal\n    await page.waitForSelector('#createStoryModal', { state: 'visible', timeout: 5000 });\n\n    // Take screenshot of the modal open\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_create_story_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_create_story_modal.png'));\n\n    // Verify modal is visible and extract some content\n    const modalVisible = await page.isVisible('#createStoryModal');\n    let modalTitle = '';\n    if (modalVisible) {\n      // Try to extract the modal's title text\n      const titleElem = await page.$('#createStoryModal h2');\n      if (titleElem) {\n        modalTitle = (await titleElem.textContent())?.trim() || '';\n      }\n    }\n\n    return {\n      success: modalVisible,\n      action: 'Clicked \"Your story\" button and verified create story modal opens',\n      extractedData: {\n        modalVisible,\n        modalTitle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15269,
+      "timestamp": "2025-09-15T12:39:49.143Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the Stories section (using .stories class) to be visible\n    await page.waitForSelector('.stories', { timeout: 5000 });\n\n    // Find the \"Your story\" button: use text strategy inside the .stories container\n    // This is usually a .story element with a child span containing \"Your story\"\n    const yourStorySelector = '.stories .story:has-text(\"Your story\")';\n    await page.waitForSelector(yourStorySelector, { timeout: 5000 });\n\n    // Scroll the element into view (in case of horizontal scroll)\n    const yourStoryElement = await page.$(yourStorySelector);\n    if (yourStoryElement) {\n      await yourStoryElement.scrollIntoViewIfNeeded();\n      // Take screenshot before clicking\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n      // Click the \"Your story\" button\n      await yourStoryElement.click();\n    } else {\n      throw new Error('\"Your story\" button not found');\n    }\n\n    // Wait for the create story modal to appear (check for #createStoryModal with visible style or display)\n    // Try both id and a possible modal class fallback\n    let modalAppeared = false;\n    try {\n      await page.waitForSelector('#createStoryModal', { timeout: 4000, state: 'visible' });\n      modalAppeared = true;\n    } catch {\n      // Fallback: try a modal with header text \"Create Story\"\n      const modalHeader = await page.$('xpath=//div[contains(@class,\"modal-content\")]//h2[contains(text(),\"Create Story\")]');\n      if (modalHeader) modalAppeared = true;\n    }\n\n    // Take screenshot after modal appears (or not)\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_story_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_story_modal.png'));\n\n    // Extract modal header if present for verification\n    let modalHeaderText = null;\n    try {\n      const headerEl = await page.$('#createStoryModal h2');\n      if (headerEl) {\n        modalHeaderText = (await headerEl.textContent())?.trim();\n      } else {\n        // Fallback: try any visible modal header\n        const fallbackHeader = await page.$('xpath=//div[contains(@class,\"modal-content\")]//h2');\n        if (fallbackHeader) modalHeaderText = (await fallbackHeader.textContent())?.trim();\n      }\n    } catch {}\n\n    // Final result\n    return {\n      success: modalAppeared,\n      action: modalAppeared\n        ? 'Clicked \"Your story\" and verified that create story modal opened'\n        : 'Clicked \"Your story\" but create story modal did not appear',\n      extractedData: {\n        modalHeader: modalHeaderText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17065,
+      "timestamp": "2025-09-15T12:40:04.412Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the stories bar to be visible (by class 'stories')\n    await page.waitForSelector('.stories', { timeout: 5000 });\n\n    // Try to find the \"Your story\" element using different strategies\n    // 1. Find the .story element containing \"Your story\"\n    const yourStoryStory = await page.$('.stories .story:has-text(\"Your story\")');\n\n    let storyClicked = false;\n\n    if (yourStoryStory) {\n      // Scroll it into view and click\n      await yourStoryStory.scrollIntoViewIfNeeded();\n      await yourStoryStory.click();\n      storyClicked = true;\n    } else {\n      // Fallback: Use XPath to find the story with the right label\n      const [storyAlt] = await page.$x('//div[contains(@class,\"stories\")]//div[contains(@class,\"story\")]//div[contains(.,\"Your story\")]');\n      if (storyAlt) {\n        await storyAlt.scrollIntoViewIfNeeded();\n        await storyAlt.click();\n        storyClicked = true;\n      }\n    }\n\n    // Take screenshot after attempt to click\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_story_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_story_click.png'));\n\n    if (!storyClicked) {\n      throw new Error('Could not find \"Your story\" element to click.');\n    }\n\n    // Wait for the create story modal to appear using different strategies\n    // Try #createStoryModal first\n    let createStoryModal;\n    try {\n      await page.waitForSelector('#createStoryModal', { timeout: 4000, state: 'visible' });\n      createStoryModal = await page.$('#createStoryModal');\n    } catch {\n      // Fallback: look for modal by text or class\n      createStoryModal = await page.$('.modal:has-text(\"Create Story\")');\n      if (!createStoryModal) {\n        // Try another fallback: modal with file input for story\n        createStoryModal = await page.$('input[type=\"file\"]#storyFileInput');\n      }\n    }\n\n    // Take screenshot after modal open attempt\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_create_story_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_create_story_modal.png'));\n\n    // Verification: extract if the modal is visible and grab its inner text\n    let modalVisible = false;\n    let modalText = '';\n    if (createStoryModal) {\n      // Check if modal is visible\n      const box = await createStoryModal.boundingBox();\n      modalVisible = !!box;\n      modalText = await createStoryModal.evaluate(node => node.innerText);\n    }\n\n    return {\n      success: modalVisible,\n      action: 'Clicked \"Your story\" and verified the create story modal opens',\n      extractedData: {\n        modalVisible,\n        modalText: modalText ? modalText.trim() : ''\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 60985,
+      "timestamp": "2025-09-15T12:40:21.478Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 93319,
+  "timestamp": "2025-09-15T12:39:49.143Z",
+  "savedAt": "2025-09-15T12:41:22.462Z",
+  "version": "1.0"
+}

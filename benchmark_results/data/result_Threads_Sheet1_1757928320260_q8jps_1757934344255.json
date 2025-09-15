@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928320260_q8jps_1757934344255",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928320260_q8jps",
+    "description": "G008",
+    "objective": "Switch to Activity View",
+    "expectedResult": "Click on Activity navigation item to view activity feed",
+    "difficulty": ".nav-item[data-view='activity']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar navigation to be visible\n    await page.waitForSelector('.sidebar .nav-menu');\n\n    // Wait for the Activity nav item to be present\n    const activityNavSelector = \".nav-item[data-view='activity']\";\n    await page.waitForSelector(activityNavSelector);\n\n    // Take screenshot before clicking Activity\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_activity_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_activity_click.png'));\n\n    // Click on the Activity navigation item\n    const activityNav = await page.$(activityNavSelector);\n    if (!activityNav) throw new Error(\"Activity navigation item not found\");\n    await activityNav.click();\n\n    // Wait for the main content area to update to Activity view\n    // Try to detect the Activity view by waiting for a header or unique element\n    // We'll look for a content-header h2 with text \"Activity\"\n    const activityHeaderSelector = \"//div[contains(@class,'content-header')]//h2[normalize-space(text())='Activity']\";\n    await page.waitForSelector(activityHeaderSelector, { timeout: 4000 });\n\n    // Take screenshot after clicking Activity\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_activity_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_activity_click.png'));\n\n    // Extract some data to verify: check if the Activity nav item now has class 'active'\n    const isActive = await page.$eval(activityNavSelector, el => el.classList.contains('active'));\n\n    // Extract the header text of the current view for verification\n    const activityHeader = await page.$eval(\n      activityHeaderSelector,\n      el => el.textContent.trim()\n    );\n\n    return {\n      success: true,\n      action: \"Clicked on Activity navigation item to view activity feed\",\n      extractedData: {\n        activityNavIsActive: isActive,\n        activityHeader\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 23479,
+      "timestamp": "2025-09-15T11:05:44.255Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar navigation to be visible\n    await page.waitForSelector('nav.sidebar ul.nav-menu');\n\n    // Use an alternative selector strategy: Find the \"Activity\" nav item by xpath (using its icon and label)\n    const [activityNavItem] = await page.$x(\n      \"//li[contains(@class,'nav-item') and @data-view='activity' and .//span[normalize-space()='Activity']]\"\n    );\n\n    if (!activityNavItem) {\n      throw new Error(\"Activity navigation item not found\");\n    }\n\n    // Scroll the nav item into view (in case it's not visible)\n    await activityNavItem.evaluate(el => el.scrollIntoView({ behavior: 'instant', block: 'center' }));\n\n    // Take a screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Click on the Activity navigation item using the element handle\n    await activityNavItem.click();\n\n    // Wait for the main content area to update: look for a view with id containing 'activity'\n    // Since we don't know the exact content, wait for a .view.active that is NOT home/search\n    await page.waitForFunction(() => {\n      const views = Array.from(document.querySelectorAll('.view.active'));\n      return views.some(v =>\n        (v.id && v.id.includes('activity')) ||\n        (v.querySelector('.content-header h2') && v.querySelector('.content-header h2').innerText.toLowerCase().includes('activity'))\n      );\n    }, { timeout: 4000 });\n\n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    // Extract confirmation data: Get the header of the active view\n    const activityHeader = await page.evaluate(() => {\n      const view = document.querySelector('.view.active');\n      if (!view) return null;\n      const h2 = view.querySelector('.content-header h2');\n      return h2 ? h2.innerText.trim() : null;\n    });\n\n    return {\n      success: true,\n      action: \"Clicked on the Activity navigation item and switched to the Activity feed view\",\n      extractedData: {\n        activityHeader\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13022,
+      "timestamp": "2025-09-15T11:06:07.735Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for sidebar navigation to be visible (using nav-menu class)\n    await page.waitForSelector('ul.nav-menu', { timeout: 5000 });\n\n    // Locate the \"Activity\" navigation item using its icon and span text as an alternative selector\n    // This is NOT using the previous selector .nav-item[data-view='activity']\n    const activityNavXPath = \"//ul[contains(@class,'nav-menu')]/li[.//span[normalize-space(text())='Activity']]\";\n    const [activityNavItem] = await page.$x(activityNavXPath);\n\n    if (!activityNavItem) {\n      throw new Error(\"Could not find the 'Activity' navigation item using alternative selector (XPath).\");\n    }\n\n    // Scroll into view for robustness\n    await activityNavItem.evaluate(el => el.scrollIntoView({ behavior: 'auto', block: 'center' }));\n\n    // Take screenshot before clicking\n    const step2 = path.join(screenshotsDir, 'step_2_activity_nav_visible.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Click the activity navigation item\n    await activityNavItem.click();\n\n    // Wait for the Activity view to appear\n    // Activity view likely has id=\"activity-view\" or the header \"Activity\"\n    // Wait for a content header containing \"Activity\"\n    await page.waitForSelector(\".content-header h2\", { timeout: 4000 });\n    const activityHeader = await page.$eval(\".content-header h2\", el => el.textContent.trim());\n    if (activityHeader !== \"Activity\") {\n      // Wait for the correct view if not yet loaded\n      await page.waitForFunction(\n        () => {\n          const h2 = document.querySelector('.content-header h2');\n          return h2 && h2.textContent.trim() === 'Activity';\n        },\n        { timeout: 4000 }\n      );\n    }\n\n    // Take screenshot after clicking\n    const step3 = path.join(screenshotsDir, 'step_3_after_activity_click.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Extract some visible data from the activity feed for verification\n    // Let's collect the header and maybe the first activity item (if any)\n    let extractedData = {};\n    const headerText = await page.$eval('.content-header h2', el => el.textContent.trim());\n    extractedData.header = headerText;\n\n    // Try to find the first activity item (if present)\n    let firstActivityText = null;\n    try {\n      // Try a generic selector for possible activity item\n      firstActivityText = await page.$eval('#activity-view .activity-item, .activity-item', el => el.textContent.trim());\n    } catch {\n      // No activity item found\n    }\n    extractedData.firstActivityText = firstActivityText;\n\n    return {\n      success: true,\n      action: \"Clicked on the Activity navigation item to view the activity feed using alternative XPath selector and validated the view.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13873,
+      "timestamp": "2025-09-15T11:06:20.757Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 50375,
+  "timestamp": "2025-09-15T11:05:44.255Z",
+  "savedAt": "2025-09-15T11:06:34.630Z",
+  "version": "1.0"
+}

@@ -1,0 +1,63 @@
+{
+  "id": "TikTok_Sheet1_1757928337548_zj34j_1757945381434",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928337548_zj34j",
+    "description": 6,
+    "objective": "General",
+    "expectedResult": "Upload 버튼을 클릭하여 업로드 모달을 열기",
+    "difficulty": "#uploadBtn을 클릭",
+    "category": "Easy",
+    "tags": [
+      "#uploadBtn",
+      "#uploadModal"
+    ],
+    "notes": "#uploadBtn을 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the upload button\n    await page.waitForSelector('#uploadBtn');\n    await page.click('#uploadBtn');\n\n    // Wait for upload modal to appear (check for file input)\n    await page.waitForSelector('#videoFileInput', { state: 'visible' });\n\n    // Take screenshot after opening upload modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_upload_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_upload_modal_opened.png'));\n\n    // Verify modal is open by checking for upload-related elements\n    const modalElements = await page.$$eval('#videoFileInput, #videoHashtags, #videoPrivacy', \n      elements => elements.map(el => el.tagName)\n    );\n\n    return {\n      success: true,\n      action: \"Successfully clicked upload button and opened upload modal\",\n      extractedData: {\n        modalElementsPresent: modalElements.length,\n        uploadButtonClicked: true,\n        modalVisible: true\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 41064,
+      "timestamp": "2025-09-15T14:09:41.434Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the upload button to be visible and enabled\n    await page.waitForSelector('#uploadBtn', { state: 'visible' });\n    await page.waitForTimeout(1000); // Additional stability wait\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Click the upload button using multiple selector strategies\n    await page.click('#uploadBtn');\n    \n    // Wait for upload modal to appear - checking for multiple indicators\n    await Promise.race([\n      page.waitForSelector('#videoFileInput', { state: 'visible', timeout: 5000 }),\n      page.waitForSelector('#videoHashtags', { state: 'visible', timeout: 5000 }),\n      page.waitForSelector('#videoPrivacy', { state: 'visible', timeout: 5000 })\n    ]);\n\n    // Take screenshot after modal opens\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_modal_open.png'));\n\n    // Verify modal is open by checking for upload-related elements\n    const uploadElements = await page.$$eval('#videoFileInput, #videoHashtags, #videoPrivacy', \n      elements => elements.map(el => el.tagName + (el.id ? '#' + el.id : ''))\n    );\n\n    return {\n      success: true,\n      action: \"Clicked upload button and successfully opened upload modal\",\n      extractedData: {\n        modalElements: uploadElements,\n        modalOpened: uploadElements.length > 0\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n    \n    return {\n      success: false,\n      action: \"Failed to open upload modal\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 64176,
+      "timestamp": "2025-09-15T14:10:22.498Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the upload button using multiple selector strategies\n    // Strategy 1: Wait for the upload button by ID\n    await page.waitForSelector('#uploadBtn', { state: 'visible', timeout: 5000 });\n    \n    // Strategy 2: Alternative selector using class and icon\n    const uploadButton = await page.$('button.nav-btn i.fa-plus').catch(() => null);\n    \n    if (uploadButton) {\n      await uploadButton.click();\n    } else {\n      // Fallback to ID selector if class selector fails\n      await page.click('#uploadBtn');\n    }\n\n    // Wait for upload modal to appear (check for file input field)\n    await page.waitForSelector('#videoFileInput', { state: 'attached', timeout: 3000 });\n\n    // Take screenshot after successful click\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_upload_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_upload_modal_open.png'));\n\n    // Verify upload modal is open by checking for upload-related elements\n    const uploadModalVisible = await page.isVisible('#videoFileInput');\n    const modalTitle = await page.textContent('.upload-modal h2').catch(() => 'Upload Modal');\n\n    return {\n      success: true,\n      action: \"Clicked upload button and opened upload modal\",\n      extractedData: {\n        modalOpen: uploadModalVisible,\n        modalTitle: modalTitle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take screenshot on error\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 74138,
+      "timestamp": "2025-09-15T14:11:26.674Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 179378,
+  "timestamp": "2025-09-15T14:09:41.434Z",
+  "savedAt": "2025-09-15T14:12:40.812Z",
+  "version": "1.0"
+}

@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_013_1757928836022",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_013",
+    "description": "General",
+    "objective": "Booking Form Completion",
+    "expectedResult": "jun_2 모달을 열고 예약 폼에 체크인/체크아웃 날짜, 게스트 수를 입력한 후 총 비용 계산 결과 확인하기",
+    "difficulty": "Hard",
+    "category": ".booking-form, #modal-checkin, #modal-checkout, #modal-guests, #total-cost",
+    "tags": [
+      "Form completion",
+      "calculation validation"
+    ],
+    "notes": "총 예약 비용 (예: '$756' - 3박 × $180 + 서비스 수수료)"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open the modal for Jun's listing\n    await page.click('button:contains(\"Stays\")'); // Click on Stays tab\n    await page.waitForSelector('#staysSearch'); // Wait for the search bar to load\n    await page.click('button.guest-selector'); // Click to open guest selector\n    await page.waitForSelector('#guestMenu'); // Wait for guest menu to appear\n\n    // Input check-in and check-out dates\n    await page.fill('#checkinInput', '2023-12-01'); // Set check-in date\n    await page.fill('#checkoutInput', '2023-12-05'); // Set check-out date\n\n    // Set number of guests\n    await page.click('button:contains(\"+\")'); // Increase adults count\n    await page.click('button:contains(\"+\")'); // Increase children count\n\n    // Take a screenshot after filling the form\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_filled_form.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_filled_form.png'));\n\n    // Calculate total cost\n    await page.click('button:contains(\"Calculate\")'); // Assuming there's a button to calculate total cost\n    await page.waitForSelector('#total-cost'); // Wait for total cost to be displayed\n\n    // Extract total cost\n    const totalCost = await page.textContent('#total-cost');\n\n    // Take a final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_total_cost.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_total_cost.png'));\n\n    return {\n      success: true,\n      action: \"Opened Jun's modal, filled in the reservation form, and calculated total cost.\",\n      extractedData: { totalCost },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16550,
+      "timestamp": "2025-09-15T09:33:56.022Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open the modal for Jun_2 listing\n    await page.click('a:contains(\"Jun\")'); // Click on the listing for Jun\n    await page.waitForSelector('#modal', { state: 'visible' }); // Wait for the modal to be visible\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_opened.png'));\n\n    // Input check-in date\n    await page.fill('#checkinInput', '2023-10-01'); // Replace with desired date\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_checkin_date.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_checkin_date.png'));\n\n    // Input check-out date\n    await page.fill('#checkoutInput', '2023-10-10'); // Replace with desired date\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_checkout_date.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_checkout_date.png'));\n\n    // Update guest count\n    await page.click('.guest-selector'); // Open the guest selector\n    await page.waitForSelector('#guestMenu', { state: 'visible' }); // Wait for guest menu to be visible\n    await page.click('button:contains(\"+\")'); // Increase adult count\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_5_guest_count_updated.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_5_guest_count_updated.png'));\n\n    // Close the guest menu\n    await page.click('.guest-selector'); // Close the guest selector\n\n    // Calculate total cost\n    await page.click('button:contains(\"Calculate\")'); // Assuming there's a button to calculate total cost\n    await page.waitForSelector('#total-cost'); // Wait for the total cost to be displayed\n    const totalCost = await page.textContent('#total-cost'); // Extract total cost\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_6_total_cost.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_6_total_cost.png'));\n\n    return {\n      success: true,\n      action: \"Opened Jun_2 modal, filled reservation form, and calculated total cost\",\n      extractedData: { totalCost },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18502,
+      "timestamp": "2025-09-15T09:34:12.572Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open the modal for Jun_2\n    await page.click('button:contains(\"Add guests\")');\n    await page.waitForSelector('#guestMenu');\n\n    // Input check-in date\n    await page.fill('#checkinInput', '2023-12-01'); // Example check-in date\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_checkin.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_checkin.png'));\n\n    // Input check-out date\n    await page.fill('#checkoutInput', '2023-12-10'); // Example check-out date\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_checkout.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_checkout.png'));\n\n    // Set number of guests\n    await page.click('button:contains(\"+\")'); // Increment adults\n    await page.click('button:contains(\"+\")'); // Increment children\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_guests.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_guests.png'));\n\n    // Verify total cost\n    await page.waitForSelector('#total-cost'); // Wait for total cost to be displayed\n    const totalCost = await page.innerText('#total-cost');\n\n    // Take a final screenshot of total cost\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_5_total_cost.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_5_total_cost.png'));\n\n    return {\n      success: true,\n      action: \"Opened modal, entered check-in/check-out dates and guest count, and verified total cost\",\n      extractedData: { totalCost },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16039,
+      "timestamp": "2025-09-15T09:34:31.074Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 51091,
+  "timestamp": "2025-09-15T09:33:56.022Z",
+  "savedAt": "2025-09-15T09:34:47.113Z",
+  "version": "1.0"
+}

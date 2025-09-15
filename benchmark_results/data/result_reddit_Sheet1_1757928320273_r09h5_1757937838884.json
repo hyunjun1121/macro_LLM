@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928320273_r09h5_1757937838884",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928320273_r09h5",
+    "description": 2,
+    "objective": "Regular",
+    "expectedResult": "Switch to Hot tab",
+    "difficulty": "Easy",
+    "category": "Click on the Hot tab button and verify it becomes active",
+    "tags": [
+      "#hot-tab .tab-btn[data-tab='hot']"
+    ],
+    "notes": "switchTab('hot')"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the tab bar to be visible (try by text or aria-label)\n    // Try to find the 'Hot' tab button by text, aria-label, or role\n    let hotTabSelector = null;\n    // Try common selectors for the Hot tab\n    const possibleSelectors = [\n      // By text content\n      'button:has-text(\"Hot\")',\n      // By aria-label\n      '[aria-label=\"Hot\"]',\n      // By role and text\n      '[role=\"tab\"]:has-text(\"Hot\")',\n      // By class (guessing common Reddit class)\n      '.tab-hot',\n      // By XPath\n      '//button[contains(., \"Hot\")]'\n    ];\n\n    for (const sel of possibleSelectors) {\n      try {\n        if (sel.startsWith('//')) {\n          const el = await page.$x(sel);\n          if (el && el.length > 0) {\n            hotTabSelector = el[0];\n            break;\n          }\n        } else {\n          const el = await page.$(sel);\n          if (el) {\n            hotTabSelector = sel;\n            break;\n          }\n        }\n      } catch (e) {}\n    }\n\n    // If not found, throw error\n    if (!hotTabSelector) {\n      throw new Error('Could not find the Hot tab button');\n    }\n\n    // If selector is an element handle (XPath), click it directly\n    if (typeof hotTabSelector !== 'string') {\n      await hotTabSelector.scrollIntoViewIfNeeded();\n      await hotTabSelector.click();\n    } else {\n      await page.waitForSelector(hotTabSelector, { timeout: 3000 });\n      await page.click(hotTabSelector);\n    }\n\n    // Wait for the Hot tab to become active\n    // Try to find an active tab with text 'Hot'\n    let activeHotTab = null;\n    // Try several strategies for active tab\n    const activeTabSelectors = [\n      // aria-selected\n      'button[aria-selected=\"true\"]:has-text(\"Hot\")',\n      '[role=\"tab\"][aria-selected=\"true\"]:has-text(\"Hot\")',\n      // class-based (commonly 'active' or 'selected')\n      'button.active:has-text(\"Hot\")',\n      'button.selected:has-text(\"Hot\")',\n      '.tab-hot.active',\n      '.tab-hot.selected',\n      // XPath\n      '//button[contains(@class,\"active\") and contains(.,\"Hot\")]',\n      '//button[@aria-selected=\"true\" and contains(.,\"Hot\")]'\n    ];\n    for (const sel of activeTabSelectors) {\n      try {\n        if (sel.startsWith('//')) {\n          const el = await page.$x(sel);\n          if (el && el.length > 0) {\n            activeHotTab = el[0];\n            break;\n          }\n        } else {\n          const el = await page.$(sel);\n          if (el) {\n            activeHotTab = sel;\n            break;\n          }\n        }\n      } catch (e) {}\n    }\n\n    // Take screenshot after clicking Hot tab\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_hot_tab_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_hot_tab_clicked.png'));\n\n    // Extract verification data: is Hot tab active?\n    let hotTabActive = false;\n    if (activeHotTab) {\n      hotTabActive = true;\n    } else {\n      // As fallback, check if any tab with text 'Hot' has aria-selected true or class 'active'\n      const hotTabStatus = await page.evaluate(() => {\n        // By aria-selected\n        const btn = Array.from(document.querySelectorAll('button, [role=\"tab\"]')).find(\n          el => el.textContent && el.textContent.trim().toLowerCase() === 'hot' &&\n            (el.getAttribute('aria-selected') === 'true' ||\n             el.classList.contains('active') ||\n             el.classList.contains('selected'))\n        );\n        return !!btn;\n      });\n      hotTabActive = hotTabStatus;\n    }\n\n    return {\n      success: hotTabActive,\n      action: \"Clicked the Hot tab and verified it became active\",\n      extractedData: {\n        hotTabActive\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 19193,
+      "timestamp": "2025-09-15T12:03:58.884Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1Path = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1Path });\n    screenshots.push(step1Path);\n\n    // Wait for the tab navigation bar to appear (try to use role=\"tablist\" or fallback to text)\n    // Try to locate the \"Hot\" tab using text and aria attributes.\n    // We'll use XPath as a new selector strategy.\n    // Wait for any tab with text \"Hot\" (case-insensitive)\n    const hotTabXPath = \"//button[normalize-space(translate(text(),'HOT','hot'))='hot' or contains(., 'Hot')]\";\n    await page.waitForSelector('button'); // Ensure buttons are present\n\n    // Wait up to 5 seconds for the \"Hot\" tab to appear\n    const [hotTabBtn] = await page.$x(hotTabXPath);\n    if (!hotTabBtn) throw new Error('Could not find the \"Hot\" tab button');\n\n    // Take screenshot before clicking\n    const step2Path = path.join(screenshotsDir, 'step_2_before_click_hot.png');\n    await page.screenshot({ path: step2Path });\n    screenshots.push(step2Path);\n\n    // Click the \"Hot\" tab\n    await hotTabBtn.click();\n\n    // Wait for the tab to become active\n    // We'll check for a class or aria-selected attribute on the Hot tab after click\n    // Give the UI some time to update\n    await page.waitForTimeout(500);\n\n    // Re-evaluate the tab's active state\n    const isActive = await page.evaluate((xpath) => {\n      const evaluator = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);\n      const btn = evaluator.singleNodeValue;\n      if (!btn) return { found: false };\n      // Try aria-selected or class for active state\n      const ariaSelected = btn.getAttribute('aria-selected');\n      const className = btn.className || '';\n      return {\n        found: true,\n        ariaSelected,\n        className,\n        active: ariaSelected === \"true\" || className.toLowerCase().includes(\"active\") || className.toLowerCase().includes(\"selected\")\n      };\n    }, hotTabXPath);\n\n    // Take screenshot after clicking Hot\n    const step3Path = path.join(screenshotsDir, 'step_3_after_click_hot.png');\n    await page.screenshot({ path: step3Path });\n    screenshots.push(step3Path);\n\n    // Prepare extracted data for verification\n    const extractedData = {\n      hotTab: {\n        found: isActive.found,\n        ariaSelected: isActive.ariaSelected,\n        className: isActive.className,\n        isActive: isActive.active\n      }\n    };\n\n    if (!isActive.found) throw new Error('Hot tab not found after clicking');\n    if (!isActive.active) throw new Error('Hot tab did not become active');\n\n    return {\n      success: true,\n      action: \"Clicked on the Hot tab button and verified it became active\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15239,
+      "timestamp": "2025-09-15T12:04:18.077Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the tab navigation area. Try to use role and aria-labels for robustness.\n    // The tab navigation is likely in the main content. Try to find by text.\n    // We'll first try to find a tab with text 'Hot'\n    const hotTabSelector = \"//button[contains(., 'Hot') or contains(@aria-label, 'hot')]\";\n    await page.waitForSelector('main', { timeout: 5000 });\n    // Wait for the Hot tab button to appear using XPath\n    const [hotTabBtn] = await page.$x(hotTabSelector);\n    if (!hotTabBtn) {\n      throw new Error('Hot tab button not found');\n    }\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Click the Hot tab\n    await hotTabBtn.click();\n\n    // Wait for the Hot tab to become active. Try to detect a class or aria-selected attribute.\n    // We'll poll for an active state (aria-selected or class contains 'active' or 'selected')\n    let isActive = false;\n    for (let i = 0; i < 10; i++) {\n      const [hotTab] = await page.$x(hotTabSelector);\n      if (hotTab) {\n        // Check for aria-selected or active class\n        const ariaSelected = await hotTab.getAttribute('aria-selected');\n        const className = await hotTab.getAttribute('class');\n        if ((ariaSelected && ariaSelected === 'true') || (className && /active|selected/.test(className))) {\n          isActive = true;\n          break;\n        }\n      }\n      await page.waitForTimeout(300);\n    }\n\n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    // Extract which tab is currently active for verification\n    let activeTabText = null;\n    // Try to get any tab button that is active by aria-selected or class\n    const activeTabButton = await page.evaluateHandle(() => {\n      // Try aria-selected\n      const btn = document.querySelector('button[aria-selected=\"true\"]');\n      if (btn) return btn;\n      // Try class contains active or selected\n      const btn2 = Array.from(document.querySelectorAll('button')).find(b => \n        b.className && (b.className.includes('active') || b.className.includes('selected'))\n      );\n      return btn2 || null;\n    });\n    if (activeTabButton) {\n      activeTabText = await activeTabButton.evaluate(el => el.textContent.trim());\n    }\n\n    return {\n      success: isActive,\n      action: isActive\n        ? \"Clicked the Hot tab and verified it became active\"\n        : \"Clicked the Hot tab but could not verify it became active\",\n      extractedData: {\n        activeTab: activeTabText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16525,
+      "timestamp": "2025-09-15T12:04:33.316Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 50957,
+  "timestamp": "2025-09-15T12:03:58.884Z",
+  "savedAt": "2025-09-15T12:04:49.841Z",
+  "version": "1.0"
+}

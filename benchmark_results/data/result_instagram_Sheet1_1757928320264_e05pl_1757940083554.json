@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928320264_e05pl_1757940083554",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928320264_e05pl",
+    "description": "IG_REG_007",
+    "objective": "Regular",
+    "expectedResult": "Click messages button in navigation and verify messages modal opens",
+    "difficulty": "Easy",
+    "category": ".messages-btn, #messagesModal",
+    "tags": [
+      "Messages modal becomes visible"
+    ],
+    "notes": "1. Click .messages-btn 2. Verify #messagesModal is displayed"
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the messages button in navigation to appear (by class)\n    const messagesBtnSelector = '.messages-btn';\n    await page.waitForSelector(messagesBtnSelector, { timeout: 5000 });\n\n    // Take screenshot before clicking messages button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click_messages.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click_messages.png'));\n\n    // Click the messages button\n    await page.click(messagesBtnSelector);\n\n    // Wait for the messages modal to appear (by ID)\n    const messagesModalSelector = '#messagesModal';\n    await page.waitForSelector(messagesModalSelector, { state: 'visible', timeout: 5000 });\n\n    // Wait for the modal content to be loaded (header text)\n    const modalHeaderSelector = '#messagesModal .messages-header h2';\n    await page.waitForSelector(modalHeaderSelector, { timeout: 3000 });\n\n    // Take screenshot after modal opens\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_messages_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_messages_modal_open.png'));\n\n    // Extract the modal header text to verify\n    const modalHeader = await page.$eval(modalHeaderSelector, el => el.textContent.trim());\n\n    // Check if modal is visible and header is correct\n    const modalVisible = await page.$eval(messagesModalSelector, el => {\n      const style = window.getComputedStyle(el);\n      return style.display !== 'none' && style.visibility !== 'hidden' && el.offsetParent !== null;\n    });\n\n    const extractedData = {\n      modalHeader,\n      modalVisible\n    };\n\n    const success = modalVisible && modalHeader.toLowerCase() === 'messages';\n\n    return {\n      success,\n      action: success\n        ? \"Clicked messages button and verified messages modal opens\"\n        : \"Messages modal did not open or header is incorrect\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14541,
+      "timestamp": "2025-09-15T12:41:23.554Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the navigation bar to be visible (using a unique icon in nav)\n    await page.waitForSelector('.nav-menu', { state: 'visible', timeout: 5000 });\n\n    // Try to find the Messages button using alternative selector strategies:\n    // 1. By aria-label, if present (not shown in HTML, so skip)\n    // 2. By icon (FontAwesome fa-paper-plane or similar), but not in provided HTML, so skip\n    // 3. By \".messages-btn\" class (as per task description), but not in available elements\n    // 4. By XPath: Find the navigation button that opens #messagesModal based on modal structure\n\n    // We'll look for a nav button that opens #messagesModal by matching its click effect.\n    // Instead, let's use a direct DOM approach: detect which nav-item opens the modal by clicking and watching for #messagesModal to open.\n\n    // Get all nav items\n    const navItems = await page.$$('.nav-menu .nav-item');\n    let messagesBtnIndex = -1;\n    let found = false;\n\n    for (let i = 0; i < navItems.length; i++) {\n      // Before clicking, ensure modal is not visible\n      const modalVisibleBefore = await page.$eval('#messagesModal', el => el.classList.contains('show') || (getComputedStyle(el).display !== 'none' && getComputedStyle(el).visibility !== 'hidden'));\n      if (modalVisibleBefore) {\n        // If modal is already open, close it to reset state (try close button inside modal)\n        const closeBtn = await page.$('#messagesModal .close-modal');\n        if (closeBtn) await closeBtn.click();\n        await page.waitForTimeout(300); // Wait for modal to close\n      }\n\n      // Click nav item\n      await navItems[i].click();\n      // Allow time for modal animation/effect\n      await page.waitForTimeout(500);\n\n      // Check if messages modal is now visible\n      const modalVisibleAfter = await page.$eval('#messagesModal', el => el.offsetParent !== null || (getComputedStyle(el).display !== 'none' && getComputedStyle(el).visibility !== 'hidden'));\n      if (modalVisibleAfter) {\n        messagesBtnIndex = i;\n        found = true;\n        break;\n      }\n    }\n\n    if (!found) {\n      throw new Error('Messages button in navigation not found via nav-item iteration');\n    }\n\n    // Take screenshot after clicking messages button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_messages_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_messages_modal_open.png'));\n\n    // Verify the modal is open and contains expected elements (e.g., header text \"Messages\")\n    await page.waitForSelector('#messagesModal', { state: 'visible', timeout: 3000 });\n    const modalHeader = await page.$eval('#messagesModal .messages-header h2', el => el.textContent.trim());\n\n    // Extract some data from the modal, e.g., list of usernames in message threads\n    const messageUsernames = await page.$$eval('#messagesModal .message-thread .message-username', nodes =>\n      nodes.map(n => n.textContent.trim())\n    );\n\n    return {\n      success: true,\n      action: \"Clicked the navigation messages button and verified the messages modal opens.\",\n      extractedData: {\n        modalHeader,\n        messageUsernames,\n        messagesBtnIndex\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20060,
+      "timestamp": "2025-09-15T12:41:38.096Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the navigation area to be visible (nav-menu class used in CSS)\n    await page.waitForSelector('.nav-menu', { timeout: 3000 });\n\n    // Try to find the \"Messages\" navigation button by icon (fa-paper-plane or similar), since button may not have a unique text\n    // Fallback: Find by nth nav-item\n    let messagesBtn = null;\n    // Try common icon for Instagram Messages (paper-plane)\n    messagesBtn = await page.$('.nav-menu .fa-paper-plane');\n    if (!messagesBtn) {\n      // Try alternative: find the nav-item with aria-label/messages\n      messagesBtn = await page.$('.nav-menu [aria-label*=\"Message\"], .nav-menu [title*=\"Message\"]');\n    }\n    if (!messagesBtn) {\n      // Try as the third .nav-item (Instagram order is usually: Home, DM, Explore...)\n      const navItems = await page.$$('.nav-menu .nav-item');\n      if (navItems.length >= 2) {\n        messagesBtn = navItems[1];\n      }\n    }\n    if (!messagesBtn) {\n      // Try via XPath: a button/icon with a plane icon or alt/title/message\n      const [xpathBtn] = await page.$x('//nav//button[contains(@aria-label, \"Message\") or contains(@title, \"Message\") or .//i[contains(@class,\"plane\") or contains(@class,\"message\")]]');\n      if (xpathBtn) messagesBtn = xpathBtn;\n    }\n    if (!messagesBtn) {\n      throw new Error('Messages button not found using various selector strategies');\n    }\n\n    // Click the messages button\n    await messagesBtn.click();\n\n    // Wait for the #messagesModal to become visible\n    await page.waitForSelector('#messagesModal.modal', { state: 'visible', timeout: 3000 });\n\n    // Wait for the modal header text \"Messages\" to appear for extra certainty\n    await page.waitForSelector('#messagesModal .messages-header h2', { timeout: 2000 });\n\n    // Take screenshot after opening messages modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_messages_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_messages_modal.png'));\n\n    // Extract verification data: check if the modal is visible and header text is correct\n    const modalVisible = await page.$eval('#messagesModal', el => {\n      const style = window.getComputedStyle(el);\n      return (style.display !== 'none' && style.visibility !== 'hidden' && el.classList.contains('modal'));\n    });\n    const headerText = await page.$eval('#messagesModal .messages-header h2', el => el.textContent.trim());\n\n    return {\n      success: modalVisible && headerText === 'Messages',\n      action: \"Clicked the messages navigation button and verified the messages modal opens\",\n      extractedData: {\n        modalVisible,\n        headerText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16097,
+      "timestamp": "2025-09-15T12:41:58.156Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 50699,
+  "timestamp": "2025-09-15T12:41:23.554Z",
+  "savedAt": "2025-09-15T12:42:14.253Z",
+  "version": "1.0"
+}

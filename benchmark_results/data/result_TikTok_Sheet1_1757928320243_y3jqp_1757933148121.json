@@ -1,0 +1,63 @@
+{
+  "id": "TikTok_Sheet1_1757928320243_y3jqp_1757933148121",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928320243_y3jqp",
+    "description": 8,
+    "objective": "General",
+    "expectedResult": "첫 번째 비디오의 댓글 버튼을 클릭하여 댓글 모달 열기",
+    "difficulty": "data-video-id='1'인 컨테이너의 .comment-btn을 클릭",
+    "category": "Easy",
+    "tags": [
+      ".video-container[data-video-id='1'] .comment-btn",
+      "#commentsModal"
+    ],
+    "notes": "data-video-id='1'인 컨테이너의 .comment-btn을 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first video container with data-video-id=\"1\"\n    const videoContainerSelector = 'div.video-container[data-video-id=\"1\"]';\n    await page.waitForSelector(videoContainerSelector, { timeout: 5000 });\n\n    // Wait for the comment button inside the first video container\n    const commentBtnSelector = `${videoContainerSelector} .action-btn.comment-btn`;\n    await page.waitForSelector(commentBtnSelector, { timeout: 5000 });\n\n    // Take screenshot before clicking the comment button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click_comment.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click_comment.png'));\n\n    // Click the comment button\n    await page.click(commentBtnSelector);\n\n    // Wait for the comment modal/dialog to appear\n    // Try to detect a modal or input for adding a comment\n    let commentModalAppeared = false;\n    let commentInputSelector = '#commentInput, .comment-modal, .comments-modal, .comments-dialog, [role=\"dialog\"]';\n    try {\n      await page.waitForSelector(commentInputSelector, { timeout: 4000 });\n      commentModalAppeared = true;\n    } catch (e) {\n      // Try to find any visible input with placeholder \"Add a comment...\"\n      const inputHandles = await page.$$('input[placeholder=\"Add a comment...\"], textarea[placeholder=\"Add a comment...\"]');\n      if (inputHandles.length > 0) {\n        commentModalAppeared = true;\n      }\n    }\n\n    // Take screenshot after clicking the comment button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click_comment.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click_comment.png'));\n\n    // Extract data to verify the modal/input is visible\n    let extractedData = {};\n    if (commentModalAppeared) {\n      // Try to extract the placeholder of the comment input\n      const commentInput = await page.$('input[placeholder=\"Add a comment...\"], textarea[placeholder=\"Add a comment...\"]');\n      let placeholder = null;\n      if (commentInput) {\n        placeholder = await commentInput.getAttribute('placeholder');\n      }\n      extractedData = {\n        commentModalVisible: true,\n        commentInputPlaceholder: placeholder\n      };\n    } else {\n      extractedData = {\n        commentModalVisible: false\n      };\n    }\n\n    return {\n      success: commentModalAppeared,\n      action: \"Clicked the first video's comment button to open the comment modal\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16312,
+      "timestamp": "2025-09-15T10:45:48.121Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the first video container to appear using data-video-id attribute (alternative to previous attempts)\n    const videoContainerSelector = '[data-video-id=\"1\"]';\n    await page.waitForSelector(videoContainerSelector, { timeout: 4000 });\n\n    // Use XPath to find the .action-btn with class comment-btn inside the correct video container\n    const xpathCommentBtn = '//div[@data-video-id=\"1\"]//button[contains(@class,\"comment-btn\")]';\n    const [commentBtn] = await page.$x(xpathCommentBtn);\n\n    if (!commentBtn) throw new Error('Comment button not found for video 1');\n\n    // Scroll into view in case it is out of the viewport\n    await commentBtn.evaluate(el => el.scrollIntoView({ block: 'center' }));\n\n    // Optional: wait for the button to be visible and enabled\n    await commentBtn.waitForElementState('visible', { timeout: 2000 });\n    await commentBtn.waitForElementState('enabled', { timeout: 2000 });\n\n    // Take screenshot before clicking the button\n    const beforeClickShot = path.join(screenshotsDir, 'step_2_before_comment_click.png');\n    await page.screenshot({ path: beforeClickShot });\n    screenshots.push(beforeClickShot);\n\n    // Click the comment button\n    await commentBtn.click();\n\n    // Wait for the comment modal/dialog to appear\n    // Try waiting for a modal or an input placeholder typically used for comments\n    // Try several selectors for robustness\n    let modalAppeared = false;\n    let commentModalSelector = null;\n    const possibleCommentSelectors = [\n      'input[placeholder=\"Add a comment...\"]',\n      '.comment-modal',\n      '.comments-container',\n      '.modal-content',\n      '[role=\"dialog\"]'\n    ];\n    for (const selector of possibleCommentSelectors) {\n      try {\n        await page.waitForSelector(selector, { timeout: 2000 });\n        commentModalSelector = selector;\n        modalAppeared = true;\n        break;\n      } catch (e) {\n        // Continue to next selector\n      }\n    }\n\n    // Take a screenshot of the comment modal open state\n    const afterClickShot = path.join(screenshotsDir, 'step_3_comment_modal_open.png');\n    await page.screenshot({ path: afterClickShot });\n    screenshots.push(afterClickShot);\n\n    // Extract some data to verify modal is open (e.g., check for comment input field visibility)\n    let commentInputVisible = false;\n    if (modalAppeared && commentModalSelector) {\n      commentInputVisible = await page.$eval(\n        commentModalSelector,\n        el => !!(el.offsetParent !== null)\n      ).catch(() => false);\n    }\n\n    return {\n      success: modalAppeared && commentInputVisible,\n      action: \"Clicked the first video's comment button and opened the comment modal/dialog.\",\n      extractedData: {\n        commentModalSelector,\n        commentInputVisible\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16788,
+      "timestamp": "2025-09-15T10:46:04.433Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1Path = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1Path });\n    screenshots.push(step1Path);\n\n    // Wait for the first video container with data-video-id=\"1\"\n    const videoContainerSelector = '[data-video-id=\"1\"]';\n    await page.waitForSelector(videoContainerSelector, { timeout: 5000 });\n\n    // Use a robust selector for the comment button inside this container:\n    // 1. Try to locate by visible text (in case icon/font fails)\n    // 2. Use direct descendant button with class .comment-btn\n    // 3. Fallback: Find the 2nd .action-btn within the video-actions div\n\n    // Try the most robust method: select the comment button via relative selector\n    const commentBtn = await page.$(`${videoContainerSelector} .video-actions .action-btn.comment-btn`);\n    if (!commentBtn) {\n      throw new Error('Comment button not found in first video container');\n    }\n\n    // Scroll into view to ensure it's interactable\n    await commentBtn.scrollIntoViewIfNeeded();\n    // Wait for it to be enabled\n    await commentBtn.waitForElementState('visible');\n    await commentBtn.waitForElementState('enabled');\n\n    // Take screenshot before clicking\n    const step2Path = path.join(screenshotsDir, 'step_2_before_comment_click.png');\n    await page.screenshot({ path: step2Path });\n    screenshots.push(step2Path);\n\n    // Click the comment button\n    await commentBtn.click();\n\n    // Wait for the comment modal/dialog to appear\n    // Try several strategies:\n    // - Look for an input with placeholder \"Add a comment...\"\n    // - Wait for a visible element with selector #commentInput or a modal/dialog role\n    // - Wait for a generic modal with comments\n\n    // Wait for comment input to appear as sign of modal opening\n    await page.waitForSelector('#commentInput, [placeholder=\"Add a comment...\"]', { timeout: 4000 });\n\n    // Take screenshot after modal is open\n    const step3Path = path.join(screenshotsDir, 'step_3_comment_modal_open.png');\n    await page.screenshot({ path: step3Path });\n    screenshots.push(step3Path);\n\n    // Extract a verification: check if the comment input is visible\n    const commentInputVisible = await page.isVisible('#commentInput, [placeholder=\"Add a comment...\"]');\n\n    return {\n      success: true,\n      action: \"Clicked the comment button on the first video (data-video-id='1') and opened the comment modal.\",\n      extractedData: {\n        commentInputVisible\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14306,
+      "timestamp": "2025-09-15T10:46:21.221Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 47406,
+  "timestamp": "2025-09-15T10:45:48.121Z",
+  "savedAt": "2025-09-15T10:46:35.527Z",
+  "version": "1.0"
+}

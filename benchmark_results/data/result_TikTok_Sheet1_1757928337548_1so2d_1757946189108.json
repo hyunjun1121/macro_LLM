@@ -1,0 +1,62 @@
+{
+  "id": "TikTok_Sheet1_1757928337548_1so2d_1757946189108",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928337548_1so2d",
+    "description": 10,
+    "objective": "General",
+    "expectedResult": "첫 번째 비디오를 북마크에 추가",
+    "difficulty": "data-video-id='1'인 컨테이너의 .bookmark-btn을 클릭",
+    "category": "Easy",
+    "tags": [
+      ".video-container[data-video-id='1'] .bookmark-btn"
+    ],
+    "notes": "data-video-id='1'인 컨테이너의 .bookmark-btn을 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the bookmark button for the first video\n    await page.waitForSelector('[data-video-id=\"1\"]');\n    const bookmarkBtn = await page.$('[data-video-id=\"1\"] .bookmark-btn');\n    \n    if (bookmarkBtn) {\n      await bookmarkBtn.click();\n      await page.waitForTimeout(1000); // Wait for UI update\n      \n      // Take screenshot after clicking bookmark\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_2_bookmarked.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_2_bookmarked.png'));\n\n      return {\n        success: true,\n        action: \"Bookmarked the first video with data-video-id='1'\",\n        extractedData: {\n          videoId: \"1\",\n          action: \"bookmarked\"\n        },\n        screenshots,\n        error: null\n      };\n    } else {\n      throw new Error('Bookmark button not found for the first video');\n    }\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to bookmark the first video\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 72441,
+      "timestamp": "2025-09-15T14:23:09.108Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for video container with data-video-id='1' to be visible\n    await page.waitForSelector('div[data-video-id=\"1\"]', { state: 'visible' });\n\n    // Find and click the bookmark button using multiple selector strategies\n    const bookmarkBtn = await page.$('div[data-video-id=\"1\"] .bookmark-btn');\n    if (bookmarkBtn) {\n      await bookmarkBtn.click();\n    } else {\n      // Alternative strategy: Use XPath to find bookmark button\n      const bookmarkXPath = '//div[@data-video-id=\"1\"]//button[contains(@class, \"bookmark-btn\")]';\n      await page.waitForSelector(`xpath=${bookmarkXPath}`);\n      await page.click(`xpath=${bookmarkXPath}`);\n    }\n\n    // Take screenshot after clicking bookmark\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_bookmark.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_bookmark.png'));\n\n    // Verify bookmark was added by checking for active state or confirmation\n    const isBookmarked = await page.$eval(\n      'div[data-video-id=\"1\"] .bookmark-btn',\n      btn => btn.classList.contains('active') || btn.getAttribute('aria-pressed') === 'true'\n    ).catch(() => false);\n\n    return {\n      success: true,\n      action: \"Bookmarked the first video (data-video-id='1')\",\n      extractedData: {\n        videoId: 1,\n        bookmarked: isBookmarked\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n    \n    return {\n      success: false,\n      action: \"Failed to bookmark the first video\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 119895,
+      "timestamp": "2025-09-15T14:24:21.549Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the bookmark button for first video\n    await page.waitForSelector('div.video-container[data-video-id=\"1\"]');\n    \n    // Using XPath to find the bookmark button within the specific video container\n    const bookmarkBtn = await page.waitForSelector('xpath=//div[@data-video-id=\"1\"]//button[contains(@class, \"bookmark-btn\")]');\n    await bookmarkBtn.click();\n    \n    // Wait for any UI changes/animations\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after clicking bookmark\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_bookmarked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_bookmarked.png'));\n\n    // Extract confirmation data\n    const bookmarkState = await page.evaluate(() => {\n      const btn = document.querySelector('div[data-video-id=\"1\"] .bookmark-btn');\n      return {\n        isBookmarked: btn ? btn.classList.contains('active') : false,\n        buttonText: btn ? btn.textContent.trim() : null\n      };\n    });\n\n    return {\n      success: true,\n      action: \"Clicked bookmark button for first video (data-video-id='1')\",\n      extractedData: {\n        videoId: \"1\",\n        isBookmarked: bookmarkState.isBookmarked,\n        buttonState: bookmarkState.buttonText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 103632,
+      "timestamp": "2025-09-15T14:26:21.444Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 295968,
+  "timestamp": "2025-09-15T14:23:09.108Z",
+  "savedAt": "2025-09-15T14:28:05.076Z",
+  "version": "1.0"
+}

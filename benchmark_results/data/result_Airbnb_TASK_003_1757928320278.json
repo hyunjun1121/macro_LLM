@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_003_1757928320278",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_003",
+    "description": "General",
+    "objective": "Guest Counter Interaction",
+    "expectedResult": "게스트 선택 메뉴를 열고 성인 2명, 아동 1명을 선택한 후 게스트 표시 텍스트 변화 확인하기",
+    "difficulty": "Medium",
+    "category": ".guest-selector, #guestMenu, [onclick*='updateGuests'], #guestCount",
+    "tags": [
+      "Menu interaction",
+      "counter manipulation"
+    ],
+    "notes": "'2 guests, 1 infant' 형태의 게스트 표시 텍스트"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the guest selector button and click to open the menu\n    await page.waitForSelector('button.guest-selector');\n    await page.click('button.guest-selector');\n\n    // Wait for the guest menu to appear\n    await page.waitForSelector('#guestMenu', { state: 'visible' });\n\n    // Take screenshot after opening guest menu\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_guest_menu_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_guest_menu_open.png'));\n\n    // Increase adults to 2\n    for (let i = 0; i < 2; i++) {\n      // Find the adults \"+\" button using xpath (to be robust)\n      const adultsPlusBtn = await page.waitForSelector(\"//div[@id='guestMenu']//strong[text()='Adults']/ancestor::div[contains(@class,'guest-option')]//button[normalize-space(text())='+']\");\n      await adultsPlusBtn.click();\n      // Wait for the count to update\n      await page.waitForFunction(() => {\n        const el = document.getElementById('adults');\n        return el && Number(el.textContent) >= 1;\n      });\n    }\n\n    // Increase children to 1\n    // Find the children \"+\" button using xpath\n    const childrenPlusBtn = await page.waitForSelector(\"//div[@id='guestMenu']//strong[text()='Children']/ancestor::div[contains(@class,'guest-option')]//button[normalize-space(text())='+']\");\n    await childrenPlusBtn.click();\n    // Wait for the count to update\n    await page.waitForFunction(() => {\n      const el = document.getElementById('children');\n      return el && Number(el.textContent) >= 1;\n    });\n\n    // Take screenshot after selecting guests\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_guests_selected.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_guests_selected.png'));\n\n    // Click outside to close the guest menu (click the header)\n    await page.click('header.header');\n\n    // Wait for guest menu to disappear (hidden)\n    await page.waitForSelector('#guestMenu', { state: 'hidden' });\n\n    // Wait for the guest count display to update\n    await page.waitForSelector('#guestCount');\n    // Give a short wait for UI update\n    await page.waitForTimeout(300);\n\n    // Take screenshot of updated guest count\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_guest_count_updated.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_guest_count_updated.png'));\n\n    // Extract the guest count display text\n    const guestCountText = await page.$eval('#guestCount', el => el.textContent.trim());\n\n    // Also extract the actual numbers for verification\n    const adultsCount = await page.$eval('#adults', el => el.textContent.trim());\n    const childrenCount = await page.$eval('#children', el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Opened guest selector, selected 2 adults and 1 child, and verified the guest count display text updated.\",\n      extractedData: {\n        guestCountText,\n        adultsCount,\n        childrenCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 19947,
+      "timestamp": "2025-09-15T09:25:20.278Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Step 1: Open guest selector menu (using aria-label and text)\n    const guestSelectorBtn = await page.waitForSelector('button.guest-selector', { timeout: 5000 });\n    await guestSelectorBtn.click();\n\n    // Wait for the guest menu to be visible via id, fallback to visible text \"Adults\"\n    let guestMenu;\n    try {\n      guestMenu = await page.waitForSelector('#guestMenu', { state: 'visible', timeout: 2000 });\n    } catch {\n      guestMenu = await page.waitForSelector('text=Adults', { timeout: 2000 });\n    }\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_guest_menu_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_guest_menu_open.png'));\n\n    // Step 2: Increase Adults to 2\n    // Find the \"Adults\" section, then click \"+\" twice\n    const adultsSection = await page.waitForSelector('//strong[text()=\"Adults\"]/ancestor::div[contains(@class,\"guest-option\")]', { timeout: 2000 });\n    const adultsPlusBtn = await adultsSection.$('button:has-text(\"+\")');\n    if (!adultsPlusBtn) throw new Error('Cannot find \"+\" button for Adults');\n    await adultsPlusBtn.click();\n    await page.waitForTimeout(200); // Small wait for UI update\n    await adultsPlusBtn.click();\n    await page.waitForTimeout(300);\n\n    // Step 3: Increase Children to 1\n    // Find the \"Children\" section, then click \"+\" once\n    const childrenSection = await page.waitForSelector('//strong[text()=\"Children\"]/ancestor::div[contains(@class,\"guest-option\")]', { timeout: 2000 });\n    const childrenPlusBtn = await childrenSection.$('button:has-text(\"+\")');\n    if (!childrenPlusBtn) throw new Error('Cannot find \"+\" button for Children');\n    await childrenPlusBtn.click();\n    await page.waitForTimeout(300);\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_guests_selected.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_guests_selected.png'));\n\n    // Step 4: Close the guest menu (click outside or on the selector button)\n    // Sometimes the menu closes automatically; if not, click outside\n    try {\n      await page.click('body', { position: { x: 5, y: 5 } });\n      await page.waitForSelector('#guestMenu', { state: 'hidden', timeout: 2000 });\n    } catch {\n      // Ignore if it closes automatically\n    }\n\n    await page.waitForTimeout(300);\n\n    // Step 5: Extract the guest count display\n    // This is in the <span id=\"guestCount\">\n    const guestCountSpan = await page.waitForSelector('#guestCount', { timeout: 2000 });\n    const guestCountText = (await guestCountSpan.innerText()).trim();\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_guest_count_display.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_guest_count_display.png'));\n\n    // Step 6: Extract the raw numbers from the counters for verification\n    const adultsCountEl = await page.$('#adults');\n    const childrenCountEl = await page.$('#children');\n    const adultsCount = adultsCountEl ? (await adultsCountEl.innerText()).trim() : null;\n    const childrenCount = childrenCountEl ? (await childrenCountEl.innerText()).trim() : null;\n\n    return {\n      success: true,\n      action: \"Opened guest selector, set Adults to 2 and Children to 1, and verified guest count display text.\",\n      extractedData: {\n        guestCountText,\n        adultsCount,\n        childrenCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 24289,
+      "timestamp": "2025-09-15T09:25:40.225Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Step 2: Open the guest selector menu\n    // Use button text and class combination for robustness\n    const guestSelectorBtn = await page.waitForSelector(\"button.guest-selector\");\n    await guestSelectorBtn.click();\n\n    // Wait for the guest menu to appear (it has id #guestMenu and class .guest-menu)\n    // Use a combination of id and visible\n    const guestMenu = await page.waitForSelector(\"#guestMenu\", { state: 'visible', timeout: 3000 });\n    await page.waitForTimeout(200); // slight pause for animation\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_guest_menu_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_guest_menu_open.png'));\n\n    // Step 3: Set Adults to 2\n    // Find the plus button for adults by traversing from the label\n    const adultSection = await page.waitForSelector(\"//strong[text()='Adults']/ancestor::div[contains(@class,'guest-option')]\", { timeout: 2000 });\n    // Get the current value for adults\n    const adultCountEl = await adultSection.$(\"span#adults\");\n    let adults = parseInt(await adultCountEl.textContent() || \"0\", 10);\n\n    while (adults < 2) {\n      const plusBtn = await adultSection.$(\"button:has-text('+')\");\n      await plusBtn.click();\n      await page.waitForTimeout(150);\n      adults = parseInt(await adultCountEl.textContent() || \"0\", 10);\n    }\n\n    // Step 4: Set Children to 1\n    const childrenSection = await page.waitForSelector(\"//strong[text()='Children']/ancestor::div[contains(@class,'guest-option')]\", { timeout: 2000 });\n    const childrenCountEl = await childrenSection.$(\"span#children\");\n    let children = parseInt(await childrenCountEl.textContent() || \"0\", 10);\n\n    while (children < 1) {\n      const plusBtn = await childrenSection.$(\"button:has-text('+')\");\n      await plusBtn.click();\n      await page.waitForTimeout(150);\n      children = parseInt(await childrenCountEl.textContent() || \"0\", 10);\n    }\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_guests_selected.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_guests_selected.png'));\n\n    // Step 5: Close the guest menu by clicking outside (click the search bar area)\n    await page.click(\"body\", { position: { x: 10, y: 10 } });\n    await page.waitForTimeout(300);\n\n    // Step 6: Verify the guest count text\n    // Wait for the #guestCount span to update\n    const guestCountSpan = await page.waitForSelector(\"#guestCount\", { timeout: 2000 });\n    const guestCountText = (await guestCountSpan.textContent()).trim();\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_guest_count_final.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_guest_count_final.png'));\n\n    // Extract result\n    return {\n      success: true,\n      action: \"Opened guest selector, selected 2 adults and 1 child, and verified guest count display.\",\n      extractedData: {\n        guestCountText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17638,
+      "timestamp": "2025-09-15T09:26:04.514Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 61874,
+  "timestamp": "2025-09-15T09:25:20.278Z",
+  "savedAt": "2025-09-15T09:26:22.153Z",
+  "version": "1.0"
+}

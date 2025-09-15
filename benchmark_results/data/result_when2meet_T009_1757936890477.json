@@ -1,0 +1,66 @@
+{
+  "id": "when2meet_T009_1757936890477",
+  "website": "when2meet",
+  "task": {
+    "id": "T009",
+    "description": "View Public Events Grid",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Verify that public events are displayed in the Public Events section",
+    "category": "#publicEventsGrid .event-card",
+    "tags": [
+      "Load homepage and identify public events"
+    ],
+    "notes": "Public Events grid contains event cards including 'Coffee Chat with New Hires' and 'Book Club Discussion'"
+  },
+  "websiteInfo": {
+    "name": "when2meet",
+    "htmlFiles": [
+      "404.html",
+      "create.html",
+      "dashboard.html",
+      "event.html",
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the Public Events Grid to be visible\n    // The selector for the grid is #publicEventsGrid\n    await page.waitForSelector('#publicEventsGrid', { timeout: 5000 });\n\n    // Wait for at least one event card to appear\n    await page.waitForSelector('#publicEventsGrid .event-card', { timeout: 5000 });\n\n    // Take a screenshot of the public events grid\n    const publicEventsGrid = await page.$('#publicEventsGrid');\n    if (publicEventsGrid) {\n      await publicEventsGrid.screenshot({ path: path.join(screenshotsDir, 'step_2_public_events_grid.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_2_public_events_grid.png'));\n    }\n\n    // Extract information about the displayed public events\n    const events = await page.$$eval('#publicEventsGrid .event-card', cards =>\n      cards.map(card => {\n        // Try to extract typical event info: title, creator, date, tags, etc.\n        const title = card.querySelector('.event-title')?.textContent?.trim() || '';\n        const creator = card.querySelector('.event-creator')?.textContent?.trim() || '';\n        const date = card.querySelector('.event-date')?.textContent?.trim() || '';\n        const tags = Array.from(card.querySelectorAll('.event-tag')).map(tag => tag.textContent.trim());\n        return { title, creator, date, tags };\n      })\n    );\n\n    // Take a screenshot of the first event card if it exists\n    const firstEventCard = await page.$('#publicEventsGrid .event-card');\n    if (firstEventCard) {\n      await firstEventCard.screenshot({ path: path.join(screenshotsDir, 'step_3_first_event_card.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_3_first_event_card.png'));\n    }\n\n    // Prepare extracted data for verification\n    const extractedData = {\n      publicEventsCount: events.length,\n      publicEvents: events\n    };\n\n    return {\n      success: true,\n      action: \"Verified that public events are displayed in the Public Events section (#publicEventsGrid .event-card). Extracted event data and took screenshots.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13791,
+      "timestamp": "2025-09-15T11:48:10.477Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the Public Events section header using text (to ensure page loaded)\n    const sectionHeader = await page.waitForSelector('text=/Public Events/i', { timeout: 4000 });\n\n    // Wait for the grid container using attribute selector (alt strategy)\n    // Try to wait for a section with an id or class containing 'publicEventsGrid'\n    const gridSelector = '[class*=\"publicEventsGrid\"], [id*=\"publicEventsGrid\"]';\n    await page.waitForSelector(gridSelector, { timeout: 4000 });\n\n    // Wait for at least one event card inside the grid\n    // Use a more robust selector: find any descendant with class containing \"event-card\"\n    const eventCardSelector = `${gridSelector} .event-card, .event-card`;\n    await page.waitForSelector(eventCardSelector, { timeout: 4000 });\n\n    // Take screenshot of the public events grid area\n    const gridHandle = await page.$(gridSelector);\n    let gridScreenshotPath;\n    if (gridHandle) {\n      gridScreenshotPath = path.join(screenshotsDir, 'step_2_public_events_grid.png');\n      await gridHandle.screenshot({ path: gridScreenshotPath });\n      screenshots.push(gridScreenshotPath);\n    }\n\n    // Extract the event cards' data (title, creator, date)\n    // Use multiple selector strategies: prefer direct children to avoid missing cards\n    const eventCards = await page.$$(`${gridSelector} .event-card, .event-card`);\n    const extractedEvents = [];\n    for (const card of eventCards) {\n      // Try to extract using possible text selectors and fallback to innerText\n      const title = await card.$eval('.event-title', el => el.textContent.trim()).catch(() => null);\n      const creator = await card.$eval('.event-creator', el => el.textContent.trim()).catch(() => null);\n      const date = await card.$eval('.event-date', el => el.textContent.trim()).catch(() => null);\n      extractedEvents.push({ title, creator, date });\n    }\n\n    // Summarize result\n    const action = eventCards.length > 0\n      ? `Found ${eventCards.length} public event card(s) in the Public Events grid`\n      : 'No public event cards found in the Public Events grid';\n\n    return {\n      success: eventCards.length > 0,\n      action,\n      extractedData: {\n        eventCount: eventCards.length,\n        events: extractedEvents\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 21040,
+      "timestamp": "2025-09-15T11:48:24.268Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the Public Events Grid to appear using a robust selector strategy\n    // Try several strategies: by id, by section heading, by event card class, by text, etc.\n\n    // 1. Wait for the 'Public Events' section heading (flexible, not just class-based)\n    const publicEventsHeader = await page.waitForSelector(\"xpath=//h3[contains(text(), 'Public Events')]\", { timeout: 5000 });\n\n    // 2. Wait for the events grid container following the heading, or direct grid by class\n    // Try to get the grid using the class directly\n    let publicEventsGrid = await page.$('#publicEventsGrid');\n    if (!publicEventsGrid) {\n      // Try by class in case id is missing\n      publicEventsGrid = await page.$('.public-events-grid');\n    }\n    // If still not found, try to get the parent of the heading with event cards under it\n    if (!publicEventsGrid && publicEventsHeader) {\n      publicEventsGrid = await publicEventsHeader.evaluateHandle(h => {\n        // find the next sibling section/div containing event cards\n        let el = h.nextElementSibling;\n        while (el && !el.querySelector('.event-card')) {\n          el = el.nextElementSibling;\n        }\n        return el;\n      });\n    }\n\n    // Wait for at least one event card in the grid\n    let eventCards = [];\n    if (publicEventsGrid) {\n      // Try to select event cards within the found grid\n      await page.waitForSelector('#publicEventsGrid .event-card, .public-events-grid .event-card, .event-card', { timeout: 5000 });\n      // Query all event cards\n      eventCards = await publicEventsGrid.$$(':scope .event-card');\n      // If not found, try to get from the page globally as fallback\n      if (!eventCards || eventCards.length === 0) {\n        eventCards = await page.$$('.event-card');\n      }\n    } else {\n      // Fallback: directly search all event-card elements on page\n      await page.waitForSelector('.event-card', { timeout: 5000 });\n      eventCards = await page.$$('.event-card');\n    }\n\n    // Take screenshot of the public events grid area for verification\n    if (publicEventsGrid) {\n      const gridScreenshot = path.join(screenshotsDir, 'step_2_public_events_grid.png');\n      await publicEventsGrid.screenshot({ path: gridScreenshot });\n      screenshots.push(gridScreenshot);\n    } else {\n      // Fallback to fullpage screenshot if grid not isolated\n      const fallbackScreenshot = path.join(screenshotsDir, 'step_2_public_events_grid_fallback.png');\n      await page.screenshot({ path: fallbackScreenshot });\n      screenshots.push(fallbackScreenshot);\n    }\n\n    // Extract data: get the title and creator (if available) of each public event card\n    const extractedEvents = [];\n    for (let card of eventCards) {\n      const title = await card.$eval('.event-title', el => el.textContent.trim()).catch(() => '');\n      const creator = await card.$eval('.event-creator', el => el.textContent.trim()).catch(() => '');\n      // Fallback: try to get text from card if no sub-elements\n      let cardText = '';\n      if (!title && !creator) {\n        cardText = await card.evaluate(el => el.textContent.trim());\n      }\n      extractedEvents.push({ title, creator, cardText });\n    }\n\n    return {\n      success: eventCards.length > 0,\n      action: \"Verified that public events are displayed in the Public Events section and extracted event data.\",\n      extractedData: {\n        publicEventCount: eventCards.length,\n        events: extractedEvents\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18285,
+      "timestamp": "2025-09-15T11:48:45.308Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 53116,
+  "timestamp": "2025-09-15T11:48:10.477Z",
+  "savedAt": "2025-09-15T11:49:03.593Z",
+  "version": "1.0"
+}

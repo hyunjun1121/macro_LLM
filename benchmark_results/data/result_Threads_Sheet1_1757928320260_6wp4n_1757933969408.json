@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928320260_6wp4n_1757933969408",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928320260_6wp4n",
+    "description": "G001",
+    "objective": "Navigate to Search View",
+    "expectedResult": "Click on the Search navigation item to switch from Home view to Search view",
+    "difficulty": ".nav-item[data-view='search']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the sidebar navigation to be visible\n    await page.waitForSelector('.sidebar .nav-menu');\n\n    // Wait for the Search nav item to be present\n    const searchNavSelector = \".nav-item[data-view='search']\";\n    await page.waitForSelector(searchNavSelector);\n\n    // Ensure Home view is currently active\n    const homeViewSelector = '#home-view.view.active';\n    await page.waitForSelector(homeViewSelector);\n\n    // Click the Search navigation item\n    const searchNav = await page.$(searchNavSelector);\n    if (!searchNav) throw new Error(\"Search navigation item not found\");\n    await searchNav.click();\n\n    // Wait for the Search view to become active\n    const searchViewSelector = '#search-view.view.active';\n    await page.waitForSelector(searchViewSelector, { timeout: 3000 });\n\n    // Wait for the search input to appear in the Search view\n    const searchInputSelector = '#search-input';\n    await page.waitForSelector(searchInputSelector);\n\n    // Take a screenshot after switching to Search view\n    const afterClickScreenshot = path.join(screenshotsDir, 'step_2_after_click_search.png');\n    await page.screenshot({ path: afterClickScreenshot });\n    screenshots.push(afterClickScreenshot);\n\n    // Extract verification data: check that Search nav is now active and Home view is not\n    const isSearchNavActive = await page.$eval(\n      \".nav-item[data-view='search']\",\n      el => el.classList.contains('active')\n    );\n    const isHomeViewVisible = await page.$eval(\n      '#home-view',\n      el => el.classList.contains('active')\n    );\n    const isSearchViewVisible = await page.$eval(\n      '#search-view',\n      el => el.classList.contains('active')\n    );\n\n    // Optionally, extract the header text from the Search view\n    let searchHeaderText = '';\n    try {\n      searchHeaderText = await page.$eval(\n        '#search-view .content-header',\n        el => el.textContent.trim()\n      );\n    } catch {}\n\n    return {\n      success: true,\n      action: \"Clicked on the Search navigation item to switch from Home view to Search view\",\n      extractedData: {\n        searchNavActive: isSearchNavActive,\n        homeViewActive: isHomeViewVisible,\n        searchViewActive: isSearchViewVisible,\n        searchHeaderText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14126,
+      "timestamp": "2025-09-15T10:59:29.408Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the sidebar nav-menu to be visible\n    await page.waitForSelector('nav.sidebar ul.nav-menu', { timeout: 5000 });\n\n    // Try to be robust: locate the \"Search\" nav item by its text, but not by class or data-view (to avoid repeat of previous strategies)\n    // Find the li in the sidebar nav-menu that contains a <span> with text \"Search\"\n    const searchNavItem = await page.waitForSelector(\n      \"//nav[contains(@class,'sidebar')]//ul[contains(@class,'nav-menu')]//li[.//span[normalize-space(text())='Search'] and not(contains(@class,'active'))]\",\n      { timeout: 5000 }\n    );\n\n    // Take screenshot before clicking search\n    const beforeClickShot = path.join(screenshotsDir, 'step_2_before_click_search.png');\n    await page.screenshot({ path: beforeClickShot });\n    screenshots.push(beforeClickShot);\n\n    // Click the \"Search\" nav item\n    await searchNavItem.click();\n\n    // Wait for the search view to become active (div#search-view.view.active)\n    await page.waitForSelector('div#search-view.view.active', { timeout: 3000 });\n\n    // Wait for the search input to appear in the search view\n    await page.waitForSelector('div#search-view input#search-input', { timeout: 3000 });\n\n    // Take screenshot after switching to search view\n    const afterClickShot = path.join(screenshotsDir, 'step_3_after_click_search.png');\n    await page.screenshot({ path: afterClickShot });\n    screenshots.push(afterClickShot);\n\n    // Extract verification data: check that the search nav item is now active\n    const isSearchNavActive = await page.evaluate(() => {\n      const searchNav = Array.from(document.querySelectorAll('nav.sidebar ul.nav-menu li.nav-item')).find(\n        li => li.textContent.trim().includes('Search')\n      );\n      return searchNav ? searchNav.classList.contains('active') : false;\n    });\n\n    // Also verify that the search view is visible and contains the input\n    const searchInputValue = await page.$eval('div#search-view input#search-input', el => el.getAttribute('placeholder'));\n\n    return {\n      success: isSearchNavActive,\n      action: \"Clicked the Search navigation item and switched from Home view to Search view.\",\n      extractedData: {\n        searchNavActive: isSearchNavActive,\n        searchInputPlaceholder: searchInputValue\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13278,
+      "timestamp": "2025-09-15T10:59:43.534Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for sidebar navigation to be present using text and structure\n    // Using XPath selector for the \"Search\" nav item for robustness\n    const searchNavXPath = \"//nav[contains(@class,'sidebar')]//li[contains(@class,'nav-item') and span[normalize-space(text())='Search']]\";\n    await page.waitForSelector(searchNavXPath, { timeout: 5000 });\n\n    // Confirm \"Home\" view is currently active\n    const homeViewSelector = '#home-view.view.active';\n    await page.waitForSelector(homeViewSelector, { timeout: 3000 });\n\n    // Click the \"Search\" navigation item using the XPath selector\n    const [searchNavItem] = await page.$x(searchNavXPath);\n    if (!searchNavItem) {\n      throw new Error('Could not find the Search navigation item in sidebar');\n    }\n    await searchNavItem.click();\n\n    // Wait for \"Search\" view to become active (wait for #search-view.view.active)\n    const searchViewSelector = '#search-view.view.active';\n    await page.waitForSelector(searchViewSelector, { timeout: 5000 });\n\n    // Additional check: ensure \"Home\" view is NOT active anymore\n    const isHomeViewStillActive = await page.$('#home-view.view.active');\n    if (isHomeViewStillActive) {\n      throw new Error('Home view is still active after clicking Search nav item');\n    }\n\n    // Take screenshot of Search view\n    const afterClickScreenshot = path.join(screenshotsDir, 'step_2_search_view.png');\n    await page.screenshot({ path: afterClickScreenshot });\n    screenshots.push(afterClickScreenshot);\n\n    // Extract verification data: check active nav item and visible view\n    // Get text of the currently active nav item\n    const activeNavItemText = await page.evaluate(() => {\n      const active = document.querySelector('.nav-item.active span');\n      return active ? active.textContent.trim() : null;\n    });\n\n    // Confirm .view.active id (should be search-view)\n    const activeViewId = await page.evaluate(() => {\n      const activeView = document.querySelector('.view.active');\n      return activeView ? activeView.id : null;\n    });\n\n    return {\n      success: true,\n      action: \"Clicked the Search navigation item and switched from Home to Search view.\",\n      extractedData: {\n        activeNavItemText,\n        activeViewId\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12737,
+      "timestamp": "2025-09-15T10:59:56.812Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 40141,
+  "timestamp": "2025-09-15T10:59:29.408Z",
+  "savedAt": "2025-09-15T11:00:09.549Z",
+  "version": "1.0"
+}

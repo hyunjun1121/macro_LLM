@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928320264_cbbov_1757938662283",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928320264_cbbov",
+    "description": 13,
+    "objective": "Regular",
+    "expectedResult": "Toggle saved posts view",
+    "difficulty": "Medium",
+    "category": "Click on Saved Posts button and verify saved posts are displayed",
+    "tags": [
+      ".quick-action-btn[onclick*='showSavedPosts']"
+    ],
+    "notes": "showSavedPosts()"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar quick actions to appear (where 'Saved Posts' button is)\n    await page.waitForSelector('button.quick-action-btn', { timeout: 5000 });\n\n    // Find the \"Saved Posts\" button by text content\n    const savedPostsBtn = await page.locator('//button[contains(@class, \"quick-action-btn\") and contains(normalize-space(.), \"Saved Posts\")]');\n    await savedPostsBtn.waitFor({ state: 'visible', timeout: 5000 });\n\n    // Take screenshot before clicking Saved Posts\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click_saved_posts.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click_saved_posts.png'));\n\n    // Click the \"Saved Posts\" button\n    await savedPostsBtn.click();\n\n    // Wait for the saved posts view to appear\n    // Try to detect a heading or container that indicates saved posts are displayed\n    // We'll look for a heading or section containing \"Saved Posts\"\n    let savedPostsSelector = 'text=\"Saved Posts\"';\n    let savedPostsHeader;\n    try {\n      savedPostsHeader = await page.waitForSelector(savedPostsSelector, { timeout: 4000 });\n    } catch {\n      // Fallback: try to find a container/section with \"Saved Posts\" in it\n      savedPostsHeader = await page.locator('//*[contains(text(), \"Saved Posts\")]').first();\n      await savedPostsHeader.waitFor({ state: 'visible', timeout: 4000 });\n    }\n\n    // Wait for posts to be displayed in the saved posts view\n    // We'll try to find post elements under the Saved Posts section\n    // Try to find a generic post container (e.g., class \"post\" or similar)\n    let savedPostItems = [];\n    try {\n      // Try common selectors for post items\n      await page.waitForSelector('.post, .saved-post, .post-item', { timeout: 4000 });\n      savedPostItems = await page.$$eval('.post, .saved-post, .post-item', nodes =>\n        nodes.map(n => n.innerText.trim()).filter(Boolean)\n      );\n    } catch {\n      // Fallback: try to get any post titles under the Saved Posts section\n      savedPostItems = await page.$$eval('h3, .post-title', nodes =>\n        nodes.map(n => n.innerText.trim()).filter(Boolean)\n      );\n    }\n\n    // Take screenshot after toggling Saved Posts\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_saved_posts_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_saved_posts_view.png'));\n\n    // Prepare extracted data for verification\n    const extractedData = {\n      savedPostsHeader: savedPostsHeader ? await savedPostsHeader.innerText() : null,\n      savedPostsCount: savedPostItems.length,\n      savedPostsSample: savedPostItems.slice(0, 3)\n    };\n\n    return {\n      success: true,\n      action: \"Clicked the 'Saved Posts' button and verified that the saved posts view is displayed.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 26975,
+      "timestamp": "2025-09-15T12:17:42.283Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Take initial screenshot\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the sidebar to be visible to ensure page loaded\n    await page.waitForSelector('aside.sidebar', { timeout: 5000 });\n\n    // Use alternative selector strategy: locate the \"Saved Posts\" button by visible text and role\n    // Try using textContent and role 'button', with :text-matches for robust matching\n    const [savedPostsBtn] = await page.$$('button.quick-action-btn');\n    let savedBtnHandle = null;\n\n    if (savedPostsBtn) {\n      // There are multiple .quick-action-btn buttons, find the one with the correct text\n      const btns = await page.$$('button.quick-action-btn');\n      for (const btn of btns) {\n        const text = (await btn.textContent()) || '';\n        if (/saved\\s*posts/i.test(text)) {\n          savedBtnHandle = btn;\n          break;\n        }\n      }\n    }\n    // If not found, try another selector as fallback (strict text selector)\n    if (!savedBtnHandle) {\n      savedBtnHandle = await page.locator('button:has-text(\"Saved Posts\")').first();\n      if (!(await savedBtnHandle.count())) {\n        throw new Error('Saved Posts button not found');\n      }\n    }\n\n    // Take screenshot before toggling\n    const beforeToggle = path.join(screenshotsDir, 'step_2_before_toggle.png');\n    await page.screenshot({ path: beforeToggle });\n    screenshots.push(beforeToggle);\n\n    // Click the Saved Posts button\n    if (savedBtnHandle.click) {\n      await savedBtnHandle.click();\n    } else {\n      // If it's a Locator, use click on locator\n      await savedBtnHandle.click();\n    }\n\n    // Wait for the saved posts view to appear. \n    // Try a couple of strategies: look for a heading, or a unique class, or a post container with a \"saved\" marker\n    // Since HTML is partial, let's try to wait for a heading or section with \"Saved Posts\"\n    let savedPostsVisible = false;\n    let savedPostTitles = [];\n    try {\n      // Try to find a heading or container that appears after clicking the button\n      await page.waitForSelector('h2, h3, .saved-posts-list, .saved-posts', { timeout: 3000 });\n      // Try to extract the first heading with \"Saved\" in it\n      const headings = await page.$$('h2, h3');\n      for (const h of headings) {\n        const text = (await h.textContent()) || '';\n        if (/saved/i.test(text)) {\n          savedPostsVisible = true;\n          break;\n        }\n      }\n      // Try to extract titles of saved posts (simulate: look for post title containers inside the saved posts area)\n      // Look for post title containers within a visible \"saved posts\" section\n      const savedSection = await page.$('section:has(h2:has-text(\"Saved\"))');\n      if (savedSection) {\n        const titleEls = await savedSection.$$('h3, .post-title');\n        for (const t of titleEls) {\n          const titleText = (await t.textContent())?.trim();\n          if (titleText) savedPostTitles.push(titleText);\n        }\n      }\n    } catch (e) {\n      // If not found, savedPostsVisible remains false\n    }\n\n    // Take screenshot after toggling\n    const afterToggle = path.join(screenshotsDir, 'step_3_after_toggle.png');\n    await page.screenshot({ path: afterToggle });\n    screenshots.push(afterToggle);\n\n    return {\n      success: savedPostsVisible || savedPostTitles.length > 0,\n      action: 'Toggled Saved Posts view and verified its display',\n      extractedData: {\n        savedPostsVisible,\n        savedPostTitles\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 25759,
+      "timestamp": "2025-09-15T12:18:09.258Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the \"Saved Posts\" button using text and role (ensures uniqueness)\n    const savedPostsBtn = await page.waitForSelector('button.quick-action-btn:has-text(\"Saved Posts\")', { timeout: 5000 });\n\n    // Scroll into view before clicking (in case it's out of viewport)\n    await savedPostsBtn.scrollIntoViewIfNeeded();\n\n    // Take screenshot before clicking\n    const step2 = path.join(screenshotsDir, 'step_2_before_click_saved.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Click the \"Saved Posts\" button using direct element handle\n    await savedPostsBtn.click();\n\n    // Wait for the saved posts view to appear.\n    // Try to detect a heading or unique section that appears upon toggling.\n    // We'll try a variety of selectors for robustness.\n    let savedSection;\n    try {\n      // Try aria-label\n      savedSection = await page.waitForSelector('[aria-label=\"Saved Posts\"], text=Saved Posts', { timeout: 3000 });\n    } catch (e) {}\n    if (!savedSection) {\n      // Try for a main heading, h2, or section with saved posts content\n      try {\n        savedSection = await page.waitForSelector('h2:has-text(\"Saved Posts\")', { timeout: 3000 });\n      } catch (e) {}\n    }\n    if (!savedSection) {\n      // Try for a container with a saved-posts class or id\n      try {\n        savedSection = await page.waitForSelector('.saved-posts, #savedPostsSection', { timeout: 3000 });\n      } catch (e) {}\n    }\n\n    // Take screenshot after toggling\n    const step3 = path.join(screenshotsDir, 'step_3_saved_posts_view.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Try to extract visible post titles from the saved posts view, if possible\n    let savedPostTitles = [];\n    if (savedSection) {\n      // Assume each post is inside an element with a class like .post or .saved-post\n      const postHandles = await page.$$('div.saved-post, div.post, .saved-post, .post');\n      for (const post of postHandles) {\n        const title = await post.$eval('h3, .post-title', el => el.innerText).catch(() => null);\n        if (title) savedPostTitles.push(title);\n      }\n    }\n\n    // Fallback: If no specific saved posts section, try to at least check if the UI changed\n    const viewChanged = !!savedSection || savedPostTitles.length > 0;\n\n    return {\n      success: viewChanged,\n      action: \"Clicked the 'Saved Posts' button and verified the saved posts view was toggled.\",\n      extractedData: {\n        savedPostTitles\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 22003,
+      "timestamp": "2025-09-15T12:18:35.018Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 74738,
+  "timestamp": "2025-09-15T12:17:42.283Z",
+  "savedAt": "2025-09-15T12:18:57.021Z",
+  "version": "1.0"
+}

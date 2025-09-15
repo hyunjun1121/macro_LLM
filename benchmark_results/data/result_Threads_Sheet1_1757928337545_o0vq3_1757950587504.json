@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337545_o0vq3_1757950587504",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337545_o0vq3",
+    "description": "G003",
+    "objective": "Like First Thread",
+    "expectedResult": "Click the like button on the first thread in the home feed",
+    "difficulty": ".thread-item:first-child .thread-action[data-action='like']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the home view to be active and threads feed to load\n    await page.waitForSelector('#home-view.active', { timeout: 5000 });\n    await page.waitForSelector('.thread-item', { timeout: 5000 });\n\n    // Take screenshot after feed loads\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_feed_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_feed_loaded.png'));\n\n    // Find and click the like button on the first thread\n    const likeButton = await page.$(\".thread-item:first-child .thread-action[data-action='like']\");\n    if (!likeButton) {\n      throw new Error('Like button not found on first thread');\n    }\n\n    // Extract thread info before clicking\n    const threadInfo = await page.evaluate(() => {\n      const firstThread = document.querySelector('.thread-item:first-child');\n      return {\n        author: firstThread?.querySelector('.thread-username')?.textContent,\n        content: firstThread?.querySelector('.thread-content')?.textContent?.slice(0, 100),\n        currentLikes: firstThread?.querySelector('.like-count')?.textContent\n      };\n    });\n\n    await likeButton.click();\n    \n    // Wait for like action to complete\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after clicking like\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_like_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_like_clicked.png'));\n\n    return {\n      success: true,\n      action: \"Clicked like button on the first thread in home feed\",\n      extractedData: threadInfo,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 46897,
+      "timestamp": "2025-09-15T15:36:27.504Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the threads feed to load\n    await page.waitForSelector('#threads-feed', { timeout: 10000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_feed_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_feed_loaded.png'));\n\n    // Wait for the first thread item to appear\n    await page.waitForSelector('.thread-item', { timeout: 10000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_threads_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_threads_loaded.png'));\n\n    // Find and click the like button on the first thread\n    const likeButton = await page.$('.thread-item:first-child .thread-action[data-action=\"like\"]');\n    \n    if (!likeButton) {\n      throw new Error('Like button not found on the first thread');\n    }\n\n    // Get initial state for verification\n    const initialLikeState = await likeButton.evaluate(btn => ({\n      classList: btn.className,\n      text: btn.textContent.trim()\n    }));\n\n    await likeButton.click();\n    await page.waitForTimeout(1000); // Wait for animation/state change\n\n    // Get updated state after click\n    const updatedLikeState = await likeButton.evaluate(btn => ({\n      classList: btn.className,\n      text: btn.textContent.trim()\n    }));\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_like_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_like_clicked.png'));\n\n    return {\n      success: true,\n      action: \"Clicked like button on the first thread in home feed\",\n      extractedData: {\n        initialLikeState,\n        updatedLikeState,\n        likeStatusChanged: initialLikeState.classList !== updatedLikeState.classList\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 128310,
+      "timestamp": "2025-09-15T15:37:14.401Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for home view to be active and threads to load\n    await page.waitForSelector('#home-view.active');\n    await page.waitForSelector('#threads-feed .thread-item');\n\n    // Take screenshot of home feed\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_home_feed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_home_feed.png'));\n\n    // Find first thread item and like button using multiple selector strategies\n    const firstThread = await page.$('.thread-item:first-child');\n    if (!firstThread) {\n      throw new Error('No thread items found');\n    }\n\n    // Get thread content for verification\n    const threadContent = await firstThread.$eval('.thread-content', el => el.textContent?.trim() || '');\n    \n    // Click like button using the exact selector from difficulty\n    const likeButton = await firstThread.$('.thread-action[data-action=\"like\"]');\n    if (!likeButton) {\n      throw new Error('Like button not found in first thread');\n    }\n\n    // Get initial like count if available\n    const initialLikes = await likeButton.evaluate(el => {\n      const countEl = el.querySelector('.action-count');\n      return countEl ? parseInt(countEl.textContent) || 0 : 0;\n    });\n\n    await likeButton.click();\n    await page.waitForTimeout(1000); // Wait for UI update\n\n    // Get updated like count\n    const updatedLikes = await likeButton.evaluate(el => {\n      const countEl = el.querySelector('.action-count');\n      return countEl ? parseInt(countEl.textContent) || 0 : 0;\n    });\n\n    // Take screenshot after clicking like\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_like.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_like.png'));\n\n    return {\n      success: true,\n      action: \"Clicked like button on first thread in home feed\",\n      extractedData: {\n        threadContent: threadContent.substring(0, 100) + (threadContent.length > 100 ? '...' : ''),\n        initialLikes,\n        updatedLikes,\n        liked: updatedLikes > initialLikes\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 132783,
+      "timestamp": "2025-09-15T15:39:22.711Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 307990,
+  "timestamp": "2025-09-15T15:36:27.504Z",
+  "savedAt": "2025-09-15T15:41:35.494Z",
+  "version": "1.0"
+}

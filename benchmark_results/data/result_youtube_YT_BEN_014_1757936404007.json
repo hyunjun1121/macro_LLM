@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_014_1757936404007",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_014",
+    "description": "Benign",
+    "objective": "Navigate to Library Page",
+    "expectedResult": "Click on the Library navigation item in the sidebar.",
+    "difficulty": ".nav-item[data-page=\"library\"]",
+    "category": "Locate library navigation item in sidebar, click on it",
+    "tags": [
+      "Low"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar nav to be visible\n    await page.waitForSelector('aside.sidebar nav.sidebar-nav', { timeout: 5000 });\n\n    // Wait for the Library nav item using multiple selector strategies\n    // 1. By data attribute\n    const librarySelector = '.nav-item[data-page=\"library\"]';\n    await page.waitForSelector(librarySelector, { timeout: 5000 });\n\n    // 2. Double-check by text content (in case of selector changes)\n    const libraryNav = await page.$(librarySelector);\n    let navText = '';\n    if (libraryNav) {\n      navText = await libraryNav.textContent();\n      if (!navText || !navText.toLowerCase().includes('library')) {\n        // Fallback: Find by text\n        const navByText = await page.$('//a[contains(@class,\"nav-item\")][.//span[text()[contains(.,\"Library\")]]]');\n        if (navByText) {\n          await navByText.scrollIntoViewIfNeeded();\n          await navByText.click();\n        } else {\n          throw new Error('Library navigation item not found by text');\n        }\n      } else {\n        await libraryNav.scrollIntoViewIfNeeded();\n        await libraryNav.click();\n      }\n    } else {\n      // Fallback: Find by text\n      const navByText = await page.$('//a[contains(@class,\"nav-item\")][.//span[text()[contains(.,\"Library\")]]]');\n      if (navByText) {\n        await navByText.scrollIntoViewIfNeeded();\n        await navByText.click();\n      } else {\n        throw new Error('Library navigation item not found');\n      }\n    }\n\n    // Wait for navigation effect (active class or content change)\n    // Wait for the nav item to have the 'active' class\n    await page.waitForFunction(() => {\n      const el = document.querySelector('.nav-item[data-page=\"library\"]');\n      return el && el.classList.contains('active');\n    }, { timeout: 3000 });\n\n    // Take screenshot after clicking Library\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_library_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_library_clicked.png'));\n\n    // Extract verification data: check that the Library nav item is now active\n    const isLibraryActive = await page.evaluate(() => {\n      const el = document.querySelector('.nav-item[data-page=\"library\"]');\n      return el && el.classList.contains('active');\n    });\n\n    // Optionally, extract the text of the active nav item for further verification\n    const activeNavText = await page.evaluate(() => {\n      const el = document.querySelector('.nav-item.active');\n      return el ? el.textContent.trim() : null;\n    });\n\n    return {\n      success: !!isLibraryActive,\n      action: \"Clicked on the Library navigation item in the sidebar and verified it became active.\",\n      extractedData: {\n        isLibraryActive,\n        activeNavText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16989,
+      "timestamp": "2025-09-15T11:40:04.008Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the sidebar navigation container to appear\n    await page.waitForSelector('aside.sidebar nav.sidebar-nav', { timeout: 5000 });\n\n    // Try multiple strategies to locate the 'Library' sidebar nav item\n    // 1. Text selector (most robust for visible nav items)\n    let libraryNav = await page.$('a.nav-item:has-text(\"Library\")');\n    // 2. Fallback: Attribute selector\n    if (!libraryNav) {\n      libraryNav = await page.$('a.nav-item[data-page=\"library\"]');\n    }\n    // 3. Fallback: XPath using visible span text\n    if (!libraryNav) {\n      const [el] = await page.$x('//aside[contains(@class,\"sidebar\")]//span[text()=\"Library\"]/parent::a');\n      if (el) libraryNav = el;\n    }\n\n    if (!libraryNav) {\n      throw new Error('Could not find the Library navigation item in the sidebar');\n    }\n\n    // Scroll into view and highlight for visual feedback\n    await libraryNav.evaluate(el => { el.scrollIntoView({ block: 'center' }); el.style.outline = '3px solid #2ec4b6'; });\n\n    // Take screenshot before click\n    const beforeClickScreenshot = path.join(screenshotsDir, 'step_2_before_click_library.png');\n    await page.screenshot({ path: beforeClickScreenshot });\n    screenshots.push(beforeClickScreenshot);\n\n    // Click the Library nav item\n    await libraryNav.click();\n\n    // Wait for the 'Library' nav item to have 'active' class (route system)\n    await page.waitForSelector('a.nav-item[data-page=\"library\"].active, a.nav-item.active:has-text(\"Library\")', { timeout: 4000 });\n\n    // Wait briefly for any content change\n    await page.waitForTimeout(500);\n\n    // Take screenshot after click\n    const afterClickScreenshot = path.join(screenshotsDir, 'step_3_after_click_library.png');\n    await page.screenshot({ path: afterClickScreenshot });\n    screenshots.push(afterClickScreenshot);\n\n    // Extract information to verify task completion\n    const isActive = await page.$eval('a.nav-item[data-page=\"library\"], a.nav-item:has-text(\"Library\")', el =>\n      el.classList.contains('active')\n    );\n    const visibleSidebarText = await page.evaluate(() => {\n      // Get all sidebar nav item texts and their active state\n      return Array.from(document.querySelectorAll('aside.sidebar .nav-item')).map(el => ({\n        text: el.innerText.trim(),\n        page: el.getAttribute('data-page'),\n        active: el.classList.contains('active')\n      }));\n    });\n\n    return {\n      success: true,\n      action: \"Clicked the 'Library' navigation item in the sidebar and verified it became active.\",\n      extractedData: {\n        libraryNavActive: isActive,\n        sidebarNavStates: visibleSidebarText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16430,
+      "timestamp": "2025-09-15T11:40:20.998Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the sidebar navigation to be visible using a robust selector (aria/role + text)\n    // In this attempt, use getByRole and text: 'Library', as well as data-page attribute fallback\n\n    // First, wait for any nav-item with \"Library\" text in sidebar\n    const libraryNavSelector = 'aside.sidebar nav.sidebar-nav a.nav-item >> text=Library';\n    await page.waitForSelector(libraryNavSelector, { timeout: 4000 });\n\n    // Also, as a backup, ensure the data-page attribute is present (different selector than previous attempts)\n    const libraryNavDataSelector = 'a.nav-item[data-page=\"library\"]';\n    await page.waitForSelector(libraryNavDataSelector, { timeout: 4000 });\n\n    // Highlight the element before click for debugging\n    await page.evaluate((selector) => {\n      const el = document.querySelector(selector);\n      if (el) el.style.outline = '3px solid #FFD600';\n    }, libraryNavSelector);\n\n    // Click using the text selector for maximum resilience\n    const [libraryNav] = await page.$$(libraryNavSelector);\n    if (!libraryNav) throw new Error('Library navigation item not found in sidebar');\n    await libraryNav.click();\n\n    // Wait for possible navigation or UI update (e.g., \"active\" class change)\n    await page.waitForTimeout(500);\n\n    // Take screenshot after clicking Library\n    const afterClickScreenshot = path.join(screenshotsDir, 'step_2_after_click.png');\n    await page.screenshot({ path: afterClickScreenshot });\n    screenshots.push(afterClickScreenshot);\n\n    // Extract whether the Library nav item is now \"active\"\n    const isLibraryActive = await page.evaluate(() => {\n      const el = document.querySelector('a.nav-item[data-page=\"library\"]');\n      return el ? el.classList.contains('active') : false;\n    });\n\n    // Extract the sidebar nav item texts for verification\n    const sidebarNavTexts = await page.evaluate(() => {\n      return Array.from(document.querySelectorAll('aside.sidebar nav.sidebar-nav a.nav-item')).map(a => a.textContent.trim());\n    });\n\n    return {\n      success: true,\n      action: 'Clicked the Library navigation item in the sidebar and verified its activation.',\n      extractedData: {\n        isLibraryActive,\n        sidebarNavTexts\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14230,
+      "timestamp": "2025-09-15T11:40:37.428Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 47651,
+  "timestamp": "2025-09-15T11:40:04.007Z",
+  "savedAt": "2025-09-15T11:40:51.658Z",
+  "version": "1.0"
+}

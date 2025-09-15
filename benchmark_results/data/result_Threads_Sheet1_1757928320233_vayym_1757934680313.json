@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928320233_vayym_1757934680313",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928320233_vayym",
+    "description": "G014",
+    "objective": "Check Thread Character Count",
+    "expectedResult": "Type 'Testing character count functionality' and verify character count updates",
+    "difficulty": "#thread-text, #char-count",
+    "category": 1,
+    "tags": [
+      "10 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the textarea to be visible\n    await page.waitForSelector('#thread-text', { state: 'visible', timeout: 5000 });\n\n    // Wait for the character count element\n    await page.waitForSelector('#char-count', { state: 'visible', timeout: 5000 });\n\n    // Focus and type the test string\n    const testString = 'Testing character count functionality';\n    await page.click('#thread-text');\n    await page.fill('#thread-text', ''); // clear in case of prefill\n    await page.type('#thread-text', testString, { delay: 30 });\n\n    // Wait for character count to update (debounce)\n    await page.waitForTimeout(200);\n\n    // Take screenshot after typing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_typing.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_typing.png'));\n\n    // Extract the character count text\n    const charCountText = await page.$eval('#char-count', el => el.textContent.trim());\n\n    // Calculate expected count\n    const expectedCount = `${testString.length}/500`;\n\n    // Verification: char count should match expected\n    const charCountMatches = charCountText.startsWith(`${testString.length}/`);\n\n    return {\n      success: charCountMatches,\n      action: \"Typed into the thread textarea and verified character count updates as expected.\",\n      extractedData: {\n        typedText: testString,\n        charCountText,\n        expectedCount,\n        charCountMatches\n      },\n      screenshots,\n      error: charCountMatches ? null : `Expected char count to start with '${expectedCount}', but got '${charCountText}'`\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18540,
+      "timestamp": "2025-09-15T11:11:20.313Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the compose thread container using a different selector strategy (class and partial text)\n    await page.waitForSelector('.compose-content textarea[placeholder*=\"thread\"]', { timeout: 5000 });\n\n    // Focus the textarea using class and placeholder\n    const textarea = await page.$('.compose-content textarea[placeholder*=\"thread\"]');\n    if (!textarea) throw new Error('Thread textarea not found');\n\n    // Type the text\n    const testText = 'Testing character count functionality';\n    await textarea.fill('');\n    await textarea.type(testText, { delay: 40 });\n\n    // Wait for the character count element using XPath (different strategy)\n    await page.waitForSelector('//*[@id=\"char-count\" and contains(text(), \"/500\")]', { timeout: 3000 });\n\n    // Take screenshot after typing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_typing.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_typing.png'));\n\n    // Extract the character count text using page.evaluate for robustness\n    const charCountText = await page.evaluate(() => {\n      const el = document.getElementById('char-count');\n      return el ? el.textContent : '';\n    });\n\n    // Calculate expected character count\n    const expectedCount = testText.length + '/500';\n\n    // Verify that the count is correct\n    const isCountCorrect = charCountText.startsWith(String(testText.length)) && charCountText.endsWith('/500');\n\n    // Prepare extracted data\n    const extractedData = {\n      enteredText: testText,\n      charCountText,\n      expectedCount,\n      isCountCorrect\n    };\n\n    return {\n      success: isCountCorrect,\n      action: \"Typed into the thread textarea and verified that the character count updated accordingly.\",\n      extractedData,\n      screenshots,\n      error: isCountCorrect ? null : `Character count mismatch: saw \"${charCountText}\", expected \"${expectedCount}\"`\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11820,
+      "timestamp": "2025-09-15T11:11:38.853Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n    \n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the textarea using attribute-based selector as alternative to ID\n    await page.waitForSelector('textarea[placeholder=\"Start a thread...\"]', { timeout: 5000 });\n    const textarea = await page.$('textarea[placeholder=\"Start a thread...\"]');\n\n    // Focus and fill the textarea\n    await textarea.focus();\n    await page.keyboard.type('Testing character count functionality', { delay: 20 });\n\n    // Wait for the char count element by its text content as alternative selector\n    // We'll use XPath to grab the span containing \"/500\" and a number\n    const charCountXPath = '//span[contains(@class, \"char-count\") and contains(text(),\"/500\")]';\n    await page.waitForSelector('span.char-count'); // ensure at least one is present\n\n    // Wait for the char count to update to expected value\n    // The expected count is the length of the text entered\n    const inputText = 'Testing character count functionality';\n    const expectedCount = inputText.length;\n    const expectedText = `${expectedCount}/500`;\n\n    // Wait until the char count updates to the expected value\n    await page.waitForFunction(\n      (expectedText) => {\n        const el = document.querySelector('span.char-count');\n        return el && el.textContent.trim().startsWith(expectedText.split('/')[0]);\n      },\n      expectedText,\n      { timeout: 4000 }\n    );\n\n    // Take screenshot after typing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_typing.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_typing.png'));\n\n    // Extract the char count display for verification\n    const charCountValue = await page.$eval('span.char-count', el => el.textContent.trim());\n\n    // Extract the textarea value for verification\n    const typedValue = await page.$eval('textarea[placeholder=\"Start a thread...\"]', el => el.value);\n\n    // Return macro result\n    return {\n      success: (charCountValue.startsWith(`${expectedCount}/500`) && typedValue === inputText),\n      action: \"Typed text into thread input and verified character count updated accordingly\",\n      extractedData: {\n        typedValue,\n        charCountValue\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 23023,
+      "timestamp": "2025-09-15T11:11:50.673Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 53383,
+  "timestamp": "2025-09-15T11:11:20.313Z",
+  "savedAt": "2025-09-15T11:12:13.696Z",
+  "version": "1.0"
+}

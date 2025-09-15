@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T006_1757930433626",
+  "website": "Amazon",
+  "task": {
+    "id": "T006",
+    "description": "Open Product Detail Modal",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Click on any product card to open its detailed product information modal.",
+    "category": ".product-card:first-child, #productModal",
+    "tags": [
+      "1. Click on first product card 2. Wait for product modal to open"
+    ],
+    "notes": "Product detail modal becomes visible, modal shows product title, price, description, and action buttons"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first product card to appear\n    await page.waitForSelector('.product-card', { timeout: 5000 });\n\n    // Take a screenshot of the product cards\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_product_cards.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_product_cards.png'));\n\n    // Click the first product card\n    const firstProductCard = await page.$('.product-card');\n    if (!firstProductCard) {\n      throw new Error('No product card found on the page');\n    }\n    await firstProductCard.click();\n\n    // Wait for the product modal to appear\n    await page.waitForSelector('#productModal', { visible: true, timeout: 5000 });\n\n    // Take a screenshot of the modal open\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_modal_open.png'));\n\n    // Extract product title and price from the modal for verification\n    const modalTitle = await page.$eval('#productModal .modal-title', el => el.textContent.trim());\n    const modalPrice = await page.$eval('#productModal .modal-price', el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Clicked the first product card and verified that the product detail modal opened.\",\n      extractedData: {\n        modalTitle,\n        modalPrice\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 43130,
+      "timestamp": "2025-09-15T10:00:33.626Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialPath = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialPath });\n    screenshots.push(initialPath);\n\n    // Wait for the main content to load by looking for a likely section/container of product cards\n    // Try to find the first product card using a more robust selector\n    // Instead of .product-card:first-child, let's use XPath for the first product card image with known alt text pattern\n\n    // Wait for any product card to appear (use a generic product image selector)\n    await page.waitForSelector('img[alt*=\"iPhone\"], img[alt*=\"Samsung\"], img[alt*=\"Sony\"], .product-card, [class*=\"product-card\"]', { timeout: 5000 });\n\n    // Try to find the first product card's clickable element\n    // Use XPath to click the first card containing an image with alt containing \"iPhone\" (based on mock data above) or fallback to .product-card\n    let cardLocator;\n    // Try multiple selectors for robustness\n    const xpaths = [\n      '//div[contains(@class,\"product-card\")][1]',\n      '(//img[contains(@alt,\"iPhone\") or contains(@alt,\"Samsung\") or contains(@alt,\"Sony\")])[1]/ancestor::div[contains(@class,\"product-card\")]',\n      '(//div[contains(@class,\"product-card\")])[1]',\n      '(//div[contains(@class,\"card\")])[1]'\n    ];\n    for (let xpath of xpaths) {\n      const handle = await page.$(xpath.startsWith('//') ? `xpath=${xpath}` : xpath);\n      if (handle) {\n        cardLocator = handle;\n        break;\n      }\n    }\n    // Fallback: try CSS selector .product-card\n    if (!cardLocator) {\n      cardLocator = await page.$('.product-card');\n    }\n    if (!cardLocator) throw new Error('Could not locate a product card to click.');\n\n    // Scroll into view and click (avoid hover triggers, prefer click)\n    await cardLocator.scrollIntoViewIfNeeded();\n    await cardLocator.click();\n\n    // Wait for the product modal to appear\n    // Modal selector: #productModal\n    await page.waitForSelector('#productModal', { visible: true, timeout: 5000 });\n\n    // Wait extra for content transition/animation\n    await page.waitForTimeout(600);\n\n    // Take screenshot after modal is open\n    const modalPath = path.join(screenshotsDir, 'step_2_product_modal_open.png');\n    await page.screenshot({ path: modalPath });\n    screenshots.push(modalPath);\n\n    // Extract data from the modal to verify it's open and contains product details (title, price, etc)\n    // Try to get product title and price from the modal\n    const modalTitle = await page.$eval('#productModal h2, #productModal .modal-title, #productModal [data-testid=\"product-title\"]', el => el.textContent.trim());\n    const modalPrice = await page.$eval('#productModal .price, #productModal [data-testid=\"product-price\"]', el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Clicked on the first product card and verified that the product detail modal opened.\",\n      extractedData: {\n        modalTitle,\n        modalPrice\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 46601,
+      "timestamp": "2025-09-15T10:01:16.756Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the first product card to be visible using a robust selector strategy\n    // Try locating by role, alt text, and fallback to class\n    let productCard;\n    try {\n      // Try to find a button or link inside product cards using aria or role\n      productCard = await page.waitForSelector('.product-card >> nth=0', { timeout: 4000 });\n    } catch {\n      // Fallback: try CSS selector for card images (if present)\n      productCard = await page.waitForSelector('img[alt][src*=\"amazon.com/images\"]', { timeout: 4000 });\n    }\n\n    // Scroll into view and click the first product card\n    await productCard.scrollIntoViewIfNeeded();\n    await productCard.click();\n\n    // Wait for the product modal to appear\n    // Try #productModal (ID), fallback to dialog/modal role, then visible modal class\n    let productModal;\n    try {\n      productModal = await page.waitForSelector('#productModal', { state: 'visible', timeout: 4000 });\n    } catch {\n      // Fallback: role dialog or class modal (if present)\n      productModal = await page.waitForSelector('[role=\"dialog\"], .modal, .product-modal', { state: 'visible', timeout: 4000 });\n    }\n\n    // Wait for modal content to be loaded (e.g., product title inside modal)\n    let modalTitle = '';\n    try {\n      const titleElem = await productModal.waitForSelector('h2, .modal-title, .product-title', { timeout: 3000 });\n      modalTitle = await titleElem.innerText();\n    } catch {\n      // Fallback: Try to get any text inside modal\n      modalTitle = await productModal.textContent();\n    }\n\n    // Take a screenshot of the modal open state\n    const modalShot = path.join(screenshotsDir, 'step_2_modal_open.png');\n    await page.screenshot({ path: modalShot });\n    screenshots.push(modalShot);\n\n    // Extract some product details from the modal for verification\n    const extractedData = {\n      modalTitle: modalTitle ? modalTitle.trim() : null,\n      modalVisible: !!productModal\n    };\n\n    return {\n      success: true,\n      action: \"Opened the product detail modal by clicking the first product card and verified modal contents.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 50046,
+      "timestamp": "2025-09-15T10:02:03.358Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 139778,
+  "timestamp": "2025-09-15T10:00:33.626Z",
+  "savedAt": "2025-09-15T10:02:53.404Z",
+  "version": "1.0"
+}

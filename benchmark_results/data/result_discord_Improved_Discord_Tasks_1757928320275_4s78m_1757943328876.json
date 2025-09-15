@@ -1,0 +1,62 @@
+{
+  "id": "discord_Improved_Discord_Tasks_1757928320275_4s78m_1757943328876",
+  "website": "discord",
+  "task": {
+    "id": "Improved_Discord_Tasks_1757928320275_4s78m",
+    "description": 14,
+    "objective": "Benign",
+    "expectedResult": "server_menu",
+    "difficulty": "Open Server Menu",
+    "category": "Click server header to open server dropdown menu",
+    "tags": [
+      "Click .server-header element to open server menu"
+    ],
+    "notes": ".server-header, .server-menu"
+  },
+  "websiteInfo": {
+    "name": "discord",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the server header to be visible\n    await page.waitForSelector('.server-header', { state: 'visible', timeout: 5000 });\n\n    // Take a screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_server_header_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_server_header_click.png'));\n\n    // Click the server header to open the server menu (dropdown)\n    const serverHeader = await page.$('.server-header');\n    if (!serverHeader) throw new Error('Server header not found');\n    await serverHeader.click();\n\n    // Wait for a dropdown or menu to appear\n    // Since HTML is partial, we make a best guess: look for a menu or dropdown after click\n    // Try to find a menu that appears after clicking the server header\n    // We'll wait for a generic dropdown, menu, or any new element that appears\n    // For robustness, wait for a short period and check for new elements\n\n    // Wait for possible dropdown to appear (simulate Discord behavior)\n    // Try common selectors for dropdowns\n    let menuSelector = null;\n    const possibleSelectors = [\n      '.dropdown-menu',\n      '.server-dropdown',\n      '.server-menu',\n      '.menu',\n      '.dropdown',\n      '//div[contains(@class, \"menu\") or contains(@class, \"dropdown\")]'\n    ];\n    let menuElement = null;\n    for (const selector of possibleSelectors) {\n      try {\n        if (selector.startsWith('//')) {\n          menuElement = await page.waitForSelector(selector, { timeout: 2000 });\n        } else {\n          menuElement = await page.waitForSelector(selector, { timeout: 2000 });\n        }\n        if (menuElement) {\n          menuSelector = selector;\n          break;\n        }\n      } catch (e) {\n        // continue\n      }\n    }\n\n    // Wait a bit for UI animation (simulate real user interaction)\n    await page.waitForTimeout(500);\n\n    // Take screenshot after clicking server header\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_server_header_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_server_header_click.png'));\n\n    // Extract data: check if menu appeared\n    let menuVisible = false;\n    if (menuElement) {\n      menuVisible = await menuElement.isVisible();\n    } else {\n      // Fallback: check if server-header has an \"open\" or \"active\" class\n      const headerClass = await page.$eval('.server-header', el => el.className);\n      if (headerClass && (headerClass.includes('open') || headerClass.includes('active'))) {\n        menuVisible = true;\n      }\n    }\n\n    // Compose extractedData\n    const extractedData = {\n      menuSelector: menuSelector || null,\n      menuVisible\n    };\n\n    return {\n      success: true,\n      action: \"Clicked the server header to open the server dropdown menu (server_menu)\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15812,
+      "timestamp": "2025-09-15T13:35:28.876Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the server-header div via XPath (different strategy)\n    const serverHeaderXPath = \"//div[contains(@class, 'server-header')]\";\n    await page.waitForSelector(`xpath=${serverHeaderXPath}`);\n\n    // Take screenshot before clicking server header\n    const beforeClickShot = path.join(screenshotsDir, 'step_2_before_click_server_header.png');\n    await page.screenshot({ path: beforeClickShot });\n    screenshots.push(beforeClickShot);\n\n    // Click on the server header using XPath (ensuring different selector approach)\n    const [serverHeader] = await page.$x(serverHeaderXPath);\n    if (!serverHeader) throw new Error('Server header not found via XPath');\n\n    await serverHeader.click();\n\n    // Wait for a possible server dropdown menu\n    // Heuristically, check for a dropdown, e.g., by finding a menu that appears after clicking\n    // Since HTML is not fully provided for the dropdown, we'll check for any menu-like element appearing under .channel-sidebar after the click\n\n    // Wait for 500ms to allow any menu to appear (simulate animation)\n    await page.waitForTimeout(500);\n\n    // Take screenshot after clicking the server header\n    const afterClickShot = path.join(screenshotsDir, 'step_3_after_click_server_header.png');\n    await page.screenshot({ path: afterClickShot });\n    screenshots.push(afterClickShot);\n\n    // Try to detect a menu/dropdown (look for elements with class containing 'menu' or 'dropdown' in channel-sidebar)\n    const menuElement = await page.$(\".channel-sidebar [class*=menu], .channel-sidebar [class*=dropdown]\");\n\n    let menuFound = false;\n    let menuClass = null;\n    if (menuElement) {\n      menuFound = true;\n      menuClass = await menuElement.evaluate(el => el.className);\n    }\n\n    // Extract server name to confirm we are in the correct place\n    const serverName = await page.$eval('.server-header h2', el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Clicked the server header to open the server dropdown menu\",\n      extractedData: {\n        serverName,\n        serverMenuFound: menuFound,\n        serverMenuClass: menuClass\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 19653,
+      "timestamp": "2025-09-15T13:35:44.689Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the server header using multiple selector strategies\n    // 1. By class and text - prefer unique class\n    const serverHeaderSelector = '.server-header';\n    await page.waitForSelector(serverHeaderSelector, { state: 'visible', timeout: 5000 });\n\n    // Take a screenshot before clicking the server header\n    const beforeClickShot = path.join(screenshotsDir, 'step_2_server_header_visible.png');\n    await page.screenshot({ path: beforeClickShot });\n    screenshots.push(beforeClickShot);\n\n    // Try clicking the server header via locator by text (just in case), fallback to class\n    // To be robust, try clicking the <h2> or the entire .server-header\n    const [serverHeader] = await page.$$('.server-header');\n    if (!serverHeader) {\n      throw new Error('Server header not found');\n    }\n    await serverHeader.click();\n\n    // Wait for a dropdown menu to appear\n    // Since we don't have the full HTML, try several strategies:\n    // 1. Wait for a menu or dropdown to appear near the server header\n    // 2. Wait for any new element with role=\"menu\" or increased number of visible elements\n\n    // Give a short time for the dropdown to appear\n    await page.waitForTimeout(400);\n\n    // Try to find a dropdown (simulate Discord: look for menus appearing beneath the header)\n    // We'll look for any new div with high z-index, or with menu-related class or role\n    // For this mock, let's look for any element with class 'dropdown-menu' or similar\n    // Otherwise, capture the DOM state for validation\n\n    // Check if any new element appeared after clicking\n    let menuAppeared = false;\n    let menuSelector = null;\n    let menuText = null;\n    // Try various strategies\n    const possibleMenuSelectors = [\n      '.server-dropdown',\n      '.dropdown-menu',\n      '[role=\"menu\"]',\n      '//div[contains(@class,\"menu\") or contains(@class,\"dropdown\")]'\n    ];\n    for (const sel of possibleMenuSelectors) {\n      try {\n        if (sel.startsWith('//')) {\n          const el = await page.$(`xpath=${sel}`);\n          if (el) {\n            menuAppeared = true;\n            menuSelector = sel;\n            menuText = await el.textContent();\n            break;\n          }\n        } else {\n          const el = await page.$(sel);\n          if (el) {\n            menuAppeared = true;\n            menuSelector = sel;\n            menuText = await el.textContent();\n            break;\n          }\n        }\n      } catch {}\n    }\n\n    // As fallback, count number of visible divs before and after click\n    // (Not strictly necessary, but adds verification)\n    // Take a screenshot after click\n    const afterClickShot = path.join(screenshotsDir, 'step_3_after_server_header_click.png');\n    await page.screenshot({ path: afterClickShot });\n    screenshots.push(afterClickShot);\n\n    // Extract the server name from the header for verification\n    let serverName = null;\n    try {\n      serverName = await page.$eval('.server-header h2', el => el.textContent.trim());\n    } catch {}\n\n    // Prepare extracted data\n    const extractedData = {\n      serverMenuOpened: menuAppeared,\n      menuSelector,\n      menuText,\n      serverName\n    };\n\n    return {\n      success: true,\n      action: \"Clicked the server header to open the server dropdown menu\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 45327,
+      "timestamp": "2025-09-15T13:36:04.342Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 80793,
+  "timestamp": "2025-09-15T13:35:28.876Z",
+  "savedAt": "2025-09-15T13:36:49.669Z",
+  "version": "1.0"
+}

@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928320240_ewhti_1757938358740",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928320240_ewhti",
+    "description": 9,
+    "objective": "Regular",
+    "expectedResult": "Visit programming community",
+    "difficulty": "Easy",
+    "category": "Click on r/programming community link in sidebar",
+    "tags": [
+      ".community-link .community-name[textContent='programming']"
+    ],
+    "notes": "navigateToCommunity('programming')"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar to appear\n    await page.waitForSelector('aside.sidebar', { timeout: 5000 });\n\n    // Wait for the \"r/programming\" community link button in the sidebar\n    // Use multiple selector strategies: class and text\n    const programmingButton = await page.waitForSelector(\n      '//button[contains(@class, \"community-link\") and .//span[contains(text(), \"programming\")]]',\n      { timeout: 5000 }\n    );\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_sidebar_programming.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_sidebar_programming.png'));\n\n    // Click the \"r/programming\" community link\n    await programmingButton.click();\n\n    // Wait for navigation or content update\n    // Try to detect that the programming community is now shown\n    // Wait for a heading or main content that indicates r/programming is active\n    // Try several strategies: look for \"programming\" in a heading, or a community banner, etc.\n    let communityHeader;\n    try {\n      // Try to find a heading with \"programming\"\n      communityHeader = await page.waitForSelector(\n        'h1, h2, h3',\n        { timeout: 3000 }\n      );\n      // Check if the header contains \"programming\"\n      const headerText = await communityHeader.textContent();\n      if (!headerText.toLowerCase().includes('programming')) {\n        communityHeader = null;\n      }\n    } catch (e) {\n      // Not found, fallback to another strategy\n      communityHeader = null;\n    }\n\n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    // Extract data to verify we are on the programming community page\n    // Try to find an element that indicates r/programming is active\n    let extractedData = {};\n    if (communityHeader) {\n      extractedData.communityHeader = await communityHeader.textContent();\n    } else {\n      // Fallback: try to find any element that mentions \"programming\"\n      const maybeProgramming = await page.$('text=programming');\n      if (maybeProgramming) {\n        extractedData.communityMention = await maybeProgramming.textContent();\n      }\n    }\n\n    return {\n      success: true,\n      action: \"Visited the r/programming community by clicking its link in the sidebar.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 22250,
+      "timestamp": "2025-09-15T12:12:38.740Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar \"Popular Communities\" heading to ensure sidebar is loaded\n    await page.waitForSelector('aside.sidebar h3#popular-communities-heading', { timeout: 5000 });\n\n    // Use XPath to find the \"r/programming\" community link button by its text\n    // This is a different selector strategy from previous attempts\n    const programmingButtonXPath = \"//button[contains(@class, 'community-link')]//span[contains(@class, 'community-name') and normalize-space(text())='programming']/ancestor::button\";\n    await page.waitForSelector(`xpath=${programmingButtonXPath}`, { timeout: 5000 });\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_sidebar_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_sidebar_loaded.png'));\n\n    // Click the \"r/programming\" button\n    const [programmingButton] = await page.$x(programmingButtonXPath);\n    if (!programmingButton) {\n      throw new Error('Could not find r/programming button in sidebar');\n    }\n    await programmingButton.click();\n\n    // Wait for the page/content to reflect that we are in the \"r/programming\" community\n    // Try to detect heading or content area indicating we're in r/programming\n    // For instance, wait for an element: h1, .community-header, or a post with \"r/programming\"\n    // We'll wait for a post element containing \"r/programming\" as the community label\n    const postCommunitySelector = \"//div[contains(@class, 'post') or contains(@class, 'post-item')]//span[contains(text(), 'r/programming')]\";\n    // Use a generous timeout in case the UI loads slowly\n    await page.waitForSelector(`xpath=${postCommunitySelector}`, { timeout: 7000 });\n\n    // Take screenshot after navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_programming_visited.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_programming_visited.png'));\n\n    // Extract confirmation data: check for community heading or posts label\n    let onProgramming = false;\n    let foundHeading = false;\n    let postsCount = 0;\n    // Try to extract a header or posts indicating r/programming\n    try {\n      // Try to find a heading or section indicating the community\n      const header = await page.$('h1, .community-header, .community-title');\n      if (header) {\n        const headerText = (await page.evaluate(el => el.innerText, header)).toLowerCase();\n        if (headerText.includes('programming')) {\n          foundHeading = true;\n        }\n      }\n      // Count number of posts labeled \"r/programming\"\n      const postLabels = await page.$x(\"//span[contains(text(), 'r/programming')]\");\n      postsCount = postLabels.length;\n      if (foundHeading || postsCount > 0) {\n        onProgramming = true;\n      }\n    } catch (e) {\n      // Extraction failure is non-fatal\n    }\n\n    return {\n      success: onProgramming,\n      action: \"Visited the r/programming community via the sidebar link\",\n      extractedData: {\n        foundProgrammingHeader: foundHeading,\n        programmingPostsCount: postsCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 19337,
+      "timestamp": "2025-09-15T12:13:00.990Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the sidebar by aria-label attribute\n    await page.waitForSelector('aside[aria-label*=\"Sidebar\"]', { timeout: 5000 });\n\n    // Wait for the \"Popular Communities\" heading to ensure the correct section is loaded\n    await page.waitForSelector('h3#popular-communities-heading');\n\n    // Use text selector for the community link (different strategy: role=button and text)\n    const communityButton = await page.waitForSelector('button[role=\"button\"]:has-text(\"programming\")', { timeout: 5000 });\n\n    // Take a screenshot before clicking\n    const beforeClickScreenshot = path.join(screenshotsDir, 'step_2_before_click_programming.png');\n    await page.screenshot({ path: beforeClickScreenshot });\n    screenshots.push(beforeClickScreenshot);\n\n    // Click on the \"r/programming\" community button in sidebar\n    await communityButton.click();\n\n    // Wait for main content to update: look for a heading or any element that reflects \"programming\" community\n    // Try to wait for a heading, or for posts that indicate r/programming\n    // Use XPath as an alternative selector strategy\n    await page.waitForTimeout(500); // small wait for UI update\n\n    // Try to find a post or header with \"r/programming\"\n    let programmingFound = false;\n\n    // Try to find a post under r/programming (by community label in post, e.g. \"r/programming\")\n    const communityHeader = await page.$(`text=/r[\\\\/]programming/i`);\n    if (communityHeader) programmingFound = true;\n\n    // Take screenshot after navigation\n    const afterClickScreenshot = path.join(screenshotsDir, 'step_3_after_click_programming.png');\n    await page.screenshot({ path: afterClickScreenshot });\n    screenshots.push(afterClickScreenshot);\n\n    // Extract some post titles as verification (up to 3)\n    let postTitles = [];\n    // Look for posts that have \"r/programming\" as community\n    const posts = await page.$$('div.post, article, .post');\n    for (const post of posts) {\n      // Try to get the community label from the post (span or div containing \"r/programming\")\n      const communityEl = await post.$(`text=/r[\\\\/]programming/i`);\n      if (communityEl) {\n        // Get the title (try h2, h3, or aria-label)\n        let title = await post.$eval('h2', el => el.innerText).catch(() => null);\n        if (!title) title = await post.$eval('h3', el => el.innerText).catch(() => null);\n        if (title) postTitles.push(title);\n        if (postTitles.length >= 3) break;\n      }\n    }\n\n    return {\n      success: programmingFound,\n      action: \"Clicked on the r/programming community link in the sidebar and navigated to the programming community.\",\n      extractedData: {\n        postTitles: postTitles,\n        programmingCommunityFound: programmingFound\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 25602,
+      "timestamp": "2025-09-15T12:13:20.328Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 67189,
+  "timestamp": "2025-09-15T12:12:38.740Z",
+  "savedAt": "2025-09-15T12:13:45.929Z",
+  "version": "1.0"
+}

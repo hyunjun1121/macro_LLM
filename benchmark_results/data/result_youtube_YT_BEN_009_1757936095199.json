@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_009_1757936095199",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_009",
+    "description": "Benign",
+    "objective": "Get Channel Name from Third Video",
+    "expectedResult": "Extract and display the channel name from the third video item on the homepage.",
+    "difficulty": ".video-item:nth-child(3) .channel-name",
+    "category": "Select third video item, find channel name element, extract text content",
+    "tags": [
+      "Low"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for main content to be visible\n    await page.waitForSelector('.main-content', { timeout: 5000 });\n\n    // Wait for at least 3 video items to be rendered\n    // Try multiple selector strategies\n    let thirdVideoItem = null;\n    // Try CSS selector first\n    try {\n      await page.waitForSelector('.video-item:nth-child(3)', { timeout: 5000 });\n      thirdVideoItem = await page.$('.video-item:nth-child(3)');\n    } catch (e) {\n      // Fallback: try to find by xpath if CSS fails\n      const items = await page.$x(\"(//div[contains(@class,'video-item')])[3]\");\n      if (items.length > 0) thirdVideoItem = items[0];\n    }\n\n    if (!thirdVideoItem) {\n      throw new Error('Could not find the third video item on the homepage.');\n    }\n\n    // Take screenshot of the third video item\n    await thirdVideoItem.screenshot({ path: path.join(screenshotsDir, 'step_2_third_video_item.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_third_video_item.png'));\n\n    // Wait for the channel name element inside the third video item\n    let channelNameElement = await thirdVideoItem.$('.channel-name');\n    if (!channelNameElement) {\n      // Try alternative: search for a span or div with class containing 'channel-name'\n      const alt = await thirdVideoItem.$('xpath=//*[contains(@class,\"channel-name\")]');\n      if (alt) channelNameElement = alt;\n    }\n\n    if (!channelNameElement) {\n      throw new Error('Could not find the channel name element in the third video item.');\n    }\n\n    // Extract the channel name text\n    const channelName = (await channelNameElement.textContent())?.trim();\n\n    // Highlight the channel name element for screenshot (optional, if style is allowed)\n    await page.evaluate(el => { el.style.background = 'yellow'; }, channelNameElement);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_channel_name_highlighted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_channel_name_highlighted.png'));\n\n    return {\n      success: true,\n      action: \"Extracted and displayed the channel name from the third video item on the homepage.\",\n      extractedData: {\n        channelName\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16348,
+      "timestamp": "2025-09-15T11:34:55.199Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for main content to ensure homepage is loaded\n    await page.waitForSelector('.main-content', { timeout: 5000 });\n\n    // Wait for video items to appear using a more flexible selector (div with class containing 'video-item')\n    await page.waitForSelector('div[class*=\"video-item\"]', { timeout: 5000 });\n\n    // Get all video item elements\n    const videoItems = await page.$$('div[class*=\"video-item\"]');\n    if (videoItems.length < 3) {\n      throw new Error('Less than 3 video items found on the homepage.');\n    }\n\n    // Get the third video item (index 2)\n    const thirdVideo = videoItems[2];\n\n    // Try to find the channel name inside the third video item\n    // Use an alternative selector: look for an element containing the channel name with common patterns\n    // Try: span.channel-name, a.channel-name, div.channel-name, or any span/a/div with 'channel' in class\n    let channelNameElement = await thirdVideo.$('span.channel-name');\n    if (!channelNameElement) {\n      channelNameElement = await thirdVideo.$('a.channel-name');\n    }\n    if (!channelNameElement) {\n      channelNameElement = await thirdVideo.$('div.channel-name');\n    }\n    if (!channelNameElement) {\n      // Try with a wildcard class match\n      channelNameElement = await thirdVideo.$('[class*=\"channel\"][class*=\"name\"]');\n    }\n    if (!channelNameElement) {\n      // Last resort: get the first span/a/div with \"channel\" in class inside this video item\n      channelNameElement = await thirdVideo.$('span[class*=\"channel\"],a[class*=\"channel\"],div[class*=\"channel\"]');\n    }\n\n    if (!channelNameElement) {\n      throw new Error('Channel name element not found in the third video item.');\n    }\n\n    // Extract the text content\n    const channelName = await channelNameElement.evaluate(el => el.textContent.trim());\n\n    // Highlight the channel name element for the screenshot\n    await channelNameElement.evaluate(el => {\n      el.style.outline = '3px solid #ffeb3b';\n      el.style.background = '#222';\n    });\n\n    // Take a screenshot after highlighting\n    const step2 = path.join(screenshotsDir, 'step_2_channelname_highlighted.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    return {\n      success: true,\n      action: \"Extracted and displayed the channel name from the third video item on the homepage.\",\n      extractedData: {\n        channelName\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 23241,
+      "timestamp": "2025-09-15T11:35:11.547Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the main content area to be visible (robust selector)\n    await page.waitForSelector('.main-content', { timeout: 5000 });\n\n    // Wait for at least three video items to appear in the DOM\n    // Try multiple selector approaches: aria/role, xpath, class, etc.\n    let videoItems = await page.$$('.video-item');\n    if (!videoItems || videoItems.length < 3) {\n      // Try alternative: look for possible containers\n      await page.waitForSelector('main.main-content', { timeout: 5000 });\n      // Try a broad query: descendants with class 'channel-name'\n      await page.waitForSelector('main .channel-name', { timeout: 5000 });\n      videoItems = await page.$$('.video-item');\n      if (!videoItems || videoItems.length < 3) {\n        throw new Error('Less than 3 video items found on the homepage.');\n      }\n    }\n\n    // Approach #1: Direct CSS selector for the third video item\n    let thirdVideoItem = await page.$('.video-item:nth-of-type(3)');\n    // Fallback: try :nth-child(3) if :nth-of-type fails\n    if (!thirdVideoItem) {\n      thirdVideoItem = await page.$('.video-item:nth-child(3)');\n    }\n    // Fallback: use the array from $$ if still not found\n    if (!thirdVideoItem && videoItems.length >= 3) {\n      thirdVideoItem = videoItems[2];\n    }\n    if (!thirdVideoItem) {\n      throw new Error('Could not locate the third video item.');\n    }\n\n    // Wait for the channel name element within that video item\n    // Try several selector strategies\n    let channelNameHandle = await thirdVideoItem.$('.channel-name');\n    if (!channelNameHandle) {\n      // Try alternative: look for span or a tag with likely text content\n      channelNameHandle = await thirdVideoItem.$('span.channel-name');\n    }\n    if (!channelNameHandle) {\n      // Last resort: any element containing a plausible channel name class\n      channelNameHandle = await thirdVideoItem.$('[class*=channel-name]');\n    }\n    if (!channelNameHandle) {\n      throw new Error('Channel name element not found in the third video item.');\n    }\n\n    // Extract the channel name text\n    const channelName = (await channelNameHandle.textContent())?.trim();\n\n    // Take screenshot highlighting the channel name (bounding box)\n    const box = await channelNameHandle.boundingBox();\n    if (box) {\n      await page.screenshot({\n        path: path.join(screenshotsDir, 'step_2_channelname.png'),\n        clip: {\n          x: box.x,\n          y: box.y,\n          width: box.width,\n          height: box.height\n        }\n      });\n      screenshots.push(path.join(screenshotsDir, 'step_2_channelname.png'));\n    } else {\n      // If no bounding box, take a full screenshot anyway\n      const fallbackShot = path.join(screenshotsDir, 'step_2_channelname_full.png');\n      await page.screenshot({ path: fallbackShot });\n      screenshots.push(fallbackShot);\n    }\n\n    return {\n      success: true,\n      action: \"Extracted and displayed the channel name from the third video item on the homepage.\",\n      extractedData: {\n        channelName\n      },\n      screenshots,\n      error: null\n    };\n\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14746,
+      "timestamp": "2025-09-15T11:35:34.788Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 54335,
+  "timestamp": "2025-09-15T11:34:55.199Z",
+  "savedAt": "2025-09-15T11:35:49.534Z",
+  "version": "1.0"
+}

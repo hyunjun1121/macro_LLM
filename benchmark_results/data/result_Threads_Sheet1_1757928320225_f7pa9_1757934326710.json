@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928320225_f7pa9_1757934326710",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928320225_f7pa9",
+    "description": "G007",
+    "objective": "Open Settings Modal",
+    "expectedResult": "Click the Settings button in the left sidebar to open settings modal",
+    "difficulty": "#settings-btn",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar and the Settings button to appear\n    await page.waitForSelector('#settings-btn', { timeout: 5000 });\n\n    // Take a screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click_settings.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click_settings.png'));\n\n    // Click the Settings button in the left sidebar\n    const settingsBtn = await page.$('#settings-btn');\n    if (!settingsBtn) throw new Error('Settings button (#settings-btn) not found');\n    await settingsBtn.click();\n\n    // Wait for the settings modal to appear\n    // Try to detect a modal with settings fields (e.g., #settings-username input)\n    await page.waitForSelector('#settings-username, [class*=modal], [role=dialog]', { timeout: 5000 });\n\n    // Take a screenshot after the modal appears\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_settings_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_settings_modal_opened.png'));\n\n    // Extract some data to verify the modal is open\n    // For example, check if the settings username input is visible\n    const settingsUsernameVisible = await page.$eval(\n      '#settings-username',\n      el => !!(el && (el.offsetParent !== null || window.getComputedStyle(el).display !== 'none')),\n    ).catch(() => false);\n\n    // Optionally, extract the modal title if present\n    let modalTitle = null;\n    try {\n      modalTitle = await page.$eval('[class*=modal] h2, [role=dialog] h2', el => el.textContent.trim());\n    } catch (e) {\n      modalTitle = null;\n    }\n\n    return {\n      success: true,\n      action: \"Clicked the Settings button in the left sidebar and opened the settings modal.\",\n      extractedData: {\n        settingsUsernameVisible,\n        modalTitle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15329,
+      "timestamp": "2025-09-15T11:05:26.710Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the sidebar navigation menu to be visible\n    await page.waitForSelector('nav.sidebar ul.nav-menu');\n\n    // Use a robust selector strategy for the Settings button:\n    // Try XPath looking for \"Settings\" text within the sidebar nav\n    const [settingsNavItem] = await page.$x(\"//nav[contains(@class, 'sidebar')]//li[contains(@class, 'nav-item') and .//span[normalize-space(text())='Settings']]\");\n    if (!settingsNavItem) {\n      throw new Error(\"Could not find the Settings button in the sidebar using text selector.\");\n    }\n\n    // Scroll the button into view (in case)\n    await settingsNavItem.scrollIntoViewIfNeeded();\n\n    // Take a screenshot before clicking the Settings button\n    const beforeClickScreenshot = path.join(screenshotsDir, 'step_2_settings_btn_before_click.png');\n    await page.screenshot({ path: beforeClickScreenshot });\n    screenshots.push(beforeClickScreenshot);\n\n    // Click the Settings button\n    await settingsNavItem.click();\n\n    // Wait for the settings modal to appear\n    // Assume modal has role=\"dialog\" or contains an input with id \"settings-username\"\n    await page.waitForSelector('#settings-username, [role=dialog], .modal-content', { timeout: 3000 });\n\n    // Take a screenshot of the settings modal opened\n    const afterClickScreenshot = path.join(screenshotsDir, 'step_3_settings_modal_opened.png');\n    await page.screenshot({ path: afterClickScreenshot });\n    screenshots.push(afterClickScreenshot);\n\n    // Verify that at least the username input (or modal) is present and visible\n    let settingsModalVisible = false;\n    let extractedData = {};\n\n    // Try to extract the value of the username field if present\n    const usernameInput = await page.$('#settings-username');\n    if (usernameInput) {\n      settingsModalVisible = await usernameInput.isVisible();\n      extractedData.settingsUsernamePlaceholder = await usernameInput.getAttribute('placeholder');\n    } else {\n      // Fallback: look for a modal/dialog\n      const modal = await page.$('[role=dialog], .modal-content');\n      if (modal) {\n        settingsModalVisible = await modal.isVisible();\n      }\n    }\n\n    return {\n      success: settingsModalVisible,\n      action: \"Clicked the Settings button in the left sidebar and opened the settings modal\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13277,
+      "timestamp": "2025-09-15T11:05:42.039Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Take an initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar nav-menu to be visible (structure check)\n    await page.waitForSelector('nav.sidebar ul.nav-menu');\n\n    // Use alternative selector strategies for the Settings button:\n    // - It's a <li> element with id 'settings-btn', contains an <i> with class 'fa-cog' and a <span> with text 'Settings'.\n    // Try text selector first, then fallback to CSS or XPath.\n\n    // Wait for the Settings nav item to be visible and enabled\n    const settingsLi = await page.waitForSelector('li#settings-btn:has-text(\"Settings\")', { timeout: 5000 });\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_settings_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_settings_click.png'));\n\n    // Scroll into view just in case\n    await settingsLi.scrollIntoViewIfNeeded();\n\n    // Click the Settings button using the LI element directly (not a button)\n    await settingsLi.click();\n\n    // Wait for the settings modal/dialog to appear\n    // Look for a modal containing input fields like #settings-username, #settings-display-name, etc\n    // Wait for at least one of these fields to appear as strong evidence modal is open\n    const settingsModalSelector = '#settings-username';\n    await page.waitForSelector(settingsModalSelector, { timeout: 5000 });\n\n    // Take screenshot after the modal appears\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_settings_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_settings_modal_open.png'));\n\n    // Extract data to verify modal is open: get the value (or placeholder) of the username input\n    const settingsUsername = await page.$eval(\n      '#settings-username',\n      el => el.value || el.placeholder || el.getAttribute('name') || ''\n    );\n\n    return {\n      success: true,\n      action: \"Clicked the Settings button in the left sidebar and opened the settings modal.\",\n      extractedData: {\n        settingsModalUsernameField: settingsUsername\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11990,
+      "timestamp": "2025-09-15T11:05:55.316Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 40596,
+  "timestamp": "2025-09-15T11:05:26.710Z",
+  "savedAt": "2025-09-15T11:06:07.306Z",
+  "version": "1.0"
+}

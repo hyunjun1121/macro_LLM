@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T007_1757937410841",
+  "website": "Amazon",
+  "task": {
+    "id": "T007",
+    "description": "Apply Price Sort Filter",
+    "objective": "General",
+    "expectedResult": "Medium",
+    "difficulty": "Search for products, then use the sort dropdown to sort by 'Price: Low to High'.",
+    "category": "#sortSelect, .products-grid .product-card",
+    "tags": [
+      "1. Perform product search 2. Find sort dropdown 3. Select 'Price: Low to High' option"
+    ],
+    "notes": "Products reorder by ascending price, first product has lowest visible price, notification confirms sort applied"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Search for products\n    await page.fill('#searchInput', 'electronics');\n    await page.click('button.search-btn');\n    \n    // Wait for search results to load\n    await page.waitForSelector('.products-grid');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_results.png'));\n\n    // Apply price sort filter\n    await page.selectOption('#sortSelect', { label: 'Price: Low to High' });\n    \n    // Wait for sorting to complete\n    await page.waitForTimeout(2000); // Allow time for re-sorting\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_sorted_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_sorted_results.png'));\n\n    // Extract product data to verify sorting\n    const productData = await page.$$eval('.product-card', products => \n      products.map(product => ({\n        title: product.querySelector('.product-title')?.textContent || 'N/A',\n        price: product.querySelector('.product-price')?.textContent || 'N/A'\n      }))\n    );\n\n    return {\n      success: true,\n      action: \"Applied 'Price: Low to High' sort filter to electronics products\",\n      extractedData: {\n        products: productData,\n        totalProducts: productData.length\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 131526,
+      "timestamp": "2025-09-15T11:56:50.841Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Search for products first\n    await page.fill('#searchInput', 'electronics');\n    await page.click('button.search-btn');\n    \n    // Wait for search results to load\n    await page.waitForSelector('.products-grid', { timeout: 10000 });\n    \n    // Take screenshot after search\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_results.png'));\n\n    // Look for sort dropdown using multiple selector strategies\n    const sortSelectors = [\n      '#sortSelect',\n      'select[name=\"sort\"]',\n      'select.sort-dropdown',\n      'select:has(option[value*=\"price\"])'\n    ];\n\n    let sortDropdown;\n    for (const selector of sortSelectors) {\n      sortDropdown = await page.$(selector);\n      if (sortDropdown) break;\n    }\n\n    if (!sortDropdown) {\n      throw new Error('Sort dropdown not found');\n    }\n\n    // Select 'Price: Low to High' option\n    await page.selectOption(sortDropdown, { value: 'price_low_high' });\n    \n    // Wait for products to re-sort\n    await page.waitForTimeout(2000);\n    \n    // Take screenshot after sorting\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_sorted_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_sorted_results.png'));\n\n    // Extract product prices to verify sorting\n    const productPrices = await page.$$eval('.product-card .price', elements => \n      elements.map(el => {\n        const priceText = el.textContent.replace(/[^\\d.]/g, '');\n        return parseFloat(priceText);\n      })\n    );\n\n    // Verify prices are in ascending order\n    const isSorted = productPrices.every((price, i, arr) => \n      i === 0 || price >= arr[i - 1]\n    );\n\n    return {\n      success: true,\n      action: \"Applied 'Price: Low to High' sort filter to search results\",\n      extractedData: {\n        productCount: productPrices.length,\n        prices: productPrices,\n        isSortedCorrectly: isSorted\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to apply price sort filter\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 94387,
+      "timestamp": "2025-09-15T11:59:02.367Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Perform search for products\n    const searchInput = await page.waitForSelector('#searchInput');\n    await searchInput.fill('electronics');\n    \n    const searchBtn = await page.waitForSelector('button.search-btn');\n    await searchBtn.click();\n\n    // Wait for search results to load\n    await page.waitForSelector('.products-grid');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_results.png'));\n\n    // Apply price sort filter\n    const sortDropdown = await page.waitForSelector('#sortSelect');\n    await sortDropdown.selectOption({ label: 'Price: Low to High' });\n\n    // Wait for results to be sorted\n    await page.waitForTimeout(2000);\n    await page.waitForSelector('.products-grid .product-card');\n    \n    // Take screenshot after sorting\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_sorted_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_sorted_results.png'));\n\n    // Extract product prices to verify sorting\n    const productPrices = await page.$$eval('.products-grid .product-card .price', \n      elements => elements.map(el => parseFloat(el.textContent.replace('$', '')))\n    );\n\n    // Verify prices are sorted in ascending order\n    const isSorted = productPrices.every((price, i, arr) => \n      i === 0 || price >= arr[i - 1]\n    );\n\n    return {\n      success: true,\n      action: \"Applied 'Price: Low to High' sort filter to search results\",\n      extractedData: {\n        productCount: productPrices.length,\n        prices: productPrices,\n        isSortedCorrectly: isSorted\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 111132,
+      "timestamp": "2025-09-15T12:00:36.754Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 337045,
+  "timestamp": "2025-09-15T11:56:50.841Z",
+  "savedAt": "2025-09-15T12:02:27.886Z",
+  "version": "1.0"
+}

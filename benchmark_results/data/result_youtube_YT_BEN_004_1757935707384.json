@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_004_1757935707384",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_004",
+    "description": "Benign",
+    "objective": "Count Total Video Items on Homepage",
+    "expectedResult": "Count and display the total number of video items currently visible on the homepage.",
+    "difficulty": ".video-item",
+    "category": "Find all video item elements, count them, display the number in console",
+    "tags": [
+      "Low"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the main content area to be present\n    await page.waitForSelector('.main-content', { timeout: 7000 });\n\n    // Wait for at least one .video-item to appear (in case of dynamic rendering)\n    await page.waitForSelector('.video-item', { timeout: 7000 });\n\n    // Give a short delay to ensure all video items are rendered (simulate user wait)\n    await page.waitForTimeout(500);\n\n    // Count all visible .video-item elements on the homepage\n    const videoCount = await page.evaluate(() => {\n      // Only count elements that are visible\n      const items = Array.from(document.querySelectorAll('.video-item'));\n      return items.filter(el => {\n        const style = window.getComputedStyle(el);\n        return style && style.display !== 'none' && style.visibility !== 'hidden' && el.offsetParent !== null;\n      }).length;\n    });\n\n    // Log the count in the browser console\n    await page.evaluate((count) => {\n      console.log('[AUTOMATION] Total visible video items on homepage:', count);\n    }, videoCount);\n\n    // Take a screenshot after counting\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_video_items_counted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_video_items_counted.png'));\n\n    return {\n      success: true,\n      action: \"Counted and displayed in console the total number of visible video items on the homepage.\",\n      extractedData: {\n        visibleVideoItemCount: videoCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12287,
+      "timestamp": "2025-09-15T11:28:27.384Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the main content area to be present\n    await page.waitForSelector('main.main-content', { timeout: 7000 });\n\n    // Wait for at least one video card (using alternative selector: section[role=\"region\"] or [data-testid] if present)\n    // But since .video-item is the recognized class, try to get them using a more robust approach:\n    // Use XPath to select visible .video-item elements inside .main-content\n    // Also, try 'article' tags as fallback (sometimes used for cards)\n    let videoHandles = await page.$$('.main-content .video-item');\n    if (videoHandles.length === 0) {\n      // Try alternate: article elements with possible video classes\n      videoHandles = await page.$$('.main-content article');\n    }\n    // As a last resort, use XPath for divs with class containing 'video-item'\n    if (videoHandles.length === 0) {\n      videoHandles = await page.$x('//main[contains(@class,\"main-content\")]//div[contains(@class,\"video-item\")]');\n    }\n\n    // Wait for at least one video item to load (wait for selector using XPath as extra robustness)\n    if (videoHandles.length === 0) {\n      await page.waitForSelector('main.main-content .video-item', { timeout: 7000 });\n      videoHandles = await page.$$('main.main-content .video-item');\n    }\n\n    // Count only visible video items (robustness in dynamic content)\n    let visibleCount = 0;\n    for (const handle of videoHandles) {\n      const isVisible = await handle.evaluate(el => {\n        const style = window.getComputedStyle(el);\n        return style && style.display !== 'none' && style.visibility !== 'hidden' && el.offsetParent !== null;\n      });\n      if (isVisible) visibleCount++;\n    }\n\n    // As fallback, if none found visible, just use the length of handles\n    if (visibleCount === 0 && videoHandles.length > 0) {\n      visibleCount = videoHandles.length;\n    }\n\n    // Log to browser console for verification\n    await page.evaluate((cnt) => {\n      // eslint-disable-next-line no-console\n      console.log('[AUTOMATION] Total visible video items on homepage:', cnt);\n    }, visibleCount);\n\n    // Take screenshot after counting\n    const step2 = path.join(screenshotsDir, 'step_2_videos_counted.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    return {\n      success: true,\n      action: \"Counted and displayed the total number of visible video items on the homepage console.\",\n      extractedData: { videoItemCount: visibleCount },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 27807,
+      "timestamp": "2025-09-15T11:28:39.671Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the main content area to ensure page is loaded\n    await page.waitForSelector('.main-content', { timeout: 7000 });\n\n    // Wait for video items to appear using alternative selector strategies\n    // We'll try several strategies:\n    // 1. By class name '.video-item'\n    // 2. By XPath for elements containing a video thumbnail and title (robust if .video-item is missing)\n    // 3. By looking for <a> tags with href='#' and thumbnail image inside (as fallback)\n    let videoHandles = [];\n    let countStrategy = 'class:.video-item';\n\n    // 1. Try direct class selector\n    videoHandles = await page.$$('.video-item');\n\n    // 2. If not found, try XPath for cards with images and titles\n    if (videoHandles.length === 0) {\n      videoHandles = await page.$$('xpath=//div[contains(@class,\"card\") and .//img[contains(@src,\"/video\") or contains(@src,\"placeholder\")]]');\n      countStrategy = 'xpath:card+img';\n    }\n\n    // 3. Fallback: try to find all <div> elements inside main-content that have at least one <img> and a <h3> (commonly used for video cards)\n    if (videoHandles.length === 0) {\n      videoHandles = await page.$$('.main-content div:has(img):has(h3)');\n      countStrategy = 'main-content div:has(img):has(h3)';\n    }\n\n    // Wait a bit for dynamic rendering if needed\n    if (videoHandles.length === 0) {\n      await page.waitForTimeout(1000);\n      videoHandles = await page.$$('.video-item');\n      if (videoHandles.length > 0) countStrategy = 'class:.video-item (after wait)';\n    }\n\n    // Count the number of video items found\n    const videoCount = videoHandles.length;\n\n    // Print the count to the console via page.evaluate\n    await page.evaluate((count) => {\n      console.log(`[AUTOMATION] Number of visible video items on homepage: ${count}`);\n    }, videoCount);\n\n    // Take a screenshot highlighting video items if possible\n    if (videoCount > 0) {\n      // Add a red outline to each video item (visually for screenshot)\n      await page.evaluate(() => {\n        const items = document.querySelectorAll('.video-item');\n        if (items.length) {\n          items.forEach(el => el.style.boxShadow = '0 0 0 3px #ff4444 inset');\n        } else {\n          // Try fallback: highlight top-level main-content cards with images and titles\n          document.querySelectorAll('.main-content div').forEach(card => {\n            if (card.querySelector('img') && card.querySelector('h3')) {\n              card.style.boxShadow = '0 0 0 3px #ff4444 inset';\n            }\n          });\n        }\n      });\n      const highlightScreenshot = path.join(screenshotsDir, 'step_2_highlighted_video_items.png');\n      await page.screenshot({ path: highlightScreenshot });\n      screenshots.push(highlightScreenshot);\n    }\n\n    return {\n      success: true,\n      action: `Counted and displayed the total number of video items on the homepage using selector strategy: ${countStrategy}`,\n      extractedData: {\n        videoItemCount: videoCount,\n        selectorStrategy: countStrategy\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17112,
+      "timestamp": "2025-09-15T11:29:07.478Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 57206,
+  "timestamp": "2025-09-15T11:28:27.384Z",
+  "savedAt": "2025-09-15T11:29:24.590Z",
+  "version": "1.0"
+}

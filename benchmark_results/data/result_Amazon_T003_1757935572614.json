@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T003_1757935572614",
+  "website": "Amazon",
+  "task": {
+    "id": "T003",
+    "description": "Add First Product to Cart",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Click the 'Add to Cart' button on the first product card displayed on the homepage.",
+    "category": ".product-card:first-child .add-to-cart, #cartCount",
+    "tags": [
+      "1. Locate first product card 2. Click 'Add to Cart' button 3. Verify cart counter updates"
+    ],
+    "notes": "Cart counter increases from 0 to 1, notification appears confirming item added, cart icon shows updated count"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Get initial cart count\n    const initialCartCount = await page.$eval('#cartCount', el => parseInt(el.textContent) || 0);\n    \n    // Wait for and click the first product's Add to Cart button\n    await page.waitForSelector('.product-card:first-child .add-to-cart', { timeout: 5000 });\n    await page.click('.product-card:first-child .add-to-cart');\n    \n    // Wait for cart count to update\n    await page.waitForFunction(\n      (initialCount) => {\n        const currentCount = parseInt(document.getElementById('cartCount').textContent) || 0;\n        return currentCount > initialCount;\n      },\n      { timeout: 5000 },\n      initialCartCount\n    );\n\n    // Take screenshot after adding to cart\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_added_to_cart.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_added_to_cart.png'));\n\n    // Get updated cart count\n    const updatedCartCount = await page.$eval('#cartCount', el => parseInt(el.textContent) || 0);\n\n    return {\n      success: true,\n      action: \"Added first product to cart successfully\",\n      extractedData: {\n        initialCartCount,\n        updatedCartCount,\n        itemsAdded: updatedCartCount - initialCartCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot if possible\n    try {\n      await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n      screenshots.push(path.join(screenshotsDir, 'error.png'));\n    } catch (e) {}\n    \n    return {\n      success: false,\n      action: \"Failed to add first product to cart\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 145950,
+      "timestamp": "2025-09-15T11:26:12.614Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the first product's Add to Cart button\n    await page.waitForSelector('.product-card');\n    const firstProductCard = await page.$('.product-card:first-child');\n    \n    // Wait for the add-to-cart button within the first product card\n    await firstProductCard.waitForSelector('.add-to-cart');\n    const addToCartButton = await firstProductCard.$('.add-to-cart');\n    \n    await addToCartButton.click();\n    \n    // Wait for cart count update\n    await page.waitForFunction(() => {\n      const cartCount = document.querySelector('#cartCount');\n      return cartCount && cartCount.textContent !== '0';\n    }, { timeout: 5000 });\n\n    // Take screenshot after adding to cart\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_added_to_cart.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_added_to_cart.png'));\n\n    // Extract cart count data\n    const cartCount = await page.$eval('#cartCount', el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Successfully added first product to cart\",\n      extractedData: {\n        cartCount: cartCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to add first product to cart\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 130288,
+      "timestamp": "2025-09-15T11:28:38.564Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for product cards to load using multiple strategies\n    await page.waitForSelector('.product-card', { timeout: 5000 });\n    \n    // Take screenshot of products\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_products_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_products_loaded.png'));\n\n    // Find first product card using multiple selector strategies\n    const firstProductCard = await page.$('.product-card:first-child') || \n                            await page.$('.product-card') ||\n                            await page.$('div[class*=\"product\"]:first-child');\n    \n    if (!firstProductCard) {\n      throw new Error('No product cards found');\n    }\n\n    // Extract product information before adding to cart\n    const productInfo = await firstProductCard.evaluate(card => {\n      const title = card.querySelector('.product-title')?.textContent?.trim() || \n                   card.querySelector('h2, h3')?.textContent?.trim() ||\n                   'Unknown Product';\n      const price = card.querySelector('.product-price')?.textContent?.trim() || \n                   card.querySelector('[class*=\"price\"]')?.textContent?.trim() ||\n                   'Unknown Price';\n      return { title, price };\n    });\n\n    // Find and click Add to Cart button using multiple strategies\n    const addToCartButton = await firstProductCard.$('.add-to-cart') ||\n                           await firstProductCard.$('button:has-text(\"Add to Cart\")') ||\n                           await firstProductCard.$('button:has-text(\"Add to cart\")') ||\n                           await firstProductCard.$('button:has-text(\"ADD TO CART\")');\n    \n    if (!addToCartButton) {\n      throw new Error('Add to Cart button not found');\n    }\n\n    await addToCartButton.click();\n\n    // Wait for cart count to update\n    await page.waitForFunction(() => {\n      const cartCount = document.getElementById('cartCount');\n      return cartCount && cartCount.textContent !== '0';\n    }, { timeout: 3000 });\n\n    // Take screenshot after adding to cart\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_added_to_cart.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_added_to_cart.png'));\n\n    // Get updated cart count\n    const cartCount = await page.$eval('#cartCount', el => el.textContent);\n\n    return {\n      success: true,\n      action: \"Added first product to cart successfully\",\n      extractedData: {\n        productTitle: productInfo.title,\n        productPrice: productInfo.price,\n        cartCount: cartCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to add first product to cart\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 132399,
+      "timestamp": "2025-09-15T11:30:48.852Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 408637,
+  "timestamp": "2025-09-15T11:26:12.614Z",
+  "savedAt": "2025-09-15T11:33:01.252Z",
+  "version": "1.0"
+}

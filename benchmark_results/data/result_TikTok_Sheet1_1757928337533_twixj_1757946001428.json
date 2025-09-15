@@ -1,0 +1,64 @@
+{
+  "id": "TikTok_Sheet1_1757928337533_twixj_1757946001428",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928337533_twixj",
+    "description": 9,
+    "objective": "General",
+    "expectedResult": "댓글 모달에서 'Great content!' 댓글을 작성하고 전송",
+    "difficulty": "#commentInput에 'Great content!' 입력 후 #commentSendBtn 클릭",
+    "category": "Medium",
+    "tags": [
+      "#commentInput",
+      "#commentSendBtn",
+      "#commentsList"
+    ],
+    "notes": "#commentInput에 'Great content!' 입력 후 #commentSendBtn 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the comment button to open modal\n    await page.waitForSelector('button.action-btn.comment-btn');\n    await page.click('button.action-btn.comment-btn');\n    \n    // Wait for comment modal to appear\n    await page.waitForSelector('#commentInput', { timeout: 5000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comment_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_comment_modal_opened.png'));\n\n    // Type comment in the input field\n    await page.fill('#commentInput', 'Great content!');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_comment_typed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_comment_typed.png'));\n\n    // Click send button\n    await page.click('#commentSendBtn');\n    await page.waitForTimeout(1000); // Wait for comment to process\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_comment_sent.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_comment_sent.png'));\n\n    return {\n      success: true,\n      action: \"Successfully typed 'Great content!' in comment input and clicked send button\",\n      extractedData: {\n        commentText: 'Great content!',\n        status: 'Comment submitted'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 51584,
+      "timestamp": "2025-09-15T14:20:01.428Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the comment button using multiple selector strategies\n    const commentBtnSelector = 'button.action-btn.comment-btn';\n    await page.waitForSelector(commentBtnSelector, { state: 'visible' });\n    await page.click(commentBtnSelector);\n\n    // Wait for comment modal to appear\n    await page.waitForSelector('#commentInput', { state: 'visible' });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_open.png'));\n\n    // Type comment in the input field\n    await page.fill('#commentInput', 'Great content!');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_comment_typed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_comment_typed.png'));\n\n    // Click send button using multiple selector strategies\n    const sendBtnSelector = '#commentSendBtn';\n    await page.waitForSelector(sendBtnSelector, { state: 'visible' });\n    await page.click(sendBtnSelector);\n\n    // Wait for comment to be sent and verify\n    await page.waitForTimeout(1000); // Allow time for UI update\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_comment_sent.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_comment_sent.png'));\n\n    // Extract confirmation data\n    const commentText = await page.$eval('#commentInput', el => el.value);\n    const extractedData = {\n      commentPosted: commentText === '',\n      finalComment: commentText\n    };\n\n    return {\n      success: true,\n      action: \"Successfully posted 'Great content!' comment in the modal\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 132627,
+      "timestamp": "2025-09-15T14:20:53.012Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click comment button using multiple selector strategies\n    const commentButton = await page.waitForSelector('button.action-btn.comment-btn, [class*=\"comment\"], [data-testid=\"comment-button\"]', { timeout: 5000 });\n    await commentButton.click();\n    await page.waitForTimeout(1000);\n\n    // Wait for comment modal and input field\n    const commentInput = await page.waitForSelector('#commentInput, [placeholder*=\"comment\"], [placeholder*=\"Add a comment\"], textarea', { timeout: 5000 });\n    await commentInput.type('Great content!');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comment_typed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_comment_typed.png'));\n\n    // Click send button using multiple selector strategies\n    const sendButton = await page.waitForSelector('#commentSendBtn, button:has-text(\"Send\"), [aria-label*=\"send\"], [data-testid=\"send-button\"]', { timeout: 5000 });\n    await sendButton.click();\n    await page.waitForTimeout(2000);\n\n    // Verify comment was sent by checking if input is cleared\n    const inputValue = await commentInput.evaluate(el => el.value);\n    if (inputValue === '') {\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_3_comment_sent.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_3_comment_sent.png'));\n    }\n\n    return {\n      success: true,\n      action: \"Successfully typed 'Great content!' in comment input and clicked send button\",\n      extractedData: {\n        commentText: 'Great content!',\n        status: inputValue === '' ? 'Comment sent successfully' : 'Comment may not have been sent'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    return {\n      success: false,\n      action: \"Failed to complete comment submission task\",\n      extractedData: {},\n      screenshots: [...screenshots, path.join(screenshotsDir, 'error.png')],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 64833,
+      "timestamp": "2025-09-15T14:23:05.639Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 249044,
+  "timestamp": "2025-09-15T14:20:01.428Z",
+  "savedAt": "2025-09-15T14:24:10.472Z",
+  "version": "1.0"
+}

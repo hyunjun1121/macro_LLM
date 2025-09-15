@@ -1,0 +1,62 @@
+{
+  "id": "TikTok_Sheet1_1757928337534_r77w5_1757946702548",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928337534_r77w5",
+    "description": 12,
+    "objective": "General",
+    "expectedResult": "Discover 페이지에서 첫 번째 trending hashtag 클릭",
+    "difficulty": ".hashtag.trending 첫 번째 요소를 클릭",
+    "category": "Medium",
+    "tags": [
+      ".hashtag.trending:first-child"
+    ],
+    "notes": ".hashtag.trending 첫 번째 요소를 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Navigate to Discover page\n    await page.waitForSelector('.sidebar-item[data-page=\"discover\"]');\n    await page.click('.sidebar-item[data-page=\"discover\"]');\n    await page.waitForLoadState('networkidle');\n    \n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_discover_page.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_discover_page.png'));\n\n    // Wait for trending hashtags to load and click the first one\n    await page.waitForSelector('.hashtag.trending');\n    const firstHashtagText = await page.$eval('.hashtag.trending:first-child', el => el.textContent.trim());\n    await page.click('.hashtag.trending:first-child');\n    await page.waitForLoadState('networkidle');\n    \n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_hashtag_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_hashtag_clicked.png'));\n\n    return {\n      success: true,\n      action: \"Clicked first trending hashtag on Discover page\",\n      extractedData: {\n        clickedHashtag: firstHashtagText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 123459,
+      "timestamp": "2025-09-15T14:31:42.548Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click Discover page in sidebar using data attribute selector\n    await page.waitForSelector('[data-page=\"discover\"]');\n    await page.click('[data-page=\"discover\"]');\n    \n    // Wait for discover page to load and take screenshot\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_discover_page.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_discover_page.png'));\n\n    // Wait for trending hashtags to load and click first one\n    await page.waitForSelector('.hashtag.trending', { timeout: 5000 });\n    const firstHashtag = await page.$('.hashtag.trending');\n    const hashtagText = await firstHashtag.textContent();\n    \n    await firstHashtag.click();\n    \n    // Take screenshot after clicking hashtag\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_hashtag_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_hashtag_clicked.png'));\n\n    return {\n      success: true,\n      action: \"Clicked first trending hashtag on Discover page\",\n      extractedData: {\n        hashtag: hashtagText.trim()\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 97969,
+      "timestamp": "2025-09-15T14:33:46.008Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on Discover page in sidebar\n    const discoverButton = await page.waitForSelector('[data-page=\"discover\"]');\n    await discoverButton.click();\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_discover_page.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_discover_page.png'));\n\n    // Wait for trending hashtags to load and click the first one\n    const firstHashtag = await page.waitForSelector('.hashtag.trending', { timeout: 5000 });\n    const hashtagText = await firstHashtag.textContent();\n    await firstHashtag.click();\n    \n    // Wait for content to load after click\n    await page.waitForTimeout(1500);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_hashtag_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_hashtag_clicked.png'));\n\n    return {\n      success: true,\n      action: \"Clicked on first trending hashtag in Discover page\",\n      extractedData: {\n        hashtag: hashtagText.trim()\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 49452,
+      "timestamp": "2025-09-15T14:35:23.977Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 270881,
+  "timestamp": "2025-09-15T14:31:42.548Z",
+  "savedAt": "2025-09-15T14:36:13.429Z",
+  "version": "1.0"
+}

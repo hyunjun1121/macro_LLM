@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928345639_vkokm_1757936401472",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928345639_vkokm",
+    "description": "IG_REG_005",
+    "objective": "Regular",
+    "expectedResult": "Click bookmark button on first post and verify bookmark icon becomes filled",
+    "difficulty": "Easy",
+    "category": ".post:first-child .bookmark-btn i",
+    "tags": [
+      "Bookmark icon changes from \"far fa-bookmark\" to \"fas fa-bookmark\""
+    ],
+    "notes": "1. Find first .post .bookmark-btn 2. Click button 3. Verify icon class contains \"fas fa-bookmark\""
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click the bookmark button on the first post\n    await page.waitForSelector('.post:first-child .bookmark-btn');\n    await page.click('.post:first-child .bookmark-btn');\n\n    // Wait for the bookmark icon to become filled\n    await page.waitForSelector('.post:first-child .bookmark-btn i.filled'); // Assuming the filled state has a class 'filled'\n\n    // Take a screenshot after clicking the bookmark\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_click.png'));\n\n    return {\n      success: true,\n      action: \"Clicked bookmark button on first post and verified bookmark icon became filled\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11788,
+      "timestamp": "2025-09-15T11:40:01.472Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first post's bookmark button to be visible\n    await page.waitForSelector('.post:first-child .bookmark-btn');\n\n    // Click the bookmark button on the first post\n    await page.click('.post:first-child .bookmark-btn');\n\n    // Take a screenshot after clicking the bookmark button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_click.png'));\n\n    // Verify that the bookmark icon is filled (check for a specific class or state)\n    const isBookmarked = await page.evaluate(() => {\n      const bookmarkIcon = document.querySelector('.post:first-child .bookmark-btn i');\n      return bookmarkIcon.classList.contains('filled'); // Assuming 'filled' is the class that indicates the bookmark is active\n    });\n\n    return {\n      success: isBookmarked,\n      action: \"Clicked the bookmark button on the first post and verified the icon state.\",\n      extractedData: { isBookmarked },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13215,
+      "timestamp": "2025-09-15T11:40:13.260Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first post's bookmark button to be visible\n    await page.waitForSelector('.post:first-child .bookmark-btn');\n\n    // Click the bookmark button on the first post\n    await page.click('.post:first-child .bookmark-btn');\n\n    // Wait for a moment to ensure the UI updates\n    await page.waitForTimeout(1000);\n\n    // Verify the bookmark icon becomes filled\n    const isBookmarked = await page.evaluate(() => {\n      const bookmarkIcon = document.querySelector('.post:first-child .bookmark-btn i');\n      return bookmarkIcon.classList.contains('filled'); // Assuming 'filled' class indicates a filled bookmark\n    });\n\n    if (isBookmarked) {\n      // Take screenshot after clicking the bookmark button\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_2_bookmarked.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_2_bookmarked.png'));\n    } else {\n      throw new Error('Bookmark icon did not become filled');\n    }\n\n    return {\n      success: true,\n      action: \"Clicked bookmark button on first post and verified it became filled\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15453,
+      "timestamp": "2025-09-15T11:40:26.475Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 40456,
+  "timestamp": "2025-09-15T11:40:01.472Z",
+  "savedAt": "2025-09-15T11:40:41.928Z",
+  "version": "1.0"
+}

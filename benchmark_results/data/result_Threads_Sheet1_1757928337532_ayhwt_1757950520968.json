@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337532_ayhwt_1757950520968",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337532_ayhwt",
+    "description": "G002",
+    "objective": "Post Simple Text Thread",
+    "expectedResult": "Type 'Hello World!' in the thread input and click the Post button",
+    "difficulty": "#thread-text, #post-thread",
+    "category": 1,
+    "tags": [
+      "10 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and fill the thread input\n    await page.waitForSelector('#thread-text', { timeout: 5000 });\n    await page.fill('#thread-text', 'Hello World!');\n    \n    // Take screenshot after filling text\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_text_filled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_text_filled.png'));\n\n    // Wait for and click the Post button\n    await page.waitForSelector('#post-thread', { timeout: 5000 });\n    await page.click('#post-thread');\n    \n    // Take screenshot after posting\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_posted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_posted.png'));\n\n    // Verify successful post by checking for success message or updated feed\n    const successMessage = await page.$('.toast-success');\n    const postedContent = await page.$eval('.thread-content:first-child', el => el.textContent);\n\n    return {\n      success: true,\n      action: \"Typed 'Hello World!' in thread input and clicked Post button\",\n      extractedData: {\n        hasSuccessMessage: successMessage !== null,\n        firstThreadContent: postedContent || 'No thread content found'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 41851,
+      "timestamp": "2025-09-15T15:35:20.968Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and focus on the thread text input\n    const threadInput = await page.waitForSelector('textarea[id=\"thread-text\"]');\n    await threadInput.focus();\n    \n    // Type 'Hello World!' in the thread input\n    await page.keyboard.type('Hello World!');\n    \n    // Take screenshot after typing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_typed_text.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_typed_text.png'));\n\n    // Wait for and click the Post button using multiple selector strategies\n    const postButton = await page.waitForSelector('#post-thread');\n    await postButton.click();\n\n    // Wait for any post-processing to complete\n    await page.waitForTimeout(1000);\n\n    // Take final screenshot after posting\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_posted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_posted.png'));\n\n    // Verify the text was posted by checking if the input was cleared\n    const currentText = await page.$eval('#thread-text', el => el.value);\n    const isPosted = currentText === '';\n\n    return {\n      success: true,\n      action: \"Typed 'Hello World!' in thread input and clicked Post button\",\n      extractedData: {\n        typedText: 'Hello World!',\n        isPosted: isPosted,\n        currentInputValue: currentText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 87479,
+      "timestamp": "2025-09-15T15:36:02.820Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and focus on the thread text input\n    const textInput = await page.waitForSelector('#thread-text', { state: 'visible' });\n    await textInput.focus();\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_focused_input.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_focused_input.png'));\n\n    // Type 'Hello World!' in the input\n    await page.type('#thread-text', 'Hello World!', { delay: 50 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_typed_text.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_typed_text.png'));\n\n    // Wait for and click the Post button using multiple selector strategies\n    const postButton = await page.waitForSelector('#post-thread:not([disabled])', { state: 'visible' });\n    await postButton.click();\n    await page.waitForTimeout(1000); // Wait for potential UI update\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_post_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_post_clicked.png'));\n\n    // Verify the action was completed by checking if input was cleared\n    const inputValue = await page.$eval('#thread-text', el => el.value);\n    const extractedData = {\n      inputAfterPost: inputValue,\n      postButtonText: await page.$eval('#post-thread', el => el.textContent.trim())\n    };\n\n    return {\n      success: true,\n      action: \"Typed 'Hello World!' in thread input and clicked Post button\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 75638,
+      "timestamp": "2025-09-15T15:37:30.299Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 204969,
+  "timestamp": "2025-09-15T15:35:20.968Z",
+  "savedAt": "2025-09-15T15:38:45.937Z",
+  "version": "1.0"
+}

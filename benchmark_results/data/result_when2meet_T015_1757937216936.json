@@ -1,0 +1,66 @@
+{
+  "id": "when2meet_T015_1757937216936",
+  "website": "when2meet",
+  "task": {
+    "id": "T015",
+    "description": "Test Search Input Focus",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Click on the search input field to focus it",
+    "category": "#eventSearchInput",
+    "tags": [
+      "Click on the search input field"
+    ],
+    "notes": "Search input gains focus and cursor appears in field"
+  },
+  "websiteInfo": {
+    "name": "when2meet",
+    "htmlFiles": [
+      "404.html",
+      "create.html",
+      "dashboard.html",
+      "event.html",
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the search input to be visible\n    await page.waitForSelector('#eventSearchInput', { state: 'visible', timeout: 5000 });\n\n    // Take screenshot before focusing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_focus.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_focus.png'));\n\n    // Click on the search input to focus it\n    await page.click('#eventSearchInput');\n\n    // Wait a moment to ensure focus is applied\n    await page.waitForTimeout(300);\n\n    // Take screenshot after focusing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_focus.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_focus.png'));\n\n    // Extract data to verify focus\n    const isFocused = await page.evaluate(() => {\n      const el = document.getElementById('eventSearchInput');\n      return document.activeElement === el;\n    });\n\n    return {\n      success: isFocused,\n      action: \"Clicked on the search input field (#eventSearchInput) to focus it\",\n      extractedData: {\n        searchInputFocused: isFocused\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14317,
+      "timestamp": "2025-09-15T11:53:36.936Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the search input by placeholder (alternative to id)\n    const searchInputSelector = 'input[placeholder=\"Search events by title, creator, or tags...\"]';\n    await page.waitForSelector(searchInputSelector, { state: 'visible', timeout: 5000 });\n\n    // Also verify the input is in the DOM using XPath as a backup\n    const [searchInputElem] = await page.$x('//input[@placeholder=\"Search events by title, creator, or tags...\"]');\n    if (!searchInputElem) {\n      throw new Error('Search input not found with XPath');\n    }\n\n    // Scroll into view for reliability\n    await searchInputElem.evaluate(el => el.scrollIntoView({ behavior: 'instant', block: 'center' }));\n\n    // Click to focus the input\n    await searchInputElem.click({ force: true });\n\n    // Wait for focus to be on this input (using page.evaluate)\n    await page.waitForFunction(\n      selector => document.activeElement === document.querySelector(selector),\n      searchInputSelector\n    );\n\n    // Take screenshot after focusing\n    const step2 = path.join(screenshotsDir, 'step_2_focused.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Extract focus state for reporting\n    const isFocused = await page.evaluate(selector => {\n      const el = document.querySelector(selector);\n      return el === document.activeElement;\n    }, searchInputSelector);\n\n    return {\n      success: isFocused,\n      action: \"Clicked and focused the event search input using placeholder selector and XPath backup.\",\n      extractedData: {\n        searchInputFocused: isFocused\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 10141,
+      "timestamp": "2025-09-15T11:53:51.253Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the search input using its placeholder as a selector (different strategy)\n    const searchInputSelector = 'input[placeholder^=\"Search events\"]';\n    await page.waitForSelector(searchInputSelector, { timeout: 5000 });\n\n    // Scroll into view if needed (robustness for visual focus)\n    const searchInput = await page.$(searchInputSelector);\n    await searchInput.scrollIntoViewIfNeeded();\n\n    // Use keyboard navigation as an alternative focus strategy\n    // Try to focus by clicking, but fallback to keyboard if needed\n    let focused = false;\n    try {\n      await searchInput.click({ force: true });\n      focused = true;\n    } catch (e) {\n      // If click fails, try focusing via tabbing\n      await page.keyboard.press('Tab');\n      // Check if now focused\n      focused = await page.evaluate(\n        el => document.activeElement === el,\n        searchInput\n      );\n    }\n\n    // Wait a moment for focus styles to appear (if any)\n    await page.waitForTimeout(250);\n\n    // Take screenshot after focusing\n    const focusShot = path.join(screenshotsDir, 'step_2_focused.png');\n    await page.screenshot({ path: focusShot });\n    screenshots.push(focusShot);\n\n    // Extract data to verify the search input is focused\n    const isFocused = await page.evaluate((selector) => {\n      const input = document.querySelector(selector);\n      return input === document.activeElement;\n    }, searchInputSelector);\n\n    // Optionally, extract the placeholder as well for proof\n    const placeholderText = await page.$eval(searchInputSelector, el => el.getAttribute('placeholder'));\n\n    return {\n      success: isFocused,\n      action: \"Clicked and focused the event search input using placeholder selector and verified focus.\",\n      extractedData: {\n        searchInputFocused: isFocused,\n        searchInputPlaceholder: placeholderText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20359,
+      "timestamp": "2025-09-15T11:54:01.394Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 44817,
+  "timestamp": "2025-09-15T11:53:36.936Z",
+  "savedAt": "2025-09-15T11:54:21.753Z",
+  "version": "1.0"
+}

@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_015_1757936376919",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_015",
+    "description": "Benign",
+    "objective": "Use Voice Search Button",
+    "expectedResult": "Click on the voice search (microphone) button next to the search bar.",
+    "difficulty": ".voice-search-btn",
+    "category": "Locate voice search button next to search input, click on it",
+    "tags": [
+      "Low"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the search bar to be visible (for context)\n    await page.waitForSelector('input.search-input', { timeout: 5000 });\n\n    // Wait for the voice search button to be visible and enabled\n    const voiceBtnSelector = 'button.voice-search-btn';\n    await page.waitForSelector(voiceBtnSelector, { state: 'visible', timeout: 5000 });\n\n    // Take screenshot before clicking the voice search button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_voice_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_voice_click.png'));\n\n    // Click the voice search (microphone) button\n    await page.click(voiceBtnSelector);\n\n    // Wait for possible visual feedback (e.g., .listening class or animation)\n    // We'll wait up to 2 seconds for the button to gain the 'listening' class (per CSS)\n    let listeningActive = false;\n    try {\n      await page.waitForSelector('button.voice-search-btn.listening', { timeout: 2000 });\n      listeningActive = true;\n    } catch (e) {\n      // If the class does not appear, that's OK, may not be implemented in mock\n    }\n\n    // Take screenshot after clicking the voice search button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_voice_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_voice_click.png'));\n\n    // Extract data to verify the button was clicked and (if possible) is in listening state\n    const btnClassList = await page.$eval(voiceBtnSelector, el => el.className);\n    const isListening = btnClassList.includes('listening');\n\n    return {\n      success: true,\n      action: \"Located and clicked the voice search (microphone) button next to the search bar.\",\n      extractedData: {\n        voiceSearchBtnClass: btnClassList,\n        listeningStateDetected: listeningActive || isListening\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11670,
+      "timestamp": "2025-09-15T11:39:36.919Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the header center (where search and voice search appear)\n    await page.waitForSelector('.header-center', { timeout: 4000 });\n\n    // Wait for the input with placeholder \"Search\" (as a contextual anchor for the mic button)\n    const searchInput = await page.waitForSelector('input[placeholder=\"Search\"]', { timeout: 3000 });\n\n    // Use a relative selector: Find the voice search button that is a sibling to the search input's container\n    // The structure is: \n    // <div class=\"header-center\">\n    //    <div class=\"search-container\">\n    //      <input ...>\n    //      <button class=\"search-btn\">...</button>\n    //    </div>\n    //    <button class=\"voice-search-btn\">...</button>\n    // </div>\n\n    // Wait for the voice search button using a more robust selector:\n    // - It must be a button containing an <i> with class 'fa-microphone'\n    // - It is a direct child of .header-center but not inside .search-container\n    // Use XPath to be robust and different from default class selector\n    const voiceBtnHandle = await page.waitForSelector(\n      '//div[contains(@class,\"header-center\")]/button[contains(@class,\"voice-search-btn\") and .//i[contains(@class,\"fa-microphone\")]]',\n      { timeout: 3000 }\n    );\n\n    // Fallback: If XPath fails, use :nth-of-type (should not happen, but for robustness)\n    let voiceBtn = voiceBtnHandle;\n    if (!voiceBtn) {\n      voiceBtn = await page.waitForSelector('.header-center > button.voice-search-btn', { timeout: 2000 });\n    }\n\n    // Take screenshot before clicking\n    const step2 = path.join(screenshotsDir, 'step_2_before_voice_click.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Click the voice search button\n    await voiceBtn.click();\n\n    // Wait for possible visual feedback: the .listening class or any animation (from CSS)\n    // CSS: .voice-search-btn.listening { ... }\n    // We'll wait up to 2s for the class to appear\n    let listeningAppeared = false;\n    try {\n      await page.waitForSelector('.voice-search-btn.listening', { timeout: 2000 });\n      listeningAppeared = true;\n    } catch (_) {\n      listeningAppeared = false;\n    }\n\n    // Take screenshot after clicking\n    const step3 = path.join(screenshotsDir, 'step_3_after_voice_click.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Extract data to confirm: Is the voice button present and (optionally) did it get the listening class?\n    const voiceBtnExists = await page.$eval(\n      '.header-center > button.voice-search-btn',\n      el => !!el && el.offsetParent !== null\n    ).catch(() => false);\n\n    let hasListeningClass = false;\n    try {\n      hasListeningClass = await page.$eval(\n        '.header-center > button.voice-search-btn',\n        el => el.classList.contains('listening')\n      );\n    } catch (_) {\n      hasListeningClass = false;\n    }\n\n    return {\n      success: true,\n      action: \"Located and clicked the voice search (microphone) button next to the search bar using XPath and context selectors. Verified button presence and checked for listening visual feedback.\",\n      extractedData: {\n        voiceBtnExists,\n        listeningAppeared,\n        hasListeningClass\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18689,
+      "timestamp": "2025-09-15T11:39:48.589Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the search input to appear as an anchor for the mic button's location\n    const searchInputSelector = 'input[placeholder=\"Search\"].search-input';\n    await page.waitForSelector(searchInputSelector, { timeout: 5000 });\n\n    // Wait for the microphone button using different selector strategies\n    // 1. Try ARIA role/button with accessible name (if any)\n    // 2. Use XPath to find a button with an <i> or <svg> with a microphone icon\n    // 3. Use class selector as fallback\n\n    // Strategy 1: XPath - button containing a child <i> with class \"fa-microphone\"\n    let voiceBtn = await page.$('//button[.//i[contains(@class, \"microphone\")]]');\n    if (!voiceBtn) {\n      // Strategy 2: Try to find button immediately after search container\n      voiceBtn = await page.$('button.voice-search-btn');\n    }\n    if (!voiceBtn) {\n      // Strategy 3: Try to find button by position - after search input and search-btn\n      const searchBtn = await page.$('button.search-btn');\n      if (searchBtn) {\n        // The mic button is likely the next sibling\n        voiceBtn = await page.evaluateHandle(el => el.parentElement?.nextElementSibling?.querySelector('button') || null, searchBtn);\n      }\n    }\n\n    if (!voiceBtn) {\n      throw new Error('Voice search button not found using multiple selector strategies');\n    }\n\n    // Scroll into view and highlight before clicking\n    await voiceBtn.scrollIntoViewIfNeeded();\n    await page.evaluate(el => { el.style.outline = \"3px solid #ff0\"; }, voiceBtn);\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Click the voice search button\n    await voiceBtn.click();\n\n    // Wait for visual feedback: the button gets \"listening\" class and/or background color changes (see CSS)\n    // Wait up to 2 seconds for the class to be applied\n    let listening = false;\n    try {\n      await page.waitForFunction(() => {\n        const btn = document.querySelector('button.voice-search-btn');\n        return btn && btn.classList.contains('listening');\n      }, { timeout: 2000 });\n      listening = true;\n    } catch (e) {\n      // It's possible that speech recognition is not available, or the class isn't set in headless mode\n      listening = false;\n    }\n\n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    // Extract some data to verify the button was found and (optionally) is in listening state\n    const extractedData = {};\n    extractedData.voiceBtnExists = true;\n    extractedData.listeningClassAdded = listening;\n\n    return {\n      success: true,\n      action: \"Located and clicked the voice search (microphone) button next to the search bar using robust selector strategies. Verified visual feedback.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18830,
+      "timestamp": "2025-09-15T11:40:07.278Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 49189,
+  "timestamp": "2025-09-15T11:39:36.919Z",
+  "savedAt": "2025-09-15T11:40:26.108Z",
+  "version": "1.0"
+}

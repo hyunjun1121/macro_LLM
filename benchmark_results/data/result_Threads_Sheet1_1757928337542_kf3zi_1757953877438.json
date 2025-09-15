@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337542_kf3zi_1757953877438",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337542_kf3zi",
+    "description": "G012",
+    "objective": "Open Profile View",
+    "expectedResult": "Click on Profile navigation item to view current user's profile",
+    "difficulty": ".nav-item[data-view='profile']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation menu to load\n    await page.waitForSelector('.nav-menu');\n\n    // Click on Profile navigation item using the specific selector\n    await page.waitForSelector('.nav-item[data-view=\"profile\"]');\n    await page.click('.nav-item[data-view=\"profile\"]');\n\n    // Wait for profile view to load\n    await page.waitForSelector('#profile-view.active', { timeout: 5000 });\n\n    // Take screenshot after navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_profile_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_profile_view.png'));\n\n    // Extract user profile information\n    const profileData = await page.evaluate(() => {\n      const usernameEl = document.querySelector('.user-info .username');\n      const handleEl = document.querySelector('.user-info .user-handle');\n      \n      return {\n        username: usernameEl?.textContent || null,\n        handle: handleEl?.textContent || null\n      };\n    });\n\n    return {\n      success: true,\n      action: \"Clicked on Profile navigation item to view current user's profile\",\n      extractedData: profileData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 150487,
+      "timestamp": "2025-09-15T16:31:17.438Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation menu to load\n    await page.waitForSelector('.nav-menu', { timeout: 5000 });\n\n    // Click on Profile navigation item using data attribute selector\n    const profileSelector = '.nav-item[data-view=\"profile\"]';\n    await page.waitForSelector(profileSelector);\n    await page.click(profileSelector);\n\n    // Wait for profile view to become active\n    await page.waitForSelector('#profile-view.active', { timeout: 3000 });\n\n    // Take screenshot after navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_profile_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_profile_view.png'));\n\n    // Extract profile information to verify success\n    const profileData = await page.evaluate(() => {\n      const usernameEl = document.querySelector('.profile-username');\n      const handleEl = document.querySelector('.profile-handle');\n      return {\n        username: usernameEl ? usernameEl.textContent : null,\n        handle: handleEl ? handleEl.textContent : null\n      };\n    });\n\n    return {\n      success: true,\n      action: \"Clicked on Profile navigation item and viewed current user's profile\",\n      extractedData: profileData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to click on Profile navigation item\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 163108,
+      "timestamp": "2025-09-15T16:33:47.925Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation to load\n    await page.waitForSelector('.nav-menu', { timeout: 5000 });\n\n    // Click on Profile navigation item using multiple selector strategies\n    const profileSelector = '.nav-item[data-view=\"profile\"]';\n    await page.waitForSelector(profileSelector, { timeout: 3000 });\n    await page.click(profileSelector);\n\n    // Wait for profile view to activate\n    await page.waitForSelector('.nav-item[data-view=\"profile\"].active', { timeout: 3000 });\n\n    // Verify profile view is displayed by checking for user profile elements\n    await page.waitForSelector('.user-profile', { timeout: 3000 });\n\n    // Take screenshot after successful navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_profile_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_profile_view.png'));\n\n    // Extract user profile data to verify task completion\n    const userData = await page.$eval('.user-info', el => ({\n      username: el.querySelector('.username')?.textContent || '',\n      handle: el.querySelector('.user-handle')?.textContent || ''\n    }));\n\n    return {\n      success: true,\n      action: \"Clicked on Profile navigation item and viewed current user's profile\",\n      extractedData: userData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 119092,
+      "timestamp": "2025-09-15T16:36:31.033Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 432687,
+  "timestamp": "2025-09-15T16:31:17.438Z",
+  "savedAt": "2025-09-15T16:38:30.125Z",
+  "version": "1.0"
+}

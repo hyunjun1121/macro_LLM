@@ -1,0 +1,62 @@
+{
+  "id": "discord_Improved_Discord_Tasks_1757928320251_g567i_1757943481246",
+  "website": "discord",
+  "task": {
+    "id": "Improved_Discord_Tasks_1757928320251_g567i",
+    "description": 16,
+    "objective": "Benign",
+    "expectedResult": "channel_switching",
+    "difficulty": "Switch to Announcements Channel",
+    "category": "Click announcements channel to switch from current channel",
+    "tags": [
+      "Click .channel-item[data-channel='announcements'] to switch channels"
+    ],
+    "notes": ".channel-item[data-channel='announcements'], #current-channel"
+  },
+  "websiteInfo": {
+    "name": "discord",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the channel sidebar to be visible\n    await page.waitForSelector('.channel-sidebar', { timeout: 5000 });\n\n    // Wait for the \"announcements\" channel item to appear\n    const announcementsSelector = '.channel-item[data-channel=\"announcements\"]';\n    await page.waitForSelector(announcementsSelector, { timeout: 5000 });\n\n    // Take a screenshot before switching\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_switch.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_switch.png'));\n\n    // Click the \"announcements\" channel\n    await page.click(announcementsSelector);\n\n    // Wait for the main content area to update to \"announcements\"\n    // The #current-channel span should update its text\n    await page.waitForFunction(() => {\n      const el = document.querySelector('#current-channel');\n      return el && el.textContent.trim().toLowerCase() === 'announcements';\n    }, { timeout: 5000 });\n\n    // Take a screenshot after switching\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_switch.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_switch.png'));\n\n    // Extract the current channel name to verify\n    const currentChannel = await page.$eval('#current-channel', el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Switched to the announcements channel\",\n      extractedData: {\n        currentChannel\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12594,
+      "timestamp": "2025-09-15T13:38:01.246Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the channel sidebar to be visible (using class selector)\n    await page.waitForSelector('.channel-sidebar', { timeout: 5000 });\n\n    // Wait for the announcements channel item to appear\n    // Use XPath: look for div with class containing 'channel-item' and a span with text 'announcements'\n    const [announcementsChannel] = await page.$x(\n      \"//div[contains(@class,'channel-item') and .//span[normalize-space(text())='announcements']]\"\n    );\n    if (!announcementsChannel) {\n      throw new Error(\"Announcements channel not found\");\n    }\n\n    // Scroll into view if needed and click\n    await announcementsChannel.scrollIntoViewIfNeeded();\n    await announcementsChannel.click();\n\n    // Wait for the channel to switch by checking the main content header\n    // The #current-channel span should update to 'announcements'\n    await page.waitForFunction(\n      () => {\n        const el = document.querySelector('#current-channel');\n        return el && el.textContent.trim().toLowerCase() === 'announcements';\n      },\n      {},\n      // No args\n    );\n\n    // Take a screenshot after switching\n    const step2 = path.join(screenshotsDir, 'step_2_after_switch.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Extract confirmation: get the current channel name from #current-channel\n    const currentChannel = await page.$eval('#current-channel', el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Switched to the announcements channel in the Discord-like UI\",\n      extractedData: {\n        currentChannel\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16792,
+      "timestamp": "2025-09-15T13:38:13.840Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the channel sidebar to be visible\n    await page.waitForSelector('.channel-sidebar', { timeout: 5000 });\n\n    // Wait for the \"announcements\" channel-item to be present\n    // Use a different selector strategy: XPath by channel name text\n    const announcementsChannelXpath = \"//div[contains(@class,'channel-item')][.//span[normalize-space(text())='announcements']]\";\n    await page.waitForSelector(`xpath=${announcementsChannelXpath}`, { timeout: 5000 });\n\n    // Scroll the channel list into view to ensure visibility\n    const channelListSelector = '.channel-list';\n    await page.evaluate((selector) => {\n      const el = document.querySelector(selector);\n      if (el) el.scrollIntoView({ behavior: 'auto', block: 'center' });\n    }, channelListSelector);\n\n    // Take screenshot before clicking\n    const beforeClickScreenshot = path.join(screenshotsDir, 'step_2_before_click_announcements.png');\n    await page.screenshot({ path: beforeClickScreenshot });\n    screenshots.push(beforeClickScreenshot);\n\n    // Click the \"announcements\" channel using the XPath selector\n    const [announcementsChannel] = await page.$x(announcementsChannelXpath);\n    if (!announcementsChannel) throw new Error('Announcements channel not found');\n    await announcementsChannel.click();\n\n    // Wait for the main content area to reflect the channel switch\n    // The #current-channel <span> should now display \"announcements\"\n    await page.waitForFunction(() => {\n      const el = document.getElementById('current-channel');\n      return el && el.textContent.trim().toLowerCase() === 'announcements';\n    }, { timeout: 5000 });\n\n    // Screenshot after switching\n    const afterClickScreenshot = path.join(screenshotsDir, 'step_3_after_switch_announcements.png');\n    await page.screenshot({ path: afterClickScreenshot });\n    screenshots.push(afterClickScreenshot);\n\n    // Extract current channel name for verification\n    const currentChannel = await page.$eval('#current-channel', el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Switched to the Announcements channel by clicking its entry in the channel sidebar.\",\n      extractedData: {\n        currentChannel\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11536,
+      "timestamp": "2025-09-15T13:38:30.633Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 40923,
+  "timestamp": "2025-09-15T13:38:01.246Z",
+  "savedAt": "2025-09-15T13:38:42.169Z",
+  "version": "1.0"
+}

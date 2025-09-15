@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928320223_6di02_1757934466894",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928320223_6di02",
+    "description": "G010",
+    "objective": "Add Emoji to Thread",
+    "expectedResult": "Click emoji button, select a smile emoji, and verify it appears in the thread text",
+    "difficulty": "#add-emoji, .emoji-item",
+    "category": 2,
+    "tags": [
+      "10 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the emoji button to be visible and click it\n    await page.waitForSelector('#add-emoji', { state: 'visible', timeout: 5000 });\n    await page.click('#add-emoji');\n    await page.waitForTimeout(300); // Allow emoji picker to render\n\n    // Take screenshot after opening emoji picker\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_emoji_picker_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_emoji_picker_open.png'));\n\n    // Wait for at least one emoji in the picker\n    await page.waitForSelector('.emoji-item', { state: 'visible', timeout: 5000 });\n\n    // Find a smile emoji (😀, 😃, 😄, 😁, 😆, 😅, 😂, 😊, 😇, 🙂, etc.)\n    // Try to find a common smile emoji\n    const smileEmojis = [\n      '😀', '😃', '😄', '😁', '😆', '😅', '😂', '😊', '😇', '🙂', '☺️', '😸'\n    ];\n    let foundEmoji = null;\n    for (const emoji of smileEmojis) {\n      const emojiLocator = page.locator(`.emoji-item:text-is(\"${emoji}\")`);\n      if (await emojiLocator.count() > 0) {\n        foundEmoji = emoji;\n        await emojiLocator.first().click();\n        break;\n      }\n    }\n\n    // If not found by text, just click the first emoji as fallback\n    if (!foundEmoji) {\n      const firstEmoji = page.locator('.emoji-item').first();\n      foundEmoji = await firstEmoji.textContent();\n      await firstEmoji.click();\n    }\n\n    // Wait for the emoji to appear in the thread text area\n    await page.waitForSelector('#thread-text', { state: 'visible', timeout: 3000 });\n    // Wait a moment for the emoji to be inserted\n    await page.waitForTimeout(300);\n\n    // Take screenshot after emoji is inserted\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_emoji_inserted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_emoji_inserted.png'));\n\n    // Extract the value of the textarea\n    const threadText = await page.$eval('#thread-text', el => el.value);\n\n    // Check if the inserted emoji is present in the textarea value\n    let emojiFoundInText = false;\n    let usedEmoji = foundEmoji;\n    if (foundEmoji && threadText.includes(foundEmoji)) {\n      emojiFoundInText = true;\n    } else {\n      // Try to match any smile emoji in the threadText\n      for (const emoji of smileEmojis) {\n        if (threadText.includes(emoji)) {\n          emojiFoundInText = true;\n          usedEmoji = emoji;\n          break;\n        }\n      }\n    }\n\n    return {\n      success: emojiFoundInText,\n      action: \"Clicked emoji button, selected a smile emoji, and verified it appears in the thread text\",\n      extractedData: {\n        emojiInserted: usedEmoji,\n        threadText\n      },\n      screenshots,\n      error: emojiFoundInText ? null : \"Emoji not found in thread text\"\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 19129,
+      "timestamp": "2025-09-15T11:07:46.894Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the emoji button using aria-label and fallback to ID\n    const emojiBtnSelector = 'button[title=\"Add emoji\"], #add-emoji, .tool-btn:has(i.fa-smile)';\n    await page.waitForSelector(emojiBtnSelector, { timeout: 4000 });\n\n    // Click the emoji button\n    await page.click(emojiBtnSelector);\n\n    // Wait for the emoji picker grid to appear (by class .emoji-grid or .emoji-item)\n    const emojiGridSelector = '.emoji-grid, .emoji-picker-content .emoji-item';\n    await page.waitForSelector(emojiGridSelector, { timeout: 4000 });\n\n    // Take screenshot of emoji picker open\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_emoji_picker_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_emoji_picker_open.png'));\n\n    // Find a \"smile\" emoji (😊 or 😃 or 😀 or 😁 or 😄)\n    // We'll try to select the first emoji that matches one of these smile variants\n    const smileEmojis = ['😊', '😃', '😀', '😁', '😄', '🙂', '😆', '😅'];\n    let emojiFound = false;\n    let selectedEmoji = null;\n\n    for (const smile of smileEmojis) {\n      // Use :text() pseudo for Playwright 1.18+, fallback to xpath for text content\n      const emojiItemSelector = `.emoji-item:text(\"${smile}\")`;\n      try {\n        // Try CSS text selector first\n        const emojiHandle = await page.$(`.emoji-item:has-text(\"${smile}\")`);\n        if (emojiHandle) {\n          await emojiHandle.click();\n          emojiFound = true;\n          selectedEmoji = smile;\n          break;\n        }\n      } catch (e) {\n        // Fallback to xpath if above fails\n        const [emojiHandle] = await page.$x(`//div[contains(@class,\"emoji-item\") and normalize-space(text())=\"${smile}\"]`);\n        if (emojiHandle) {\n          await emojiHandle.click();\n          emojiFound = true;\n          selectedEmoji = smile;\n          break;\n        }\n      }\n    }\n\n    if (!emojiFound) {\n      throw new Error('Could not find a smile emoji in emoji picker');\n    }\n\n    // Wait a moment for emoji to be inserted\n    await page.waitForTimeout(500);\n\n    // Take screenshot after emoji is inserted\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_emoji_inserted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_emoji_inserted.png'));\n\n    // Verify that the emoji appears in the thread textarea\n    // The textarea has id #thread-text\n    await page.waitForSelector('#thread-text', { timeout: 3000 });\n    const threadTextValue = await page.$eval('#thread-text', el => el.value);\n\n    // Check if the selected emoji is present\n    const emojiPresent = selectedEmoji && threadTextValue.includes(selectedEmoji);\n\n    return {\n      success: emojiPresent,\n      action: \"Clicked emoji button, selected a smile emoji, and verified it appears in the thread text\",\n      extractedData: {\n        threadText: threadTextValue,\n        emojiInserted: selectedEmoji,\n        emojiPresent\n      },\n      screenshots,\n      error: emojiPresent ? null : \"Emoji not present in thread text after selection\"\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18473,
+      "timestamp": "2025-09-15T11:08:06.023Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the compose box to be visible (textarea with placeholder)\n    await page.waitForSelector('textarea[placeholder=\"Start a thread...\"]', { timeout: 5000 });\n\n    // Wait for and click the emoji button using aria-label and class as alternative selector\n    // Try to use role=button and visible icon class\n    const emojiBtn = await page.waitForSelector('button#add-emoji, button.tool-btn[title=\"Add emoji\"], button:has(i.fa-smile)', { timeout: 4000 });\n    await emojiBtn.click();\n\n    // Wait for the emoji picker panel to appear (look for emoji grid)\n    await page.waitForSelector('.emoji-grid', { timeout: 4000 });\n\n    // Take screenshot after emoji picker is open\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_emoji_picker_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_emoji_picker_open.png'));\n\n    // Find the first emoji that looks like a smile (try common smile emojis)\n    // We'll match on Unicode for classic smiley face or use the first .emoji-item that matches a smile emoji\n    // Try a few alternatives in order:\n    const smileEmojis = [\n      '😊', '😄', '😁', '😀', '🙂', '😃', '😅', '😆', '😸', '😺', '😻', '☺️'\n    ];\n    let smileEmojiElem = null;\n    for (const smile of smileEmojis) {\n      // Try to find exact match\n      smileEmojiElem = await page.$(`.emoji-item:text-is(\"${smile}\")`);\n      if (smileEmojiElem) break;\n      // Try to find partial match (for emojis with modifiers)\n      smileEmojiElem = await page.$(`.emoji-item:has-text(\"${smile}\")`);\n      if (smileEmojiElem) break;\n    }\n    // If still not found, just pick the first .emoji-item as fallback\n    if (!smileEmojiElem) {\n      const emojiItems = await page.$$('.emoji-item');\n      smileEmojiElem = emojiItems[0];\n    }\n\n    // Click the smile emoji\n    await smileEmojiElem.click();\n\n    // Wait for the emoji picker to disappear\n    await page.waitForSelector('.emoji-grid', { state: 'detached', timeout: 3000 });\n\n    // Take screenshot after emoji inserted\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_emoji_inserted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_emoji_inserted.png'));\n\n    // Extract the contents of the thread text area\n    const threadTextContent = await page.$eval('textarea#thread-text', el => el.value);\n\n    // Check if it contains a smile emoji\n    const foundSmileEmoji = smileEmojis.find(e => threadTextContent.includes(e));\n\n    return {\n      success: !!foundSmileEmoji,\n      action: \"Clicked emoji button, selected a smile emoji, and verified it appears in the thread text area\",\n      extractedData: {\n        threadText: threadTextContent,\n        foundSmileEmoji: foundSmileEmoji || null\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 19809,
+      "timestamp": "2025-09-15T11:08:24.496Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 57411,
+  "timestamp": "2025-09-15T11:07:46.894Z",
+  "savedAt": "2025-09-15T11:08:44.306Z",
+  "version": "1.0"
+}

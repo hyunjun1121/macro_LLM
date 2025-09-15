@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T001_1757929149736",
+  "website": "Amazon",
+  "task": {
+    "id": "T001",
+    "description": "Navigate to Electronics Category",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Click on the 'Electronics' link in the navigation menu to navigate to the electronics category page.",
+    "category": ".nav-links a[onclick*='electronics'], .category-card[onclick*='electronics']",
+    "tags": [
+      "1. Locate electronics navigation link 2. Click the electronics link 3. Wait for page to load"
+    ],
+    "notes": "URL contains '/electronics' OR page heading shows 'Electronics', products grid is populated with electronics items"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on the 'Electronics' link in the navigation menu\n    await page.waitForSelector('.nav-links a[onclick*=\"electronics\"]');\n    await page.click('.nav-links a[onclick*=\"electronics\"]');\n    await page.waitForLoadState('networkidle');\n\n    // Take screenshot after navigating to Electronics category\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_navigated_to_electronics.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_navigated_to_electronics.png'));\n\n    // Verify navigation by checking the URL or a specific element on the electronics page\n    const currentUrl = page.url();\n    const electronicsPageCheck = await page.$('.category-card[onclick*=\"electronics\"]');\n\n    return {\n      success: true,\n      action: \"Navigated to Electronics category\",\n      extractedData: {\n        currentUrl,\n        isElectronicsPage: electronicsPageCheck !== null\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 44132,
+      "timestamp": "2025-09-15T09:39:09.736Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the navigation menu to be visible\n    await page.waitForSelector('.nav-links', { timeout: 5000 });\n\n    // Click on the 'Electronics' link using a different selector approach\n    await page.click('a[onclick*=\"electronics\"]');\n    \n    // Wait for the electronics category page to load\n    await page.waitForLoadState('networkidle');\n\n    // Take a screenshot after navigating to the Electronics category\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_electronics_category.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_electronics_category.png'));\n\n    // Verify that the navigation was successful by checking for a specific element\n    const electronicsPageTitle = await page.title();\n    const isElectronicsPage = electronicsPageTitle.includes('Electronics');\n\n    return {\n      success: isElectronicsPage,\n      action: \"Navigated to the Electronics category page\",\n      extractedData: { pageTitle: electronicsPageTitle },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 60629,
+      "timestamp": "2025-09-15T09:39:53.868Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the Electronics link to be visible and then click it\n    await page.waitForSelector('a[href=\"#\"]', { timeout: 5000 });\n    const electronicsLink = await page.$('a[href=\"#\"][onclick*=\"electronics\"]');\n    if (electronicsLink) {\n      await electronicsLink.click();\n    } else {\n      throw new Error('Electronics link not found');\n    }\n\n    // Wait for the navigation to complete\n    await page.waitForLoadState('networkidle');\n\n    // Take a screenshot after navigating to the Electronics category\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_navigated_to_electronics.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_navigated_to_electronics.png'));\n\n    // Verify navigation by checking if the page contains expected content\n    const electronicsPageContent = await page.content();\n    if (!electronicsPageContent.includes('Electronics')) {\n      throw new Error('Failed to navigate to Electronics category');\n    }\n\n    return {\n      success: true,\n      action: \"Navigated to the Electronics category page\",\n      extractedData: { category: 'Electronics' },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 45278,
+      "timestamp": "2025-09-15T09:40:54.497Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 150039,
+  "timestamp": "2025-09-15T09:39:09.736Z",
+  "savedAt": "2025-09-15T09:41:39.775Z",
+  "version": "1.0"
+}

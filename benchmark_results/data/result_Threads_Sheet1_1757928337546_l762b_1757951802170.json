@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337546_l762b_1757951802170",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337546_l762b",
+    "description": "G010",
+    "objective": "Add Emoji to Thread",
+    "expectedResult": "Click emoji button, select a smile emoji, and verify it appears in the thread text",
+    "difficulty": "#add-emoji, .emoji-item",
+    "category": 2,
+    "tags": [
+      "10 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the emoji button\n    await page.waitForSelector('#add-emoji');\n    await page.click('#add-emoji');\n    await page.waitForTimeout(500); // Wait for emoji picker animation\n    \n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_emoji_picker_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_emoji_picker_opened.png'));\n\n    // Wait for emoji items to load and select a smile emoji\n    await page.waitForSelector('.emoji-item');\n    const emojiItems = await page.$$('.emoji-item');\n    \n    // Find a smile emoji (typically first few items in most emoji pickers)\n    if (emojiItems.length > 0) {\n      const firstEmoji = await emojiItems[0].textContent();\n      await emojiItems[0].click();\n      \n      // Verify emoji appears in thread text\n      await page.waitForTimeout(300); // Wait for emoji insertion\n      const threadText = await page.$eval('#thread-text', el => el.value);\n      \n      await page.screenshot({ path: path.join(screenshotsDir, 'step_3_emoji_added.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_3_emoji_added.png'));\n\n      return {\n        success: threadText.includes(firstEmoji),\n        action: \"Clicked emoji button, selected smile emoji, and verified it appeared in thread text\",\n        extractedData: {\n          selectedEmoji: firstEmoji,\n          threadTextContent: threadText,\n          emojiFound: threadText.includes(firstEmoji)\n        },\n        screenshots,\n        error: null\n      };\n    } else {\n      throw new Error('No emoji items found in picker');\n    }\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete emoji selection task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 127438,
+      "timestamp": "2025-09-15T15:56:42.170Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the emoji button using multiple selector strategies\n    const emojiButton = await page.waitForSelector('#add-emoji');\n    await emojiButton.click();\n    await page.waitForTimeout(1000); // Wait for emoji picker animation\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_emoji_picker_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_emoji_picker_open.png'));\n\n    // Wait for emoji items to be visible and select a smile emoji\n    await page.waitForSelector('.emoji-item');\n    \n    // Get all emoji items and select the first smile-like emoji\n    const emojiItems = await page.$$('.emoji-item');\n    const selectedEmoji = await page.evaluate(el => el.textContent, emojiItems[0]);\n    \n    // Click the first emoji (assuming it's a smile emoji)\n    await emojiItems[0].click();\n    await page.waitForTimeout(500); // Wait for emoji to be inserted\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_emoji_selected.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_emoji_selected.png'));\n\n    // Verify the emoji appears in the thread text\n    const threadText = await page.$eval('#thread-text', el => el.value);\n    const emojiInText = threadText.includes(selectedEmoji);\n\n    if (!emojiInText) {\n      throw new Error('Selected emoji did not appear in the thread text');\n    }\n\n    return {\n      success: true,\n      action: \"Clicked emoji button, selected a smile emoji, and verified it appears in thread text\",\n      extractedData: {\n        selectedEmoji: selectedEmoji,\n        threadText: threadText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_error.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to complete emoji selection task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 91633,
+      "timestamp": "2025-09-15T15:58:49.608Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for emoji button and click it\n    const emojiButton = await page.waitForSelector('#add-emoji', { state: 'visible' });\n    await emojiButton.click();\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_emoji_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_emoji_clicked.png'));\n\n    // Wait for emoji picker to appear and select a smile emoji\n    await page.waitForSelector('.emoji-item', { state: 'visible' });\n    const emojiItems = await page.$$('.emoji-item');\n    \n    // Find a smile emoji by checking text content\n    let smileEmoji = null;\n    for (const emoji of emojiItems) {\n      const emojiText = await emoji.textContent();\n      if (emojiText.includes('😊') || emojiText.includes('😀') || emojiText.includes('🙂')) {\n        smileEmoji = emoji;\n        break;\n      }\n    }\n\n    if (!smileEmoji) {\n      // Fallback to first emoji if no smile found\n      smileEmoji = emojiItems[0];\n    }\n\n    await smileEmoji.click();\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_emoji_selected.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_emoji_selected.png'));\n\n    // Verify emoji appears in thread text\n    const threadText = await page.$eval('#thread-text', el => el.value);\n    const containsEmoji = /[\\u{1F600}-\\u{1F64F}]/gu.test(threadText);\n\n    if (!containsEmoji) {\n      throw new Error('Emoji was not added to thread text');\n    }\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_emoji_verified.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_emoji_verified.png'));\n\n    return {\n      success: true,\n      action: \"Clicked emoji button, selected a smile emoji, and verified it appears in thread text\",\n      extractedData: {\n        threadText: threadText,\n        emojiAdded: containsEmoji\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 56814,
+      "timestamp": "2025-09-15T16:00:21.241Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 275885,
+  "timestamp": "2025-09-15T15:56:42.170Z",
+  "savedAt": "2025-09-15T16:01:18.055Z",
+  "version": "1.0"
+}

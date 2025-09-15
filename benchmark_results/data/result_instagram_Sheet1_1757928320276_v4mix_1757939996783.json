@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928320276_v4mix_1757939996783",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928320276_v4mix",
+    "description": "IG_REG_006",
+    "objective": "Regular",
+    "expectedResult": "Click \"Your story\" button and verify create story modal opens",
+    "difficulty": "Easy",
+    "category": ".story.add-story, #createStoryModal",
+    "tags": [
+      "Create story modal becomes visible"
+    ],
+    "notes": "1. Click .story.add-story button 2. Verify #createStoryModal has style display:block or visible class"
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the \"Your story\" button in the stories section\n    // Try several selector strategies: .story.add-story, text, xpath\n    let yourStoryButton = null;\n    try {\n      yourStoryButton = await page.waitForSelector('.story.add-story', { timeout: 4000 });\n    } catch (e) {\n      // Fallback: try text selector\n      const buttons = await page.$$('.story');\n      for (const btn of buttons) {\n        const text = await btn.textContent();\n        if (text && text.toLowerCase().includes('your story')) {\n          yourStoryButton = btn;\n          break;\n        }\n      }\n    }\n    if (!yourStoryButton) {\n      throw new Error('Could not find \"Your story\" button');\n    }\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click_your_story.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click_your_story.png'));\n\n    // Click the \"Your story\" button\n    await yourStoryButton.click();\n\n    // Wait for the create story modal to appear\n    // Modal has id #createStoryModal\n    await page.waitForSelector('#createStoryModal', { state: 'visible', timeout: 5000 });\n\n    // Take screenshot after modal opens\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_story_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_story_modal_open.png'));\n\n    // Extract modal title to verify\n    let modalTitle = '';\n    try {\n      const modalTitleEl = await page.$('#createStoryModal h2');\n      if (modalTitleEl) {\n        modalTitle = (await modalTitleEl.textContent())?.trim() || '';\n      }\n    } catch (e) {\n      modalTitle = '';\n    }\n\n    // Check modal is visible and title is as expected\n    const modalVisible = await page.isVisible('#createStoryModal');\n    const expectedTitle = modalTitle.toLowerCase().includes('create') && modalTitle.toLowerCase().includes('story');\n\n    return {\n      success: modalVisible && expectedTitle,\n      action: 'Clicked \"Your story\" button and verified create story modal opens',\n      extractedData: {\n        modalVisible,\n        modalTitle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15487,
+      "timestamp": "2025-09-15T12:39:56.783Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the stories section using a robust selector\n    await page.waitForSelector('.stories', { timeout: 5000 });\n\n    // Find the \"Your story\" button using a combination of text and story class\n    // Try to find an element with class containing 'story' and also containing text \"Your story\"\n    const yourStoryLocator = page.locator('//div[contains(@class,\"story\") and .//div[contains(@class,\"story-username\") and normalize-space(text())=\"Your story\"]]');\n    await yourStoryLocator.waitFor({ timeout: 5000 });\n\n    // Take screenshot before clicking\n    const beforeClickShot = path.join(screenshotsDir, 'step_2_before_click_your_story.png');\n    await page.screenshot({ path: beforeClickShot });\n    screenshots.push(beforeClickShot);\n\n    // Click the \"Your story\" element\n    await yourStoryLocator.click();\n\n    // After clicking, expect the \"create story\" modal to be visible\n    // The modal should have id=createStoryModal and class modal\n    await page.waitForSelector('#createStoryModal.modal', { state: 'visible', timeout: 4000 });\n\n    // Take screenshot of the modal open state\n    const modalOpenShot = path.join(screenshotsDir, 'step_3_story_modal_open.png');\n    await page.screenshot({ path: modalOpenShot });\n    screenshots.push(modalOpenShot);\n\n    // Extract some modal info for verification\n    const modalVisible = await page.$eval('#createStoryModal.modal', el => window.getComputedStyle(el).display !== 'none' && el.offsetParent !== null);\n    let modalTitle = '';\n    try {\n      modalTitle = await page.$eval('#createStoryModal h2', el => el.innerText.trim());\n    } catch (e) {\n      // If no h2, leave as empty\n    }\n\n    return {\n      success: modalVisible === true,\n      action: 'Clicked \"Your story\" button and verified that the create story modal opened.',\n      extractedData: {\n        createStoryModalVisible: modalVisible,\n        createStoryModalTitle: modalTitle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15645,
+      "timestamp": "2025-09-15T12:40:12.270Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the \"Your story\" story bubble/button (should have .story.add-story)\n    // Try multiple selectors for robustness\n    const storySelector = '.story.add-story';\n    await page.waitForSelector(storySelector, { timeout: 5000 });\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_story_bubble_visible.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_story_bubble_visible.png'));\n\n    // Click the \"Your story\" bubble/button\n    await page.click(storySelector);\n\n    // Wait for the create story modal to appear, try by id and class\n    // Modal likely has id=\"createStoryModal\" or class \"create-story-modal\"\n    let modalAppeared = false;\n    let modalHandle = null;\n\n    // Try id selector first\n    try {\n      await page.waitForSelector('#createStoryModal', { timeout: 3000, state: 'visible' });\n      modalAppeared = true;\n      modalHandle = await page.$('#createStoryModal');\n    } catch {}\n\n    // If not found, try class selector as fallback\n    if (!modalAppeared) {\n      try {\n        await page.waitForSelector('.create-story-modal', { timeout: 2000, state: 'visible' });\n        modalAppeared = true;\n        modalHandle = await page.$('.create-story-modal');\n      } catch {}\n    }\n\n    // If still not found, try generic modal with visible and h2 \"Create new story\"\n    if (!modalAppeared) {\n      const modalCandidates = await page.$$('.modal[style*=\"display: block\"], .modal:not([style*=\"display: none\"])');\n      for (let modal of modalCandidates) {\n        const text = await modal.textContent();\n        if (text && text.toLowerCase().includes('create') && text.toLowerCase().includes('story')) {\n          modalAppeared = true;\n          modalHandle = modal;\n          break;\n        }\n      }\n    }\n\n    // Take screenshot of the modal state\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_create_story_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_create_story_modal.png'));\n\n    // Extract a key visible header from the modal for verification\n    let modalHeader = null;\n    if (modalHandle) {\n      // Try to extract any h2/h3 header inside the modal\n      const headerHandle = await modalHandle.$('h2, h3');\n      if (headerHandle) {\n        modalHeader = (await headerHandle.innerText()).trim();\n      }\n    }\n\n    return {\n      success: modalAppeared,\n      action: modalAppeared\n        ? 'Clicked \"Your story\" and verified create story modal opened'\n        : 'Clicked \"Your story\" but create story modal did NOT appear',\n      extractedData: {\n        modalHeader: modalHeader || null\n      },\n      screenshots,\n      error: modalAppeared ? null : 'Create story modal not found'\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 57023,
+      "timestamp": "2025-09-15T12:40:27.915Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 88155,
+  "timestamp": "2025-09-15T12:39:56.783Z",
+  "savedAt": "2025-09-15T12:41:24.938Z",
+  "version": "1.0"
+}

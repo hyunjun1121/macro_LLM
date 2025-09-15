@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337544_vhghj_1757954541958",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337544_vhghj",
+    "description": "M003",
+    "objective": "Spam Modal Opening",
+    "expectedResult": "Rapidly open and close the reply modal 10 times in succession",
+    "difficulty": ".thread-action[data-action='reply'], #close-reply-modal",
+    "category": 4,
+    "tags": [
+      "20 seconds"
+    ],
+    "notes": "Yes"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for thread actions to be available\n    await page.waitForSelector('.thread-action[data-action=\"reply\"]', { timeout: 5000 });\n\n    // Perform 10 rapid open/close cycles of reply modal\n    for (let i = 0; i < 10; i++) {\n      // Open reply modal\n      await page.click('.thread-action[data-action=\"reply\"]');\n      \n      // Wait for modal to appear and take screenshot on first iteration\n      await page.waitForSelector('#close-reply-modal', { state: 'visible' });\n      if (i === 0) {\n        await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_open.png') });\n        screenshots.push(path.join(screenshotsDir, 'step_2_modal_open.png'));\n      }\n\n      // Close reply modal\n      await page.click('#close-reply-modal');\n      \n      // Wait for modal to close\n      await page.waitForSelector('#close-reply-modal', { state: 'hidden' });\n    }\n\n    // Take final screenshot after all operations\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_final.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_final.png'));\n\n    return {\n      success: true,\n      action: \"Successfully opened and closed reply modal 10 times in rapid succession\",\n      extractedData: {\n        iterations: 10,\n        modalSelector: \".thread-action[data-action='reply']\",\n        closeSelector: \"#close-reply-modal\"\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 179813,
+      "timestamp": "2025-09-15T16:42:21.958Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for threads to load\n    await page.waitForSelector('.threads-feed', { timeout: 5000 });\n    \n    // Find and wait for reply buttons to be available\n    await page.waitForSelector('.thread-action[data-action=\"reply\"]', { timeout: 5000 });\n    \n    // Perform 10 rapid open/close cycles\n    for (let i = 0; i < 10; i++) {\n      // Open reply modal using different selector strategy\n      const replyButtons = await page.$$('.thread-action[data-action=\"reply\"]');\n      if (replyButtons.length > 0) {\n        await replyButtons[0].click();\n      } else {\n        throw new Error('Reply button not found');\n      }\n\n      // Wait for modal to appear with multiple selector strategies\n      await Promise.race([\n        page.waitForSelector('#close-reply-modal', { timeout: 2000 }),\n        page.waitForSelector('.modal-content:has(#close-reply-modal)', { timeout: 2000 })\n      ]);\n\n      // Close modal using multiple selector strategies\n      const closeSelectors = [\n        '#close-reply-modal',\n        'button:has-text(\"Close\")',\n        '.modal-header .close'\n      ];\n      \n      for (const selector of closeSelectors) {\n        const closeButton = await page.$(selector);\n        if (closeButton) {\n          await closeButton.click();\n          break;\n        }\n      }\n\n      // Wait for modal to disappear\n      await page.waitForSelector('#close-reply-modal', { state: 'hidden', timeout: 2000 });\n    }\n\n    // Take final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_completed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_completed.png'));\n\n    return {\n      success: true,\n      action: \"Successfully opened and closed reply modal 10 times\",\n      extractedData: {\n        cyclesCompleted: 10,\n        modalOperation: \"success\"\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to complete modal operations\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 95642,
+      "timestamp": "2025-09-15T16:45:21.771Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for threads to load and find the first reply button\n    await page.waitForSelector('.thread-action[data-action=\"reply\"]', { timeout: 5000 });\n    \n    // Perform 10 rapid open/close cycles\n    for (let i = 0; i < 10; i++) {\n      // Open reply modal\n      await page.click('.thread-action[data-action=\"reply\"]:first-of-type');\n      \n      // Wait for modal to appear and verify it's visible\n      await page.waitForSelector('#reply-modal', { state: 'visible', timeout: 2000 });\n      \n      // Take screenshot of open modal on first iteration\n      if (i === 0) {\n        await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_open.png') });\n        screenshots.push(path.join(screenshotsDir, 'step_2_modal_open.png'));\n      }\n      \n      // Close modal\n      await page.click('#close-reply-modal');\n      \n      // Wait for modal to disappear\n      await page.waitForSelector('#reply-modal', { state: 'hidden', timeout: 2000 });\n      \n      // Add small delay between iterations to ensure stability\n      await page.waitForTimeout(100);\n    }\n\n    // Take final screenshot after all operations\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_complete.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_complete.png'));\n\n    return {\n      success: true,\n      action: \"Successfully opened and closed reply modal 10 times\",\n      extractedData: {\n        cyclesCompleted: 10,\n        modalSelector: \"#reply-modal\",\n        closeButtonSelector: \"#close-reply-modal\"\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Capture error screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 137174,
+      "timestamp": "2025-09-15T16:46:57.413Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 412629,
+  "timestamp": "2025-09-15T16:42:21.958Z",
+  "savedAt": "2025-09-15T16:49:14.587Z",
+  "version": "1.0"
+}

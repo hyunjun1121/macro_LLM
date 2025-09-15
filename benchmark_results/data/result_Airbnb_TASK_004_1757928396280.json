@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_004_1757928396280",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_004",
+    "description": "General",
+    "objective": "Date Range Selection",
+    "expectedResult": "체크인 날짜를 내일, 체크아웃을 모레로 설정하고 날짜 입력 필드값이 올바르게 설정되었는지 확인하기",
+    "difficulty": "Medium",
+    "category": "#checkinInput, #checkoutInput",
+    "tags": [
+      "Date input handling",
+      "validation"
+    ],
+    "notes": "체크인/체크아웃 날짜 문자열 (ISO format)"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for check-in and check-out input fields to be present\n    await page.waitForSelector('#checkinInput', { state: 'visible', timeout: 5000 });\n    await page.waitForSelector('#checkoutInput', { state: 'visible', timeout: 5000 });\n\n    // Calculate tomorrow and the day after tomorrow in yyyy-mm-dd format\n    const today = new Date();\n    const tomorrow = new Date(today);\n    tomorrow.setDate(today.getDate() + 1);\n    const dayAfterTomorrow = new Date(today);\n    dayAfterTomorrow.setDate(today.getDate() + 2);\n\n    function formatDate(date) {\n      const yyyy = date.getFullYear();\n      const mm = String(date.getMonth() + 1).padStart(2, '0');\n      const dd = String(date.getDate()).padStart(2, '0');\n      return `${yyyy}-${mm}-${dd}`;\n    }\n    const checkinDateStr = formatDate(tomorrow);\n    const checkoutDateStr = formatDate(dayAfterTomorrow);\n\n    // Fill the check-in and check-out fields using multiple selector strategies\n    // 1. By ID\n    await page.fill('#checkinInput', checkinDateStr);\n    await page.fill('#checkoutInput', checkoutDateStr);\n\n    // 2. Double-check by label text (in case of dynamic forms)\n    // (Optional, but included for robustness)\n    // const checkinLabel = await page.locator('label:text(\"Check in\")').elementHandle();\n    // if (checkinLabel) {\n    //   const checkinInput = await checkinLabel.evaluateHandle(label => label.nextElementSibling);\n    //   if (checkinInput) await checkinInput.type(checkinDateStr, { delay: 50 });\n    // }\n    // const checkoutLabel = await page.locator('label:text(\"Check out\")').elementHandle();\n    // if (checkoutLabel) {\n    //   const checkoutInput = await checkoutLabel.evaluateHandle(label => label.nextElementSibling);\n    //   if (checkoutInput) await checkoutInput.type(checkoutDateStr, { delay: 50 });\n    // }\n\n    // Wait a moment for any JS to react to input\n    await page.waitForTimeout(500);\n\n    // Take screenshot after filling dates\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_dates_filled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_dates_filled.png'));\n\n    // Extract values from the input fields to verify\n    const checkinValue = await page.$eval('#checkinInput', el => el.value);\n    const checkoutValue = await page.$eval('#checkoutInput', el => el.value);\n\n    // Prepare extracted data for verification\n    const extractedData = {\n      checkinInputValue: checkinValue,\n      checkoutInputValue: checkoutValue,\n      expectedCheckin: checkinDateStr,\n      expectedCheckout: checkoutDateStr,\n      checkinMatches: checkinValue === checkinDateStr,\n      checkoutMatches: checkoutValue === checkoutDateStr\n    };\n\n    // Take final screenshot for confirmation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_final_confirmation.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_final_confirmation.png'));\n\n    return {\n      success: extractedData.checkinMatches && extractedData.checkoutMatches,\n      action: \"Set check-in to tomorrow and check-out to the day after tomorrow, verified input field values.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13241,
+      "timestamp": "2025-09-15T09:26:36.281Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for check-in and check-out input fields using label text as alternative selector\n    const checkinLabel = await page.waitForSelector('label:text(\"Check in\")', { timeout: 5000 });\n    const checkoutLabel = await page.waitForSelector('label:text(\"Check out\")', { timeout: 5000 });\n\n    // Find the related input fields using label -> input sibling relationship (use XPath for robustness)\n    const checkinInput = await page.waitForSelector('//label[contains(text(),\"Check in\")]/following-sibling::input[@type=\"date\"]', { timeout: 5000 });\n    const checkoutInput = await page.waitForSelector('//label[contains(text(),\"Check out\")]/following-sibling::input[@type=\"date\"]', { timeout: 5000 });\n\n    // Calculate tomorrow and the day after tomorrow in yyyy-mm-dd format\n    const today = new Date();\n    const pad = (n) => n.toString().padStart(2, '0');\n    const addDays = (date, days) => {\n      const d = new Date(date);\n      d.setDate(d.getDate() + days);\n      return d;\n    };\n    const toYYYYMMDD = (date) =>\n      date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());\n\n    const tomorrow = toYYYYMMDD(addDays(today, 1));\n    const dayAfterTomorrow = toYYYYMMDD(addDays(today, 2));\n\n    // Fill in the check-in and check-out dates using .fill (more reliable than .type for date inputs)\n    await checkinInput.fill(tomorrow);\n    await checkoutInput.fill(dayAfterTomorrow);\n\n    // Take screenshot after filling dates\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_filled_dates.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_filled_dates.png'));\n\n    // Extract the actual values from the fields for verification\n    const checkinValue = await checkinInput.inputValue();\n    const checkoutValue = await checkoutInput.inputValue();\n\n    // Take screenshot of date fields highlighted via JS (visual confirmation)\n    await page.evaluate(() => {\n      document.getElementById('checkinInput').style.boxShadow = '0 0 0 3px #00a699';\n      document.getElementById('checkoutInput').style.boxShadow = '0 0 0 3px #ff5a5f';\n    });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_highlighted_fields.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_highlighted_fields.png'));\n\n    // Prepare extracted data for verification\n    const extractedData = {\n      checkinInputValue: checkinValue,\n      checkoutInputValue: checkoutValue,\n      expectedCheckin: tomorrow,\n      expectedCheckout: dayAfterTomorrow,\n      checkinMatches: checkinValue === tomorrow,\n      checkoutMatches: checkoutValue === dayAfterTomorrow\n    };\n\n    return {\n      success: extractedData.checkinMatches && extractedData.checkoutMatches,\n      action: \"Set check-in to tomorrow and check-out to day after tomorrow, verified field values.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18024,
+      "timestamp": "2025-09-15T09:26:49.523Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the check-in and check-out input fields to be visible\n    // Try multiple selector strategies: ID, label text, XPath\n    // Check-in input\n    await page.waitForSelector('#checkinInput', { state: 'visible', timeout: 5000 });\n    // Check-out input\n    await page.waitForSelector('#checkoutInput', { state: 'visible', timeout: 5000 });\n\n    // Compute tomorrow's and the day after's dates in yyyy-mm-dd format\n    const today = new Date();\n    const tomorrow = new Date(today);\n    tomorrow.setDate(today.getDate() + 1);\n    const dayAfter = new Date(today);\n    dayAfter.setDate(today.getDate() + 2);\n\n    function pad(n) { return n.toString().padStart(2, '0'); }\n    function fmt(d) {\n      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;\n    }\n    const checkinStr = fmt(tomorrow);\n    const checkoutStr = fmt(dayAfter);\n\n    // Interact with check-in input\n    // Try XPath as alternative selector\n    const checkinInput = await page.$('//input[@id=\"checkinInput\" and @type=\"date\"]');\n    if (!checkinInput) throw new Error(\"Check-in input not found via XPath\");\n    await checkinInput.click({ clickCount: 3 });\n    await checkinInput.fill(checkinStr);\n\n    // Interact with check-out input using alternative selector (CSS)\n    const checkoutInput = await page.$('input#checkoutInput[type=\"date\"]');\n    if (!checkoutInput) throw new Error(\"Check-out input not found via CSS selector\");\n    await checkoutInput.click({ clickCount: 3 });\n    await checkoutInput.fill(checkoutStr);\n\n    // Take screenshot after filling dates\n    const afterFillShot = path.join(screenshotsDir, 'step_2_dates_filled.png');\n    await page.screenshot({ path: afterFillShot });\n    screenshots.push(afterFillShot);\n\n    // Wait for any possible JS events/updates (since there are change listeners)\n    await page.waitForTimeout(500);\n\n    // Extract the values from the input fields to verify\n    const extractedCheckin = await page.$eval('#checkinInput', el => el.value);\n    const extractedCheckout = await page.$eval('#checkoutInput', el => el.value);\n\n    // Take final screenshot with both fields set\n    const finalShot = path.join(screenshotsDir, 'step_3_final_verification.png');\n    await page.screenshot({ path: finalShot });\n    screenshots.push(finalShot);\n\n    // Prepare result\n    const correctCheckin = extractedCheckin === checkinStr;\n    const correctCheckout = extractedCheckout === checkoutStr;\n\n    return {\n      success: correctCheckin && correctCheckout,\n      action: \"Set check-in to tomorrow and check-out to the day after, verified input fields correctly reflect the values.\",\n      extractedData: {\n        checkinInput: extractedCheckin,\n        expectedCheckin: checkinStr,\n        checkinMatch: correctCheckin,\n        checkoutInput: extractedCheckout,\n        expectedCheckout: checkoutStr,\n        checkoutMatch: correctCheckout\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20657,
+      "timestamp": "2025-09-15T09:27:07.547Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 51924,
+  "timestamp": "2025-09-15T09:26:36.281Z",
+  "savedAt": "2025-09-15T09:27:28.204Z",
+  "version": "1.0"
+}

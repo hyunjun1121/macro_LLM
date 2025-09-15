@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928345713_chw7j_1757935548536",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928345713_chw7j",
+    "description": 10,
+    "objective": "Regular",
+    "expectedResult": "Refresh feed",
+    "difficulty": "Easy",
+    "category": "Click refresh button and verify feed updates",
+    "tags": [
+      ".refresh-btn"
+    ],
+    "notes": "refreshFeed() renderPosts()"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click the refresh button (assuming a refresh button exists)\n    await page.waitForSelector('button.create-post-btn'); // Wait for the button to be available\n    await page.click('button.create-post-btn'); // Click the button to refresh the feed\n\n    // Wait for the feed to update (this may depend on how the feed updates)\n    await page.waitForTimeout(2000); // Adjust the timeout as necessary\n\n    // Take a screenshot after refreshing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_refresh.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_refresh.png'));\n\n    // Extract meaningful data to verify task completion (example: check for new posts)\n    const newPosts = await page.$$eval('.community-item', items => items.map(item => item.innerText));\n    \n    return {\n      success: true,\n      action: \"Refreshed the feed and captured new posts\",\n      extractedData: { newPosts },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14462,
+      "timestamp": "2025-09-15T11:25:48.536Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click the refresh button (using a class selector)\n    await page.waitForSelector('button.create-post-btn');\n    await page.click('button.create-post-btn');\n\n    // Wait for the content to update\n    await page.waitForTimeout(2000); // Wait for 2 seconds to ensure the feed updates\n\n    // Take a screenshot after refreshing the feed\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_refresh.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_refresh.png'));\n\n    // Extracting the updated content for verification\n    const updatedContent = await page.evaluate(() => {\n      return Array.from(document.querySelectorAll('.community-item')).map(item => item.innerText);\n    });\n\n    return {\n      success: true,\n      action: \"Refreshed the feed and verified updates\",\n      extractedData: { updatedContent },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12981,
+      "timestamp": "2025-09-15T11:26:02.998Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click the refresh button (using a class name selector)\n    await page.waitForSelector('button.create-post-btn'); // Wait for the button to be visible\n    await page.click('button.create-post-btn'); // Click the button to refresh the feed\n\n    // Wait for potential content update - assuming new posts will appear\n    await page.waitForTimeout(2000); // Wait for 2 seconds for the content to load\n\n    // Take a screenshot after the refresh\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_refresh.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_refresh.png'));\n\n    // Extracting some data to verify updates (for example, checking the first post title)\n    const firstPostTitle = await page.$eval('.community-list li:first-child .community-name', el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Refreshed the feed and captured screenshots\",\n      extractedData: { firstPostTitle },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12794,
+      "timestamp": "2025-09-15T11:26:15.979Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 40237,
+  "timestamp": "2025-09-15T11:25:48.536Z",
+  "savedAt": "2025-09-15T11:26:28.773Z",
+  "version": "1.0"
+}

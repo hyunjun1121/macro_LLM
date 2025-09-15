@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T005_1757930278907",
+  "website": "Amazon",
+  "task": {
+    "id": "T005",
+    "description": "Switch to List View Mode",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Perform a search, then click the list view button to switch from grid view to list view.",
+    "category": ".view-btn[title='List View'], .products-list",
+    "tags": [
+      "1. Perform any search 2. Locate list view button 3. Click list view button"
+    ],
+    "notes": "Products display changes to list format, list view button becomes active, products show in single column with more details"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the search input to be visible\n    await page.waitForSelector('#searchInput', { timeout: 5000 });\n\n    // Enter a search term (e.g., \"phone\")\n    await page.fill('#searchInput', 'phone');\n\n    // Click the search button\n    await page.waitForSelector('button.search-btn', { timeout: 5000 });\n    await page.click('button.search-btn');\n\n    // Wait for products to load (wait for either .products-list or .products-grid)\n    // Wait for at least one product card to appear (assuming .product-card or similar)\n    // But as per the task, we want to switch to list view, so wait for the view buttons\n    await page.waitForSelector('.view-btn[title=\"List View\"]', { timeout: 7000 });\n\n    // Take screenshot after search\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_search.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_search.png'));\n\n    // Click the List View button\n    await page.click('.view-btn[title=\"List View\"]');\n\n    // Wait for the list view to be active (wait for .products-list to be visible)\n    await page.waitForSelector('.products-list', { timeout: 5000 });\n\n    // Take screenshot after switching to list view\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_list_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_list_view.png'));\n\n    // Extract some data to verify list view: count the number of product items in list view\n    const productCount = await page.$$eval('.products-list .product-card, .products-list .product-item', els => els.length);\n\n    // Optionally, check that the grid view is not visible (if .products-grid exists)\n    let gridViewVisible = false;\n    try {\n      gridViewVisible = await page.isVisible('.products-grid');\n    } catch (e) {\n      // If selector doesn't exist, that's fine\n      gridViewVisible = false;\n    }\n\n    return {\n      success: true,\n      action: \"Performed a search and switched to List View mode on the Amazon simulation site.\",\n      extractedData: {\n        listViewProductCount: productCount,\n        gridViewVisible\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 42010,
+      "timestamp": "2025-09-15T09:57:58.907Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // STEP 2: Perform a search (type 'laptop' in the search bar and submit)\n    await page.waitForSelector('#searchInput', { timeout: 5000 });\n    await page.fill('#searchInput', 'laptop');\n    // Try pressing Enter first (alternative to clicking button)\n    await page.press('#searchInput', 'Enter');\n    // Wait for possible results to load (wait for a known product/result area)\n    await page.waitForSelector('.products-list, .product-grid, .product-card', { timeout: 5000 }).catch(() => {});\n\n    // Take screenshot after search\n    const searchShot = path.join(screenshotsDir, 'step_2_after_search.png');\n    await page.screenshot({ path: searchShot });\n    screenshots.push(searchShot);\n\n    // STEP 3: Switch to List View Mode\n    // Use alternative selector strategies for the \"List View\" button\n    // 1. Try aria-label, 2. Try xpath by title, 3. Try visible text, 4. Try by class and title\n    let listViewBtn = null;\n    try {\n      // Try by title attribute using xpath (not used in previous attempts)\n      listViewBtn = await page.waitForSelector(\"//button[contains(@class, 'view-btn') and @title='List View']\", { timeout: 2500 });\n    } catch {}\n\n    if (!listViewBtn) {\n      try {\n        // Try as a .view-btn[title='List View'] with :visible\n        listViewBtn = await page.waitForSelector(\".view-btn[title='List View']:visible\", { timeout: 2500 });\n      } catch {}\n    }\n\n    if (!listViewBtn) {\n      try {\n        // Try by role and title\n        listViewBtn = await page.waitForSelector(\"button[title='List View']\", { timeout: 2500 });\n      } catch {}\n    }\n\n    if (!listViewBtn) {\n      throw new Error(\"List View button not found using any selector strategy\");\n    }\n\n    // Click the List View button\n    await listViewBtn.click();\n\n    // Wait for the list view to take effect: look for .products-list (not grid) to appear\n    await page.waitForSelector('.products-list', { timeout: 4000 });\n\n    // Take screenshot after switching to list view\n    const listViewShot = path.join(screenshotsDir, 'step_3_list_view.png');\n    await page.screenshot({ path: listViewShot });\n    screenshots.push(listViewShot);\n\n    // STEP 4: Extract some data to verify we're in list view\n    // For example, count number of .products-list > .product-list-item elements\n    let listItemCount = 0;\n    let listModeDetected = false;\n    try {\n      await page.waitForSelector('.products-list', { timeout: 2000 });\n      listModeDetected = true;\n      listItemCount = await page.$$eval('.products-list .product-list-item', els => els.length);\n      // If fallback, count all children\n      if (listItemCount === 0) {\n        listItemCount = await page.$$eval('.products-list > *', els => els.length);\n      }\n    } catch {}\n\n    return {\n      success: listModeDetected && listItemCount > 0,\n      action: \"Performed a product search and switched to List View mode using multiple selector strategies.\",\n      extractedData: {\n        listModeDetected,\n        listItemCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 46290,
+      "timestamp": "2025-09-15T09:58:40.918Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the search input by placeholder (alternative selector)\n    await page.waitForSelector('input[placeholder=\"Search Amazon\"]', { timeout: 5000 });\n\n    // Type a search query (e.g., \"laptop\")\n    await page.fill('input[placeholder=\"Search Amazon\"]', 'laptop');\n\n    // Take screenshot after typing search\n    const step2 = path.join(screenshotsDir, 'step_2_typed_search.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Wait for and click the search button using icon inside (alternative selector)\n    await page.waitForSelector('button.search-btn i.fa-search', { timeout: 5000 });\n    await page.click('button.search-btn');\n\n    // Wait for products to appear (wait for .products-list or .products-grid)\n    // We'll use a race to allow for either grid or list view containers\n    let productsSelector;\n    try {\n      await page.waitForSelector('.products-list, .products-grid', { timeout: 5000 });\n      productsSelector = await page.$('.products-list') ? '.products-list' : '.products-grid';\n    } catch {\n      throw new Error('No products list or grid appeared after search');\n    }\n\n    // Take screenshot after search results loaded\n    const step3 = path.join(screenshotsDir, 'step_3_search_results.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Wait for the \"List View\" button by title attribute (alternative selector)\n    await page.waitForSelector('.view-btn[title=\"List View\"]', { timeout: 5000 });\n\n    // Take screenshot before switching view\n    const step4 = path.join(screenshotsDir, 'step_4_before_list_view.png');\n    await page.screenshot({ path: step4 });\n    screenshots.push(step4);\n\n    // Click the List View button\n    await page.click('.view-btn[title=\"List View\"]');\n\n    // Wait for the .products-list container to be visible and grid to disappear as needed\n    await page.waitForSelector('.products-list', { state: 'visible', timeout: 5000 });\n\n    // Wait a moment to ensure DOM has updated\n    await page.waitForTimeout(500);\n\n    // Take screenshot after switching to list view\n    const step5 = path.join(screenshotsDir, 'step_5_list_view.png');\n    await page.screenshot({ path: step5 });\n    screenshots.push(step5);\n\n    // Extract some data to prove we're in list view: count number of products\n    const productCount = await page.$$eval('.products-list .product-item', els => els.length);\n\n    return {\n      success: true,\n      action: \"Performed a search, switched from grid to list view using the List View button, and verified .products-list is present.\",\n      extractedData: {\n        listViewActive: await page.$('.products-list') !== null,\n        productCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 43342,
+      "timestamp": "2025-09-15T09:59:27.208Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 131643,
+  "timestamp": "2025-09-15T09:57:58.907Z",
+  "savedAt": "2025-09-15T10:00:10.550Z",
+  "version": "1.0"
+}

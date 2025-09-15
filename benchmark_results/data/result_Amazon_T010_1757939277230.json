@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T010_1757939277230",
+  "website": "Amazon",
+  "task": {
+    "id": "T010",
+    "description": "Add Product to Wishlist",
+    "objective": "General",
+    "expectedResult": "Medium",
+    "difficulty": "Open a product detail modal and click the 'Add to Wish List' button.",
+    "category": ".product-card:first-child, .add-to-wishlist",
+    "tags": [
+      "1. Click product card to open modal 2. Click 'Add to Wish List' button"
+    ],
+    "notes": "Success notification appears, wishlist localStorage is updated, button state may change"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click first product card to open detail modal\n    const productCard = await page.waitForSelector('.product-card:first-child');\n    await productCard.click();\n    await page.waitForTimeout(1000); // Wait for modal animation\n    \n    // Take screenshot after opening product modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_open.png'));\n\n    // Wait for and click Add to Wishlist button\n    const wishlistButton = await page.waitForSelector('.add-to-wishlist');\n    await wishlistButton.click();\n    await page.waitForTimeout(500); // Wait for action to complete\n\n    // Take screenshot after adding to wishlist\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_added_to_wishlist.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_added_to_wishlist.png'));\n\n    // Verify success by checking if wishlist count updated\n    const wishlistCount = await page.$eval('.wishlist-count', el => el.textContent.trim());\n    \n    return {\n      success: true,\n      action: \"Successfully opened product detail modal and added product to wishlist\",\n      extractedData: {\n        wishlistCount: wishlistCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to add product to wishlist\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 92624,
+      "timestamp": "2025-09-15T12:27:57.230Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the first product card\n    await page.waitForSelector('.product-card:first-child', { timeout: 5000 });\n    await page.click('.product-card:first-child');\n    \n    // Wait for product modal to appear and take screenshot\n    await page.waitForSelector('.product-detail-modal', { timeout: 5000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_opened.png'));\n\n    // Click the Add to Wish List button\n    await page.waitForSelector('.add-to-wishlist', { timeout: 5000 });\n    await page.click('.add-to-wishlist');\n    \n    // Wait for confirmation and take final screenshot\n    await page.waitForTimeout(1000); // Wait for any animation/confirmation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_wishlist_added.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_wishlist_added.png'));\n\n    // Extract product information to verify success\n    const productInfo = await page.evaluate(() => {\n      const title = document.querySelector('.product-detail-modal .product-title')?.textContent;\n      const price = document.querySelector('.product-detail-modal .product-price')?.textContent;\n      return { title, price };\n    });\n\n    return {\n      success: true,\n      action: \"Successfully opened product modal and added item to wishlist\",\n      extractedData: productInfo,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 98120,
+      "timestamp": "2025-09-15T12:29:29.854Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the first product card using multiple selector strategies\n    const productCard = await page.waitForSelector('.product-card:first-child, [class*=\"product-card\"]', { timeout: 5000 });\n    await productCard.click();\n    \n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_product_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_product_modal_opened.png'));\n\n    // Wait for the wishlist button using multiple strategies\n    const wishlistButton = await page.waitForSelector('.add-to-wishlist, [class*=\"wishlist\"], button:has-text(\"Add to Wish List\"), button:has-text(\"Wish List\")', { timeout: 5000 });\n    \n    // Verify the button is visible and enabled\n    const isButtonVisible = await wishlistButton.isVisible();\n    const isButtonEnabled = await wishlistButton.isEnabled();\n    \n    if (!isButtonVisible || !isButtonEnabled) {\n      throw new Error('Wishlist button is not interactable');\n    }\n\n    await wishlistButton.click();\n    \n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_wishlist_added.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_wishlist_added.png'));\n\n    // Verify success by checking for confirmation message or updated UI state\n    const confirmationText = await page.textContent('body');\n    const hasConfirmation = confirmationText.includes('Added to Wish List') || \n                           confirmationText.includes('Wish List') || \n                           confirmationText.includes('Success');\n\n    return {\n      success: true,\n      action: \"Successfully opened product modal and added product to wishlist\",\n      extractedData: {\n        buttonVisible: isButtonVisible,\n        buttonEnabled: isButtonEnabled,\n        confirmationDetected: hasConfirmation\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'error_state.png') });\n    screenshots.push(path.join(screenshotsDir, 'error_state.png'));\n\n    return {\n      success: false,\n      action: \"Failed to add product to wishlist\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 90838,
+      "timestamp": "2025-09-15T12:31:07.974Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 281582,
+  "timestamp": "2025-09-15T12:27:57.230Z",
+  "savedAt": "2025-09-15T12:32:38.813Z",
+  "version": "1.0"
+}

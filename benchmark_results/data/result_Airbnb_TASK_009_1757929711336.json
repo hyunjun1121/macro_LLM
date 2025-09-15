@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_009_1757929711336",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_009",
+    "description": "General",
+    "objective": "Search History Storage",
+    "expectedResult": "검색 수행 후 localStorage의 검색 기록이 업데이트되는지 확인하고 최신 검색어 추출하기",
+    "difficulty": "Medium",
+    "category": ".search-btn, localStorage",
+    "tags": [
+      "Search execution",
+      "storage inspection"
+    ],
+    "notes": "localStorage의 airbnb_searches 배열에서 가장 최근 검색 기록"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Fill search form\n    await page.fill('#locationInput', 'Seoul');\n    \n    // Set dates (today + 7 days for check-in, today + 14 days for check-out)\n    const today = new Date();\n    const checkinDate = new Date(today.setDate(today.getDate() + 7)).toISOString().split('T')[0];\n    const checkoutDate = new Date(today.setDate(today.getDate() + 14)).toISOString().split('T')[0];\n    \n    await page.fill('#checkinInput', checkinDate);\n    await page.fill('#checkoutInput', checkoutDate);\n\n    // Set guests\n    await page.click('button.guest-selector');\n    await page.waitForSelector('.guest-menu');\n    await page.click('div.guest-option:has(strong:has-text(\"Adults\")) button:has-text(\"+\")');\n    await page.click('div.guest-option:has(strong:has-text(\"Adults\")) button:has-text(\"+\")');\n\n    // Take screenshot before search\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_form.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_form.png'));\n\n    // Perform search\n    await page.click('.search-btn');\n    await page.waitForLoadState('networkidle');\n\n    // Check localStorage for search history\n    const searchHistory = await page.evaluate(() => {\n      return JSON.parse(localStorage.getItem('searchHistory') || '[]');\n    });\n\n    // Extract latest search term\n    const latestSearch = searchHistory.length > 0 ? searchHistory[searchHistory.length - 1] : null;\n\n    // Take screenshot after search\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_search.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_search.png'));\n\n    return {\n      success: true,\n      action: \"Performed search and extracted latest search term from localStorage\",\n      extractedData: {\n        searchHistory: searchHistory,\n        latestSearchTerm: latestSearch?.query || 'No search history found'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 123771,
+      "timestamp": "2025-09-15T09:48:31.336Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Fill search destination\n    await page.waitForSelector('#locationInput');\n    await page.fill('#locationInput', 'Seoul');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_location_filled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_location_filled.png'));\n\n    // Set check-in date (7 days from now)\n    const checkinDate = new Date();\n    checkinDate.setDate(checkinDate.getDate() + 7);\n    const checkinFormatted = checkinDate.toISOString().split('T')[0];\n    await page.fill('#checkinInput', checkinFormatted);\n\n    // Set check-out date (10 days from now)\n    const checkoutDate = new Date();\n    checkoutDate.setDate(checkoutDate.getDate() + 10);\n    const checkoutFormatted = checkoutDate.toISOString().split('T')[0];\n    await page.fill('#checkoutInput', checkoutFormatted);\n\n    // Set guests to 2 adults\n    await page.click('button.guest-selector');\n    await page.waitForSelector('.guest-menu');\n    \n    // Click + button for adults twice\n    const adultPlusButton = await page.$('button[onclick*=\"adults\"][onclick*=\"1\"]');\n    await adultPlusButton.click();\n    await adultPlusButton.click();\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_guests_set.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_guests_set.png'));\n\n    // Close guest menu by clicking outside\n    await page.click('body');\n\n    // Perform search by pressing Enter in location input\n    await page.press('#locationInput', 'Enter');\n    await page.waitForTimeout(2000); // Wait for search to complete\n\n    // Get search history from localStorage\n    const searchHistory = await page.evaluate(() => {\n      return JSON.parse(localStorage.getItem('airbnb_search_history') || '[]');\n    });\n\n    // Extract latest search term\n    const latestSearch = searchHistory.length > 0 ? searchHistory[searchHistory.length - 1] : null;\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_search_complete.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_search_complete.png'));\n\n    return {\n      success: true,\n      action: \"Performed search and extracted latest search term from localStorage\",\n      extractedData: {\n        searchHistory: searchHistory,\n        latestSearchTerm: latestSearch?.location || 'No search history found'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete search and extract search history\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 117043,
+      "timestamp": "2025-09-15T09:50:35.107Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Fill search location\n    await page.waitForSelector('#locationInput', { state: 'visible' });\n    await page.fill('#locationInput', 'Seoul');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_location_filled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_location_filled.png'));\n\n    // Set check-in date (7 days from now)\n    const checkInDate = new Date();\n    checkInDate.setDate(checkInDate.getDate() + 7);\n    const checkInFormatted = checkInDate.toISOString().split('T')[0];\n    await page.fill('#checkinInput', checkInFormatted);\n\n    // Set check-out date (14 days from now)\n    const checkOutDate = new Date();\n    checkOutDate.setDate(checkOutDate.getDate() + 14);\n    const checkOutFormatted = checkOutDate.toISOString().split('T')[0];\n    await page.fill('#checkoutInput', checkOutFormatted);\n\n    // Add guests\n    await page.click('.guest-selector');\n    await page.waitForSelector('#guestMenu', { state: 'visible' });\n    \n    // Add 2 adults\n    await page.click('button:has-text(\"+\") >> nth=0');\n    await page.click('button:has-text(\"+\") >> nth=0');\n    \n    // Add 1 child\n    await page.click('button:has-text(\"+\") >> nth=1');\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_guests_added.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_guests_added.png'));\n\n    // Close guest menu\n    await page.click('.guest-selector');\n\n    // Perform search\n    await page.click('.search-btn');\n    await page.waitForLoadState('networkidle');\n    await page.waitForTimeout(2000); // Wait for localStorage update\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_after_search.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_after_search.png'));\n\n    // Extract search history from localStorage\n    const searchHistory = await page.evaluate(() => {\n      return JSON.parse(localStorage.getItem('searchHistory') || '[]');\n    });\n\n    // Get latest search term\n    const latestSearch = searchHistory.length > 0 ? searchHistory[searchHistory.length - 1] : null;\n\n    return {\n      success: true,\n      action: \"Performed search and extracted search history from localStorage\",\n      extractedData: {\n        searchHistory: searchHistory,\n        latestSearchTerm: latestSearch\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 175064,
+      "timestamp": "2025-09-15T09:52:32.150Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 415878,
+  "timestamp": "2025-09-15T09:48:31.336Z",
+  "savedAt": "2025-09-15T09:55:27.214Z",
+  "version": "1.0"
+}

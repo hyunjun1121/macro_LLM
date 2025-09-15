@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928345667_15q69_1757935623003",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928345667_15q69",
+    "description": 12,
+    "objective": "Regular",
+    "expectedResult": "Test keyboard navigation",
+    "difficulty": "Medium",
+    "category": "Use Tab key to navigate through interactive elements and verify focus",
+    "tags": [
+      "focusable elements [tabindex] [role]"
+    ],
+    "notes": "setupKeyboardNavigation()"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Focus on the search input and verify focus\n    await page.waitForSelector('#searchInput');\n    await page.click('#searchInput');\n    await page.keyboard.press('Tab'); // Navigate to the next element\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_input_focused.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_input_focused.png'));\n\n    // Verify focus on the theme toggle button\n    await page.waitForSelector('button.theme-toggle-btn');\n    const isThemeToggleFocused = await page.evaluate(() => document.activeElement.classList.contains('theme-toggle-btn'));\n    if (isThemeToggleFocused) {\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_3_theme_toggle_focused.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_3_theme_toggle_focused.png'));\n    }\n\n    // Navigate through community buttons\n    await page.keyboard.press('Tab'); // Navigate to the create post button\n    await page.waitForSelector('button.create-post-btn');\n    const isCreatePostFocused = await page.evaluate(() => document.activeElement.classList.contains('create-post-btn'));\n    if (isCreatePostFocused) {\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_4_create_post_focused.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_4_create_post_focused.png'));\n    }\n\n    // Navigate through community links\n    await page.keyboard.press('Tab'); // Navigate to the first community button\n    await page.waitForSelector('button.community-link');\n    const communityButtons = await page.$$('button.community-link');\n    for (let button of communityButtons) {\n      await button.focus();\n      const isFocused = await page.evaluate(el => document.activeElement === el, button);\n      if (isFocused) {\n        await page.screenshot({ path: path.join(screenshotsDir, `step_5_${await button.evaluate(b => b.innerText)}_focused.png`) });\n        screenshots.push(path.join(screenshotsDir, `step_5_${await button.evaluate(b => b.innerText)}_focused.png`));\n      }\n      await page.keyboard.press('Tab'); // Move to the next button\n    }\n\n    return {\n      success: true,\n      action: \"Tested keyboard navigation through interactive elements and verified focus\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20655,
+      "timestamp": "2025-09-15T11:27:03.003Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Focus on the search input field\n    await page.waitForSelector('#searchInput');\n    await page.focus('#searchInput');\n    await page.keyboard.press('Tab'); // Move focus to the next interactive element\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_search_input_focus.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_search_input_focus.png'));\n\n    // Focus on the theme toggle button\n    await page.waitForSelector('button.theme-toggle-btn');\n    await page.keyboard.press('Tab'); // Move focus to the theme toggle button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_theme_toggle_focus.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_theme_toggle_focus.png'));\n\n    // Focus on the create post button\n    await page.waitForSelector('button.create-post-btn');\n    await page.keyboard.press('Tab'); // Move focus to the create post button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_after_create_post_focus.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_after_create_post_focus.png'));\n\n    // Focus on the community links\n    const communityButtons = await page.$$('button.community-link');\n    for (const button of communityButtons) {\n      await button.focus(); // Focus on each community button\n      await page.keyboard.press('Tab'); // Move to the next button\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_5_after_community_button_focus.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_5_after_community_button_focus.png'));\n    }\n\n    return {\n      success: true,\n      action: \"Tested keyboard navigation through interactive elements\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 21802,
+      "timestamp": "2025-09-15T11:27:23.658Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Use TAB key to navigate through interactive elements\n    const interactiveElements = [\n      '#searchInput', // Search input\n      'button.theme-toggle-btn', // Theme toggle button\n      'button.create-post-btn', // Create post button\n      'button.community-link', // Community links\n      'button.quick-action-btn' // Quick action buttons\n    ];\n\n    for (const selector of interactiveElements) {\n      await page.focus(selector); // Focus on the element\n      await page.keyboard.press('Tab'); // Press Tab to navigate\n\n      // Take a screenshot after each focus change\n      await page.screenshot({ path: path.join(screenshotsDir, `step_focused_${selector.replace(/[^a-zA-Z0-9]/g, '_')}.png`) });\n      screenshots.push(path.join(screenshotsDir, `step_focused_${selector.replace(/[^a-zA-Z0-9]/g, '_')}.png`));\n    }\n\n    // Verify that the focus is correctly applied\n    const focusedElement = await page.evaluate(() => document.activeElement);\n    const isFocused = interactiveElements.some(selector => focusedElement.matches(selector));\n\n    return {\n      success: true,\n      action: \"Successfully navigated through interactive elements using Tab key\",\n      extractedData: { isFocused },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16829,
+      "timestamp": "2025-09-15T11:27:45.460Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 59286,
+  "timestamp": "2025-09-15T11:27:03.003Z",
+  "savedAt": "2025-09-15T11:28:02.289Z",
+  "version": "1.0"
+}

@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928345646_vyoc2_1757936868722",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928345646_vyoc2",
+    "description": "IG_REG_014",
+    "objective": "Regular",
+    "expectedResult": "Click on followers count in profile modal and verify user list modal opens",
+    "difficulty": "Medium",
+    "category": ".profile-btn, #profileModal, .stats span:contains(\"followers\"), #userListModal",
+    "tags": [
+      "User list modal opens showing followers"
+    ],
+    "notes": "1. Click .profile-btn 2. Click followers count in .stats 3. Verify #userListModal opens with followers list"
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on the followers count in the profile modal\n    await page.waitForSelector('#profileModal'); // Wait for the profile modal to be visible\n    await page.waitForSelector('.stats span:contains(\"followers\")'); // Wait for the followers count\n    await page.click('.stats span:contains(\"followers\")'); // Click on the followers count\n\n    // Take screenshot after clicking followers count\n    await page.waitForSelector('#userListModal'); // Wait for the user list modal to open\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_user_list_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_user_list_modal.png'));\n\n    // Verify that the user list modal is open\n    const isUserListModalVisible = await page.isVisible('#userListModal');\n\n    return {\n      success: true,\n      action: \"Clicked on followers count and verified user list modal opened\",\n      extractedData: { isUserListModalVisible },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13502,
+      "timestamp": "2025-09-15T11:47:48.722Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the profile modal to be present and click on followers count\n    await page.waitForSelector('#profileModal', { timeout: 5000 });\n    await page.waitForSelector('.stats span:contains(\"followers\")', { timeout: 5000 });\n\n    // Click on the followers count\n    await page.click('.stats span:contains(\"followers\")');\n\n    // Wait for the user list modal to open\n    await page.waitForSelector('#userListModal', { timeout: 5000 });\n\n    // Take a screenshot after interaction\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_followers_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_followers_clicked.png'));\n\n    // Verify that the user list modal is visible\n    const isModalVisible = await page.isVisible('#userListModal');\n\n    return {\n      success: true,\n      action: \"Clicked on followers count and verified user list modal opened\",\n      extractedData: { isModalVisible },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14153,
+      "timestamp": "2025-09-15T11:48:02.224Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the profile modal to be visible\n    await page.waitForSelector('#profileModal', { state: 'visible' });\n\n    // Click on the followers count\n    await page.click('.stats span:contains(\"followers\")');\n\n    // Wait for the user list modal to appear\n    await page.waitForSelector('#userListModal', { state: 'visible' });\n\n    // Take a screenshot of the user list modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_user_list.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_user_list.png'));\n\n    // Verify that the user list modal opened\n    const isUserListModalVisible = await page.isVisible('#userListModal');\n\n    return {\n      success: isUserListModalVisible,\n      action: isUserListModalVisible ? \"Successfully opened user list modal\" : \"Failed to open user list modal\",\n      extractedData: { isUserListModalVisible },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17823,
+      "timestamp": "2025-09-15T11:48:16.377Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 45478,
+  "timestamp": "2025-09-15T11:47:48.722Z",
+  "savedAt": "2025-09-15T11:48:34.200Z",
+  "version": "1.0"
+}

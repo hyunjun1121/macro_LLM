@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928320272_3topc_1757937884990",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928320272_3topc",
+    "description": 3,
+    "objective": "Regular",
+    "expectedResult": "Toggle dark mode",
+    "difficulty": "Easy",
+    "category": "Click the theme toggle button and verify dark mode is applied",
+    "tags": [
+      ".theme-toggle-btn #themeIcon"
+    ],
+    "notes": "toggleDarkMode() applyTheme()"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the theme toggle button to be visible\n    await page.waitForSelector('button.theme-toggle-btn', { state: 'visible', timeout: 5000 });\n\n    // Get initial body background color and class\n    const initialBg = await page.evaluate(() => {\n      const body = document.querySelector('body');\n      return {\n        bg: window.getComputedStyle(body).backgroundColor,\n        classList: Array.from(body.classList)\n      };\n    });\n\n    // Click the theme toggle button\n    await page.click('button.theme-toggle-btn');\n\n    // Wait for the dark mode to be applied\n    // We'll wait for either a body class change or a background color change\n    await page.waitForFunction(\n      (prevBg, prevClasses) => {\n        const body = document.querySelector('body');\n        const newBg = window.getComputedStyle(body).backgroundColor;\n        const newClasses = Array.from(body.classList);\n        return newBg !== prevBg || newClasses.join(',') !== prevClasses.join(',');\n      },\n      initialBg.bg,\n      initialBg.classList,\n      { timeout: 5000 }\n    );\n\n    // Take screenshot after toggling dark mode\n    const afterToggleScreenshot = path.join(screenshotsDir, 'step_2_dark_mode.png');\n    await page.screenshot({ path: afterToggleScreenshot });\n    screenshots.push(afterToggleScreenshot);\n\n    // Extract data to verify dark mode\n    const darkModeData = await page.evaluate(() => {\n      const body = document.querySelector('body');\n      const header = document.querySelector('.header');\n      return {\n        bodyBg: window.getComputedStyle(body).backgroundColor,\n        bodyClassList: Array.from(body.classList),\n        headerBg: header ? window.getComputedStyle(header).backgroundColor : null,\n        isDark: body.classList.contains('dark') || window.getComputedStyle(body).backgroundColor === 'rgb(26, 26, 27)' // #1a1a1b\n      };\n    });\n\n    return {\n      success: true,\n      action: \"Toggled dark mode by clicking the theme toggle button and verified dark mode was applied.\",\n      extractedData: {\n        before: initialBg,\n        after: darkModeData\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14874,
+      "timestamp": "2025-09-15T12:04:44.990Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the theme toggle button using aria-label as an alternate selector\n    const themeToggleBtn = await page.waitForSelector('button[aria-label*=\"theme\"]', { timeout: 4000 });\n\n    // Capture the background color BEFORE toggling\n    const beforeBg = await page.evaluate(() => {\n      return window.getComputedStyle(document.body).backgroundColor;\n    });\n\n    // Click the theme toggle button (using a different click strategy: evaluate)\n    await themeToggleBtn.evaluate(btn => btn.click());\n\n    // Wait for body background-color to change (expecting dark mode)\n    // We'll poll for up to 3 seconds for a significant color change\n    let afterBg = beforeBg;\n    let attempts = 0;\n    while (afterBg === beforeBg && attempts < 15) {\n      await page.waitForTimeout(200);\n      afterBg = await page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);\n      attempts++;\n    }\n\n    // Take screenshot after toggling\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_darkmode.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_darkmode.png'));\n\n    // Additionally, check if a dark mode class is present on body or html\n    const bodyClass = await page.evaluate(() => document.body.className);\n    const htmlClass = await page.evaluate(() => document.documentElement.className);\n\n    // Compose meaningful verification info\n    const darkModeApplied = (afterBg !== beforeBg) || /dark/i.test(bodyClass) || /dark/i.test(htmlClass);\n\n    return {\n      success: darkModeApplied,\n      action: \"Toggled dark mode using theme toggle button and verified visual/background change.\",\n      extractedData: {\n        beforeBackground: beforeBg,\n        afterBackground: afterBg,\n        bodyClass,\n        htmlClass,\n        darkModeApplied\n      },\n      screenshots,\n      error: darkModeApplied ? null : \"Dark mode could not be visually verified.\"\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 25018,
+      "timestamp": "2025-09-15T12:04:59.864Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the theme toggle button using aria-label (alternative selector)\n    const themeToggleAria = 'button[aria-label*=\"Toggle\"][aria-label*=\"theme\"]';\n    await page.waitForSelector(themeToggleAria, { state: 'visible', timeout: 5000 });\n\n    // Get original background color for later comparison (use computed style)\n    const originalBg = await page.evaluate(() => {\n      const body = document.querySelector('body');\n      return window.getComputedStyle(body).backgroundColor;\n    });\n\n    // Click the theme toggle button\n    await page.click(themeToggleAria);\n\n    // Wait for body background-color to change (dark mode)\n    let newBg = originalBg;\n    let attempts = 0;\n    while (newBg === originalBg && attempts < 20) {\n      await page.waitForTimeout(150);\n      newBg = await page.evaluate(() => {\n        const body = document.querySelector('body');\n        return window.getComputedStyle(body).backgroundColor;\n      });\n      attempts++;\n    }\n\n    // Take screenshot after toggling\n    const afterToggleScreenshot = path.join(screenshotsDir, 'step_2_dark_mode.png');\n    await page.screenshot({ path: afterToggleScreenshot });\n    screenshots.push(afterToggleScreenshot);\n\n    // Additionally, check for a dark class or icon change (robust verification)\n    const hasDarkClass = await page.evaluate(() => {\n      return document.body.classList.contains('dark') || document.body.classList.contains('dark-theme');\n    });\n\n    // Try to extract the icon name (moon/sun) from the button, as a secondary check\n    const themeIconClass = await page.evaluate(() => {\n      const icon = document.querySelector('button[aria-label*=\"Toggle\"] i');\n      return icon ? icon.className : null;\n    });\n\n    // Build extractedData\n    const extractedData = {\n      originalBgColor: originalBg,\n      newBgColor: newBg,\n      backgroundChanged: originalBg !== newBg,\n      hasDarkClass,\n      themeIconClass\n    };\n\n    // Decide success based on color change or class\n    const success = (originalBg !== newBg) || hasDarkClass;\n\n    return {\n      success,\n      action: \"Toggled dark mode via theme toggle button and verified background/color changes\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14758,
+      "timestamp": "2025-09-15T12:05:24.882Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 54650,
+  "timestamp": "2025-09-15T12:04:44.990Z",
+  "savedAt": "2025-09-15T12:05:39.640Z",
+  "version": "1.0"
+}

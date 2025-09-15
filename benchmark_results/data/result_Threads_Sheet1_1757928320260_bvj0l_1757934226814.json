@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928320260_bvj0l_1757934226814",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928320260_bvj0l",
+    "description": "G006",
+    "objective": "Bookmark First Thread",
+    "expectedResult": "Click the bookmark button on the first thread in the feed",
+    "difficulty": ".thread-item:first-child .thread-action[data-action='bookmark']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the threads feed to be loaded\n    await page.waitForSelector('#threads-feed', { timeout: 5000 });\n\n    // Wait for at least one thread-item to appear\n    await page.waitForSelector('.thread-item', { timeout: 5000 });\n\n    // Find the first thread-item\n    const firstThread = await page.$('.thread-item:first-child');\n    if (!firstThread) {\n      throw new Error('No thread-item found in the feed');\n    }\n\n    // Wait for the bookmark button inside the first thread\n    const bookmarkBtn = await firstThread.$(\".thread-action[data-action='bookmark']\");\n    if (!bookmarkBtn) {\n      throw new Error('Bookmark button not found in the first thread');\n    }\n\n    // Scroll into view to ensure visibility\n    await bookmarkBtn.evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_bookmark.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_bookmark.png'));\n\n    // Click the bookmark button\n    await bookmarkBtn.click();\n\n    // Wait for any UI feedback (e.g., icon change, toast, etc.)\n    // We'll wait up to 2 seconds for a visual change in the bookmark button (e.g., class or aria-pressed)\n    await page.waitForTimeout(500); // short pause for UI update\n\n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_bookmark.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_bookmark.png'));\n\n    // Extract data to verify the bookmark action\n    // Try to get an attribute or class change on the bookmark button\n    const bookmarkState = await bookmarkBtn.evaluate(el => ({\n      ariaPressed: el.getAttribute('aria-pressed'),\n      class: el.className,\n      dataBookmarked: el.getAttribute('data-bookmarked')\n    }));\n\n    return {\n      success: true,\n      action: \"Clicked the bookmark button on the first thread in the feed\",\n      extractedData: {\n        bookmarkButtonState: bookmarkState\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18345,
+      "timestamp": "2025-09-15T11:03:46.814Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the Threads HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Initial screenshot\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the threads feed to be present\n    await page.waitForSelector('#threads-feed', { timeout: 5000 });\n\n    // Wait for at least one thread item to be rendered (dynamic content)\n    await page.waitForSelector('.thread-item', { timeout: 7000 });\n\n    // Try to use a robust selector for the first thread's bookmark button\n    // Approach: Find the first .thread-item, then its descendant .thread-action[data-action='bookmark']\n    const bookmarkButton = await page.$eval(\n      '.thread-item:first-child .thread-action[data-action=\"bookmark\"]',\n      btn => btn\n    );\n\n    // If above fails (in case :first-child is not supported), fallback to nth-of-type(1)\n    let bookmarkBtnHandle = await page.$('.thread-item:first-child .thread-action[data-action=\"bookmark\"]');\n    if (!bookmarkBtnHandle) {\n      bookmarkBtnHandle = await page.$('.thread-item:nth-of-type(1) .thread-action[data-action=\"bookmark\"]');\n    }\n    // If still not found, try querying all bookmark buttons and filter the first visible one inside threads-feed\n    if (!bookmarkBtnHandle) {\n      const allBookmarkBtns = await page.$$('#threads-feed .thread-action[data-action=\"bookmark\"]');\n      if (allBookmarkBtns.length > 0) {\n        bookmarkBtnHandle = allBookmarkBtns[0];\n      }\n    }\n\n    if (!bookmarkBtnHandle) {\n      throw new Error('Could not locate the bookmark button on the first thread.');\n    }\n\n    // Scroll into view for clarity\n    await bookmarkBtnHandle.evaluate(btn => btn.scrollIntoView({behavior: \"auto\", block: \"center\"}));\n\n    // Take screenshot before clicking\n    const beforeClickShot = path.join(screenshotsDir, 'step_2_before_bookmark.png');\n    await page.screenshot({ path: beforeClickShot });\n    screenshots.push(beforeClickShot);\n\n    // Click the bookmark button\n    await bookmarkBtnHandle.click();\n\n    // Wait for some visual feedback (e.g., class change, count update, icon change)\n    // We'll wait for a class toggle or aria-pressed change, or just a short delay if not available\n    await page.waitForTimeout(500);\n\n    // Take screenshot after clicking\n    const afterClickShot = path.join(screenshotsDir, 'step_3_after_bookmark.png');\n    await page.screenshot({ path: afterClickShot });\n    screenshots.push(afterClickShot);\n\n    // Extract some data to confirm: Does the button now have a 'bookmarked' or 'active' class, or aria-pressed=true?\n    const bookmarkState = await bookmarkBtnHandle.evaluate(btn => {\n      return {\n        classList: btn.className,\n        ariaPressed: btn.getAttribute('aria-pressed'),\n        title: btn.getAttribute('title')\n      };\n    });\n\n    return {\n      success: true,\n      action: \"Clicked the bookmark button on the first thread in the feed\",\n      extractedData: {\n        bookmarkButtonState: bookmarkState\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 26611,
+      "timestamp": "2025-09-15T11:04:05.159Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the feed to render (wait for the threads-feed container to have at least one thread-item)\n    await page.waitForSelector('.threads-feed');\n    // Use a different selector strategy: wait for a thread-item that contains a bookmark action\n    await page.waitForSelector('.threads-feed .thread-item');\n\n    // Use XPath to get the first thread-item's bookmark action button\n    // More robust: re-query after ensuring content is present\n    const [firstThread] = await page.$$('.threads-feed .thread-item');\n    if (!firstThread) throw new Error('No thread found in feed');\n\n    // Within this thread, find the bookmark button by data-action attribute\n    // Alternate strategy: query inside the thread element directly for the action\n    const bookmarkButton = await firstThread.$(\".thread-action[data-action='bookmark']\");\n    if (!bookmarkButton) throw new Error('Bookmark button not found in first thread');\n\n    // Take a pre-click screenshot\n    const preClickScreenshot = path.join(screenshotsDir, 'step_2_pre_click.png');\n    await page.screenshot({ path: preClickScreenshot });\n    screenshots.push(preClickScreenshot);\n\n    // Click the bookmark button\n    await bookmarkButton.click();\n\n    // Wait for a visual change: bookmark icon changes, or aria-pressed, or class\n    // Try waiting for a class toggle or attribute change\n    await page.waitForTimeout(400); // slight delay for UI update\n\n    // Attempt to extract data that indicates bookmark state (e.g., aria-pressed or class change)\n    let isBookmarked = false;\n    // Check for aria-pressed or class toggle\n    const ariaPressed = await bookmarkButton.getAttribute('aria-pressed');\n    const buttonClass = await bookmarkButton.getAttribute('class');\n    if (\n      ariaPressed === 'true' ||\n      (buttonClass && buttonClass.includes('active')) ||\n      (await bookmarkButton.evaluate(el => el.classList.contains('bookmarked')))\n    ) {\n      isBookmarked = true;\n    }\n\n    // Take post-click screenshot\n    const postClickScreenshot = path.join(screenshotsDir, 'step_3_post_click.png');\n    await page.screenshot({ path: postClickScreenshot });\n    screenshots.push(postClickScreenshot);\n\n    return {\n      success: true,\n      action: \"Clicked the bookmark button on the first thread in the feed\",\n      extractedData: {\n        isBookmarked,\n        ariaPressed,\n        buttonClass\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 27072,
+      "timestamp": "2025-09-15T11:04:31.770Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 72028,
+  "timestamp": "2025-09-15T11:03:46.814Z",
+  "savedAt": "2025-09-15T11:04:58.842Z",
+  "version": "1.0"
+}

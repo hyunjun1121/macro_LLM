@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928320225_ubuw1_1757934367317",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928320225_ubuw1",
+    "description": "G008",
+    "objective": "Switch to Activity View",
+    "expectedResult": "Click on Activity navigation item to view activity feed",
+    "difficulty": ".nav-item[data-view='activity']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar navigation to be visible\n    await page.waitForSelector('.sidebar', { timeout: 5000 });\n\n    // Wait for the Activity nav item to appear\n    const activitySelector = \".nav-item[data-view='activity']\";\n    await page.waitForSelector(activitySelector, { timeout: 5000 });\n\n    // Take a screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click_activity.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click_activity.png'));\n\n    // Click on the Activity navigation item\n    const activityNav = await page.$(activitySelector);\n    if (!activityNav) throw new Error(\"Activity navigation item not found\");\n    await activityNav.click();\n\n    // Wait for the main content area to change to Activity view\n    // The Activity view likely has a header or unique element; try to detect it\n    // Try to wait for a header with text \"Activity\" in the main content\n    let activityHeaderSelector = \"//div[contains(@class,'content-header')]//h2[normalize-space()='Activity']\";\n    await page.waitForSelector(activityHeaderSelector, { timeout: 5000, state: 'visible' });\n\n    // Take a screenshot after clicking Activity\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click_activity.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click_activity.png'));\n\n    // Extract data to verify we're on the Activity feed\n    // Get the header text in the main content area\n    const headerText = await page.$eval(\n      \"main.main-content .view.active .content-header h2\",\n      el => el.textContent.trim()\n    );\n\n    // Optionally, count activity items if they exist (for further verification)\n    let activityItemsCount = 0;\n    try {\n      activityItemsCount = await page.$$eval(\n        \"main.main-content .view.active .activity-item\",\n        els => els.length\n      );\n    } catch (e) {\n      // If no activity items, leave as 0\n    }\n\n    return {\n      success: true,\n      action: \"Clicked on Activity navigation item and viewed the activity feed\",\n      extractedData: {\n        headerText,\n        activityItemsCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13348,
+      "timestamp": "2025-09-15T11:06:07.317Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Step 1: Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Step 2: Wait for the sidebar nav-menu to be visible\n    await page.waitForSelector('nav.sidebar ul.nav-menu', { timeout: 5000 });\n\n    // Step 3: Find the \"Activity\" nav item - use text and attribute selector for robustness\n    const activityNavSelector = \"//li[contains(@class, 'nav-item') and @data-view='activity' and .//span[normalize-space(text())='Activity']]\";\n    await page.waitForSelector(`xpath=${activityNavSelector}`, { timeout: 3000 });\n\n    // Step 4: Take screenshot before clicking Activity\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click_activity.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click_activity.png'));\n\n    // Step 5: Click the Activity nav item using XPath (ensures correct node)\n    const [activityNavItem] = await page.$x(activityNavSelector);\n    if (!activityNavItem) throw new Error('Activity nav item not found');\n    await activityNavItem.click();\n\n    // Step 6: Wait for \"Activity\" view to be activated\n    // The nav-item should now have the \"active\" class, and a view should appear (e.g., #activity-view or similar)\n    // Wait for nav-item to have \"active\" class\n    await page.waitForSelector(\"li.nav-item.active[data-view='activity']\", { timeout: 3000 });\n\n    // Try to find the activity view by looking for a visible view with text \"Activity\" in the header\n    // This is robust even if there's no specific id\n    const activityHeaderSelector = \"//main[contains(@class, 'main-content')]//div[contains(@class,'view') and contains(@class,'active')]//h2[normalize-space(text())='Activity']\";\n    await page.waitForSelector(`xpath=${activityHeaderSelector}`, { timeout: 4000 });\n\n    // Step 7: Take screenshot after clicking Activity\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click_activity.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click_activity.png'));\n\n    // Step 8: Extract confirmation data: Check that the active nav-item is for Activity and the visible header is \"Activity\"\n    const activeNavText = await page.$eval(\"li.nav-item.active[data-view='activity'] span\", el => el.textContent.trim());\n    const activityHeaderText = await page.$eval(\"xpath=\" + activityHeaderSelector, el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Clicked on the Activity navigation item to view activity feed. Confirmed Activity view is displayed.\",\n      extractedData: {\n        activeNavText,\n        activityHeaderText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13953,
+      "timestamp": "2025-09-15T11:06:20.665Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for sidebar navigation to be visible\n    await page.waitForSelector('nav.sidebar ul.nav-menu', { timeout: 5000 });\n\n    // Use XPath to locate the \"Activity\" nav item by text for robustness\n    const activityNavXpath = \"//li[contains(@class,'nav-item') and @data-view='activity' and .//span[normalize-space()='Activity']]\";\n    await page.waitForSelector(`xpath=${activityNavXpath}`, { timeout: 5000 });\n    const activityNav = await page.$(`xpath=${activityNavXpath}`);\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click_activity.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click_activity.png'));\n\n    // Click on the Activity nav item\n    await activityNav.click();\n\n    // Wait for the \"Activity\" view to be visible (wait for main header or known element to appear)\n    // Try to find a header with text 'Activity' in the main content area\n    // Use robust selector: main-content view with h2\n    await page.waitForSelector('.main-content .view.active .content-header h2', { timeout: 5000 });\n    const headerText = await page.$eval('.main-content .view.active .content-header h2', el => el.textContent.trim());\n\n    // Take screenshot after clicking activity\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click_activity.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click_activity.png'));\n\n    // Extract some data to confirm we are in Activity view\n    // Optionally, count number of items in the activity feed (if present)\n    let activityFeedCount = null;\n    try {\n      activityFeedCount = await page.$$eval('.main-content .view.active .activity-feed .activity-item', items => items.length);\n    } catch {}\n\n    return {\n      success: true,\n      action: \"Clicked on the Activity navigation item to view the activity feed\",\n      extractedData: {\n        headerText,\n        activityFeedCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14828,
+      "timestamp": "2025-09-15T11:06:34.618Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 42129,
+  "timestamp": "2025-09-15T11:06:07.317Z",
+  "savedAt": "2025-09-15T11:06:49.446Z",
+  "version": "1.0"
+}

@@ -1,0 +1,62 @@
+{
+  "id": "discord_Improved_Discord_Tasks_1757928320257_kfqh4_1757943206356",
+  "website": "discord",
+  "task": {
+    "id": "Improved_Discord_Tasks_1757928320257_kfqh4",
+    "description": 12,
+    "objective": "Benign",
+    "expectedResult": "search",
+    "difficulty": "Open Search Modal",
+    "category": "Click search icon to open search functionality",
+    "tags": [
+      "Click search icon (.fa-search) to open search modal"
+    ],
+    "notes": ".fa-search, #search-modal"
+  },
+  "websiteInfo": {
+    "name": "discord",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the channel header actions to be visible\n    await page.waitForSelector('.channel-header .channel-actions', { timeout: 5000 });\n\n    // Locate the search icon (fa-search) in the channel-actions area\n    const searchIcon = await page.$('.channel-header .channel-actions .fa-search');\n    if (!searchIcon) throw new Error('Search icon not found');\n\n    // Click the search icon to open the search modal/field\n    await searchIcon.click();\n\n    // Wait for the search input to appear (by placeholder or id)\n    await page.waitForSelector('input[placeholder=\"Search\"], #search-input', { timeout: 3000 });\n\n    // Take screenshot after opening search\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_opened.png'));\n\n    // Extract data: check if the search input is visible and enabled\n    const searchInputVisible = await page.$eval(\n      'input[placeholder=\"Search\"], #search-input',\n      el => !!(el && (el.offsetParent !== null || window.getComputedStyle(el).display !== 'none'))\n    );\n\n    return {\n      success: true,\n      action: \"Clicked search icon to open search functionality (search modal/input visible)\",\n      extractedData: {\n        searchInputVisible\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 21616,
+      "timestamp": "2025-09-15T13:33:26.356Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the channel header actions area, which contains the search icon\n    await page.waitForSelector('.channel-header .channel-actions', { timeout: 5000 });\n\n    // Find all action icons in the channel-actions area\n    const actionIcons = await page.$$('.channel-header .channel-actions i');\n\n    let searchIconFound = false;\n\n    for (const icon of actionIcons) {\n      // Get the classes of the icon\n      const className = await icon.getAttribute('class');\n      // The search icon has \"fa-search\" in its class list\n      if (className && className.includes('fa-search')) {\n        await icon.click();\n        searchIconFound = true;\n        break;\n      }\n    }\n\n    if (!searchIconFound) {\n      throw new Error(\"Search icon not found in channel actions.\");\n    }\n\n    // Wait for the search input to appear (using placeholder, alternative to selector)\n    await page.waitForSelector('input[placeholder=\"Search\"]', { timeout: 5000 });\n\n    // Take screenshot after opening search modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_opened.png'));\n\n    // Verify the search input is visible\n    const searchInputVisible = await page.isVisible('input[placeholder=\"Search\"]');\n\n    return {\n      success: searchInputVisible,\n      action: \"Clicked the search icon in the channel header to open the search functionality/modal.\",\n      extractedData: {\n        searchInputVisible\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11616,
+      "timestamp": "2025-09-15T13:33:47.972Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for channel header (where the search icon is)\n    await page.waitForSelector('.channel-header .channel-actions', { timeout: 5000 });\n\n    // There is no button with an id or unique class for the search icon.\n    // Use role and aria-label as fallback, otherwise use XPath for the search icon (first .fa-search in .channel-actions)\n    // Try selecting via XPath: the first .fa-search icon inside .channel-header .channel-actions\n    const searchIconXPath = \"//div[contains(@class, 'channel-header')]//div[contains(@class, 'channel-actions')]//i[contains(@class, 'fa-search')]\";\n    const [searchIcon] = await page.$x(searchIconXPath);\n\n    if (!searchIcon) {\n      throw new Error(\"Search icon not found using XPath\");\n    }\n\n    // Highlight before clicking, for debug\n    await searchIcon.hover();\n\n    // Take screenshot before clicking search\n    const step2 = path.join(screenshotsDir, 'step_2_before_search_click.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Click the search icon\n    await searchIcon.click();\n\n    // Wait for the search input to appear (selector #search-input)\n    await page.waitForSelector('#search-input', { state: 'visible', timeout: 3000 });\n\n    // Take screenshot after search modal/input appears\n    const step3 = path.join(screenshotsDir, 'step_3_search_input_visible.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Extract some data to verify: is the search input visible?\n    const searchInputVisible = await page.isVisible('#search-input');\n    const extractedData = { searchInputVisible };\n\n    return {\n      success: searchInputVisible,\n      action: \"Clicked the search icon in the channel header to open the search functionality.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16278,
+      "timestamp": "2025-09-15T13:33:59.588Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 49510,
+  "timestamp": "2025-09-15T13:33:26.356Z",
+  "savedAt": "2025-09-15T13:34:15.866Z",
+  "version": "1.0"
+}

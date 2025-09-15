@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928320260_t8xen_1757934009556",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928320260_t8xen",
+    "description": "G002",
+    "objective": "Post Simple Text Thread",
+    "expectedResult": "Type 'Hello World!' in the thread input and click the Post button",
+    "difficulty": "#thread-text, #post-thread",
+    "category": 1,
+    "tags": [
+      "10 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the thread input textarea to be visible\n    await page.waitForSelector('#thread-text', { state: 'visible', timeout: 5000 });\n\n    // Focus and type 'Hello World!' into the textarea\n    const threadInput = await page.$('#thread-text');\n    await threadInput.click();\n    await threadInput.fill('Hello World!');\n\n    // Take screenshot after typing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_text_typed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_text_typed.png'));\n\n    // Wait for the Post button to be enabled and visible\n    const postButton = await page.waitForSelector('#post-thread', { state: 'visible', timeout: 5000 });\n    // Extra check: ensure it's enabled (not disabled)\n    const isDisabled = await postButton.getAttribute('disabled');\n    if (isDisabled !== null) {\n      throw new Error('Post button is disabled after typing');\n    }\n\n    // Click the Post button\n    await postButton.click();\n\n    // Wait for the new thread to appear in the feed\n    // The feed is #threads-feed, and a thread containing 'Hello World!' should appear\n    await page.waitForTimeout(700); // Give time for UI update\n\n    // Use multiple selector strategies to find the thread\n    // 1. Try to find by text content in the feed\n    const threadSelector = \"//div[@id='threads-feed']//div[contains(., 'Hello World!')]\";\n    await page.waitForSelector('#threads-feed', { state: 'visible', timeout: 5000 });\n    const threadElement = await page.waitForSelector(threadSelector, { timeout: 4000 });\n\n    // Take screenshot after posting\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_posted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_posted.png'));\n\n    // Extract the text of the latest thread to verify\n    const threadText = await threadElement.evaluate(el => el.innerText);\n\n    // Prepare extracted data for verification\n    const extractedData = {\n      postedThreadText: threadText\n    };\n\n    return {\n      success: threadText.includes('Hello World!'),\n      action: \"Typed 'Hello World!' in the thread input and clicked the Post button. Verified the thread appears in the feed.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15909,
+      "timestamp": "2025-09-15T11:00:09.556Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the compose-thread area using a different selector strategy: XPath via placeholder text\n    const threadInputXPath = \"//textarea[@placeholder='Start a thread...']\";\n    await page.waitForSelector(threadInputXPath, { timeout: 5000 });\n\n    // Focus and type 'Hello World!' using XPath\n    const threadInput = await page.$(threadInputXPath);\n    await threadInput.click({ clickCount: 2 }); // Ensure focus\n    await threadInput.fill('Hello World!');\n\n    // Take screenshot after typing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_typed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_typed.png'));\n\n    // Wait for and click the \"Post\" button using a different selector strategy: button text content and role\n    // Note: Using getByRole to ensure we get <button> with name \"Post\"\n    const [postButton] = await page.$x(\"//button[normalize-space(text())='Post']\");\n    if (!postButton) {\n      throw new Error(\"Could not find the Post button by text\");\n    }\n    await postButton.click();\n\n    // Wait for the threads feed to update with the new thread.\n    // Wait for an element in the threads-feed containing the text \"Hello World!\"\n    const threadFeedSelector = '#threads-feed';\n    await page.waitForSelector(threadFeedSelector, { timeout: 5000 });\n\n    // Wait for a thread containing \"Hello World!\" to appear, using :text-matches for Playwright\n    await page.waitForFunction(\n      () => !![...document.querySelectorAll('#threads-feed *')].find(el => el.textContent && el.textContent.includes('Hello World!')),\n      { timeout: 5000 }\n    );\n\n    // Take screenshot after posting\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_posted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_posted.png'));\n\n    // Extract the latest thread text to verify\n    const latestThreadText = await page.evaluate(() => {\n      const feed = document.querySelector('#threads-feed');\n      if (!feed) return null;\n      // Find the first element that contains 'Hello World!'\n      const thread = [...feed.querySelectorAll('*')].find(el => el.textContent && el.textContent.includes('Hello World!'));\n      return thread ? thread.textContent : null;\n    });\n\n    return {\n      success: true,\n      action: \"Typed 'Hello World!' in the thread input and clicked the Post button. Verified the post in the threads feed.\",\n      extractedData: {\n        latestThreadText,\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14966,
+      "timestamp": "2025-09-15T11:00:25.465Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('domcontentloaded');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the thread input textarea using alternative selector (by placeholder, since it's unique)\n    const threadInputSelector = 'textarea[placeholder=\"Start a thread...\"]';\n    await page.waitForSelector(threadInputSelector, { state: 'visible', timeout: 5000 });\n\n    // Focus and type 'Hello World!'\n    const threadInput = await page.$(threadInputSelector);\n    await threadInput.click({ clickCount: 3 }); // Ensure focus and select all\n    await threadInput.fill('Hello World!');\n\n    // Take screenshot after filling input\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_filled_input.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_filled_input.png'));\n\n    // Wait for the Post button - using role and name as an alternative selector\n    // The button has id 'post-thread', but let's use role+text for diversity\n    const postButton = await page.waitForSelector('button:has-text(\"Post\")', { state: 'visible', timeout: 5000 });\n\n    // Ensure the button is enabled before clicking\n    const isDisabled = await postButton.getAttribute('disabled');\n    if (isDisabled) {\n      throw new Error('Post button is disabled');\n    }\n\n    // Click the Post button\n    await postButton.click();\n\n    // Wait for the threads feed to update with our new thread\n    // Wait for an element in the feed that contains \"Hello World!\"\n    // The feed has id 'threads-feed', and each thread probably contains text\n    const feedSelector = '#threads-feed';\n    await page.waitForSelector(feedSelector, { state: 'visible', timeout: 5000 });\n\n    // Wait up to 5 seconds for the post to appear\n    const newThreadSelector = `#threads-feed :text(\"Hello World!\")`;\n    await page.waitForSelector(newThreadSelector, { timeout: 5000 });\n\n    // Take screenshot after posting\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_posted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_posted.png'));\n\n    // Extract the first thread's content from the feed to verify\n    const postedThread = await page.$eval(newThreadSelector, el => el.innerText);\n\n    return {\n      success: true,\n      action: \"Typed 'Hello World!' in the thread input and clicked Post. Verified the post appears in the feed.\",\n      extractedData: {\n        postedThread\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15435,
+      "timestamp": "2025-09-15T11:00:40.431Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 46310,
+  "timestamp": "2025-09-15T11:00:09.556Z",
+  "savedAt": "2025-09-15T11:00:55.866Z",
+  "version": "1.0"
+}

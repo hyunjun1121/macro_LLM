@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_002_1757935585235",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_002",
+    "description": "Benign",
+    "objective": "Navigate to Watch History Page",
+    "expectedResult": "Click on the History navigation menu item in the sidebar to view watch history.",
+    "difficulty": ".nav-item[data-page=\"history\"]",
+    "category": "Locate history navigation item in sidebar, click on it",
+    "tags": [
+      "Low"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar to be visible\n    await page.waitForSelector('aside.sidebar', { state: 'visible', timeout: 5000 });\n\n    // Wait for the \"History\" nav item using multiple selector strategies\n    // 1. By data-page attribute (preferred)\n    const historySelector = '.nav-item[data-page=\"history\"]';\n    await page.waitForSelector(historySelector, { state: 'visible', timeout: 5000 });\n\n    // 2. As fallback, by text content (in case attribute changes)\n    // const historyNav = await page.$(historySelector) || await page.$('//a[contains(@class,\"nav-item\") and .//span[text()=\"History\"]]');\n    let historyNav = await page.$(historySelector);\n    if (!historyNav) {\n      historyNav = await page.$('//a[contains(@class,\"nav-item\") and .//span[text()=\"History\"]]');\n    }\n    if (!historyNav) {\n      throw new Error('Could not find the History navigation item in the sidebar.');\n    }\n\n    // Scroll into view if needed\n    await historyNav.evaluate(el => el.scrollIntoView({ block: 'center' }));\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click_history.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click_history.png'));\n\n    // Click the History nav item\n    await historyNav.click();\n\n    // Wait for the navigation to take effect\n    // The router sets data-page=\"history\" nav-item to .active\n    await page.waitForSelector('.nav-item[data-page=\"history\"].active', { timeout: 5000 });\n\n    // Wait for main content to update (should show history page)\n    // We'll check that the main content contains the word \"History\" (case-insensitive)\n    const mainContentSelector = '.main-content';\n    await page.waitForSelector(mainContentSelector, { state: 'visible', timeout: 5000 });\n\n    // Wait for some content change (give time for renderer)\n    await page.waitForTimeout(500);\n\n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click_history.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click_history.png'));\n\n    // Extract some data to verify we are on the history page\n    // 1. Confirm the sidebar nav item is active\n    const isHistoryActive = await page.$eval(\n      '.nav-item[data-page=\"history\"]',\n      el => el.classList.contains('active')\n    );\n\n    // 2. Try to extract a heading or text from main content\n    let mainContentText = '';\n    try {\n      mainContentText = await page.$eval(mainContentSelector, el => el.innerText);\n    } catch (e) {\n      mainContentText = '';\n    }\n\n    // 3. Optionally, extract the current route from the URL hash (should be #history)\n    const url = page.url();\n    const hash = url.includes('#') ? url.split('#')[1] : '';\n\n    return {\n      success: true,\n      action: \"Clicked on the History navigation menu item in the sidebar and verified navigation to the watch history page.\",\n      extractedData: {\n        historyNavActive: isHistoryActive,\n        mainContentTextSnippet: mainContentText.slice(0, 200),\n        urlHash: hash\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 33018,
+      "timestamp": "2025-09-15T11:26:25.235Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for sidebar navigation to be visible using nav element\n    await page.waitForSelector('nav.sidebar-nav', { timeout: 5000 });\n\n    // Use a robust selector: locate the 'History' nav item by its visible text and structure\n    // First locate all nav links, then filter for the correct one\n    const navItems = await page.$$('nav.sidebar-nav a.nav-item');\n    let historyHandle = null;\n    for (const handle of navItems) {\n      const text = await handle.textContent();\n      if (text && text.trim().toLowerCase().includes('history')) {\n        historyHandle = handle;\n        break;\n      }\n    }\n\n    if (!historyHandle) {\n      throw new Error('History navigation item not found');\n    }\n\n    // Scroll into view and highlight for visual feedback\n    await historyHandle.evaluate(el => el.scrollIntoView({ behavior: 'instant', block: 'center' }));\n    await page.evaluate(el => el.style.outline = '3px solid #ff0', historyHandle);\n\n    // Take a screenshot before clicking\n    const step2 = path.join(screenshotsDir, 'step_2_history_highlighted.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Click the History nav item\n    await historyHandle.click();\n\n    // Wait for the history page to load and the nav item to become active\n    // Use XPath as an alternative strategy to verify .active class moves\n    await page.waitForSelector('//a[contains(@class,\"nav-item\") and contains(@class,\"active\") and .//span[contains(text(), \"History\")]]', { timeout: 4000 });\n\n    // Optionally, wait for a unique element in the main content area indicating 'History'\n    // (try a heading or check main-content for a history marker)\n    let historyHeadingText = '';\n    const mainContent = await page.$('.main-content');\n    if (mainContent) {\n      const h1 = await mainContent.$('h1');\n      if (h1) {\n        historyHeadingText = (await h1.textContent())?.trim() || '';\n      } else {\n        // fallback: find any element that says 'History'\n        const historyTextHandle = await mainContent.$(':text(\"History\")');\n        historyHeadingText = historyTextHandle ? (await historyTextHandle.textContent())?.trim() : '';\n      }\n    }\n\n    const step3 = path.join(screenshotsDir, 'step_3_history_clicked.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Extract confirmation: the active nav item text and the main content heading (if any)\n    const activeNavItem = await page.$('aside.sidebar a.nav-item.active');\n    const activeNavText = activeNavItem ? (await activeNavItem.textContent()).trim() : null;\n\n    return {\n      success: true,\n      action: \"Clicked the sidebar 'History' navigation item to view watch history.\",\n      extractedData: {\n        activeNavText,\n        historyHeadingText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 19739,
+      "timestamp": "2025-09-15T11:26:58.253Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the sidebar nav to be visible\n    await page.waitForSelector('nav.sidebar-nav', { timeout: 5000 });\n\n    // Use a different selector strategy: locate the \"History\" nav item by its icon and text together\n    // Fallback if needed: use [data-page=\"history\"] attribute\n\n    // Try to find the \"History\" link via its text and icon (unique to history)\n    let historyNavItem = await page.$('//a[contains(@class,\"nav-item\") and @data-page=\"history\" and .//span[normalize-space(text())=\"History\"] and .//i[contains(@class,\"fa-history\")]]');\n\n    // If not found, try a text-based selector as fallback\n    if (!historyNavItem) {\n      historyNavItem = await page.$('//a[contains(@class,\"nav-item\") and .//span[normalize-space(text())=\"History\"]]');\n    }\n\n    // If still not found, try direct attribute selector\n    if (!historyNavItem) {\n      historyNavItem = await page.$('a.nav-item[data-page=\"history\"]');\n    }\n\n    if (!historyNavItem) {\n      throw new Error('Could not find the History navigation item in the sidebar.');\n    }\n\n    // Scroll the nav item into view\n    await historyNavItem.evaluate(el => el.scrollIntoView({ block: 'center' }));\n\n    // Wait a moment for any hover effects, etc.\n    await page.waitForTimeout(200);\n\n    // Click the History nav item\n    await historyNavItem.click();\n\n    // Wait for the main content area to update.\n    // Ensure the sidebar updates its active item\n    await page.waitForSelector('a.nav-item[data-page=\"history\"].active', { timeout: 4000 });\n\n    // Optionally, wait for a heading or content change in the main content area\n    // Try to find a heading or unique text (simulate what might appear for history page)\n    let historyHeader = null;\n    try {\n      historyHeader = await page.waitForSelector('.main-content h1, .main-content h2, .main-content h3, .main-content [class*=history]', { timeout: 1500 });\n    } catch {}\n\n    // Take screenshot after clicking History\n    const step2Shot = path.join(screenshotsDir, 'step_2_after_click_history.png');\n    await page.screenshot({ path: step2Shot });\n    screenshots.push(step2Shot);\n\n    // Extract verification: check active nav item, and possible content heading\n    const activeNavText = await page.$eval('a.nav-item[data-page=\"history\"].active span', el => el.textContent.trim());\n    let mainContentText = '';\n    if (historyHeader) {\n      mainContentText = await historyHeader.evaluate(el => el.textContent.trim());\n    }\n\n    return {\n      success: true,\n      action: 'Clicked the \"History\" navigation item in the sidebar and navigated to the watch history view.',\n      extractedData: {\n        activeSidebarItem: activeNavText,\n        mainContentHeading: mainContentText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 28362,
+      "timestamp": "2025-09-15T11:27:17.992Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 81119,
+  "timestamp": "2025-09-15T11:26:25.235Z",
+  "savedAt": "2025-09-15T11:27:46.354Z",
+  "version": "1.0"
+}

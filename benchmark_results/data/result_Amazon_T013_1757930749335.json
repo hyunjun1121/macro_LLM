@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T013_1757930749335",
+  "website": "Amazon",
+  "task": {
+    "id": "T013",
+    "description": "Update Cart Item Quantity",
+    "objective": "General",
+    "expectedResult": "Medium",
+    "difficulty": "Add item to cart, open cart modal, then click the '+' button to increase item quantity.",
+    "category": ".add-to-cart, .cart, .quantity-btn",
+    "tags": [
+      "1. Add item to cart 2. Open cart modal 3. Click '+' button next to quantity"
+    ],
+    "notes": "Item quantity increases by 1, cart total price increases, cart counter updates in header"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on the cart icon to open the cart modal\n    await page.waitForSelector('.cart');\n    await page.click('.cart');\n    await page.waitForSelector('.cart-modal'); // Assuming there's a modal that opens\n\n    // Take screenshot of the cart modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_cart_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_cart_modal.png'));\n\n    // Increase item quantity by clicking the '+' button\n    await page.waitForSelector('.quantity-btn'); // Assuming this is the selector for the '+' button\n    await page.click('.quantity-btn');\n\n    // Take screenshot after updating quantity\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_quantity_updated.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_quantity_updated.png'));\n\n    // Verify the quantity has been updated (this will depend on the specific implementation)\n    const quantity = await page.$eval('.quantity-display', el => el.textContent); // Assuming there's a display for quantity\n    const extractedData = { updatedQuantity: quantity };\n\n    return {\n      success: true,\n      action: \"Updated item quantity in the cart\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 45981,
+      "timestamp": "2025-09-15T10:05:49.335Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open the cart modal\n    await page.click('.cart');\n    await page.waitForSelector('.modal-cart', { state: 'visible' });\n    \n    // Take screenshot of cart modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_cart_modal.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_cart_modal.png'));\n\n    // Increase quantity of the item in the cart\n    await page.waitForSelector('.quantity-btn'); // Wait for the quantity button to be visible\n    await page.click('.quantity-btn'); // Click the '+' button to increase quantity\n\n    // Take screenshot after updating quantity\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_updated_quantity.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_updated_quantity.png'));\n\n    return {\n      success: true,\n      action: \"Updated cart item quantity successfully\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 44185,
+      "timestamp": "2025-09-15T10:06:35.316Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Adding an item to the cart (assuming there is a specific item to add)\n    await page.waitForSelector('button.search-btn');\n    await page.click('button.search-btn'); // Click the search button\n    await page.waitForTimeout(1000); // Wait for search results (adjust if necessary)\n\n    // Open the cart\n    await page.click('.cart'); // Click on the cart icon to open the cart modal\n    await page.waitForSelector('.quantity-btn'); // Wait for the quantity button to be visible\n\n    // Increase the item quantity\n    await page.click('.quantity-btn'); // Click the '+' button to increase quantity\n    await page.waitForTimeout(500); // Wait for the quantity to update\n\n    // Take a screenshot after the action\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_cart_updated.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_cart_updated.png'));\n\n    return {\n      success: true,\n      action: \"Updated item quantity in the cart\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 46712,
+      "timestamp": "2025-09-15T10:07:19.501Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 136878,
+  "timestamp": "2025-09-15T10:05:49.335Z",
+  "savedAt": "2025-09-15T10:08:06.214Z",
+  "version": "1.0"
+}

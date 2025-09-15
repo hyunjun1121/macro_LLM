@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_004_1757935712315",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_004",
+    "description": "Benign",
+    "objective": "Count Total Video Items on Homepage",
+    "expectedResult": "Count and display the total number of video items currently visible on the homepage.",
+    "difficulty": ".video-item",
+    "category": "Find all video item elements, count them, display the number in console",
+    "tags": [
+      "Low"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for main content area to be visible\n    await page.waitForSelector('.main-content', { timeout: 5000 });\n\n    // Wait for at least one video item to appear (using multiple selector strategies)\n    // Try class selector first\n    let videoItems = await page.$$('.video-item');\n    // If not found, try to trigger home navigation (in case not on home)\n    if (videoItems.length === 0) {\n      const homeNav = await page.$('a.nav-item.active');\n      if (homeNav) {\n        await homeNav.click();\n        // Wait for possible rerender\n        await page.waitForTimeout(500);\n        await page.waitForSelector('.video-item', { timeout: 4000 });\n        videoItems = await page.$$('.video-item');\n      }\n    }\n    // If still not found, try alternative: look for elements with a likely video card structure\n    if (videoItems.length === 0) {\n      videoItems = await page.$$('xpath=//div[contains(@class,\"video-item\")]');\n    }\n\n    // Wait for at least one video item, up to 5 seconds\n    if (videoItems.length === 0) {\n      await page.waitForSelector('.video-item', { timeout: 5000 });\n      videoItems = await page.$$('.video-item');\n    }\n\n    // Count visible video items (filter those that are visible in viewport)\n    const visibleVideoCount = await page.evaluate(() => {\n      const items = Array.from(document.querySelectorAll('.video-item'));\n      // Only count those that are visible (offsetParent check)\n      return items.filter(el => el.offsetParent !== null).length;\n    });\n\n    // Log the result to the browser console\n    await page.evaluate((count) => {\n      console.log('Total visible video items on homepage:', count);\n    }, visibleVideoCount);\n\n    // Take screenshot after counting\n    const countShot = path.join(screenshotsDir, 'step_2_video_count.png');\n    await page.screenshot({ path: countShot });\n    screenshots.push(countShot);\n\n    return {\n      success: true,\n      action: \"Counted and displayed the total number of visible video items on the homepage in the console.\",\n      extractedData: {\n        visibleVideoItemCount: visibleVideoCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 25338,
+      "timestamp": "2025-09-15T11:28:32.315Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the main content area (robust root)\n    await page.waitForSelector('main.main-content', { timeout: 7000 });\n\n    // Wait for at least one .video-item to appear using multiple strategies:\n    //   1. CSS selector\n    //   2. XPath as fallback\n    let videoItems = [];\n    try {\n      await page.waitForSelector('.video-item', { timeout: 4000 });\n      videoItems = await page.$$('.video-item');\n    } catch {\n      // Fallback: try XPath for elements with class containing 'video-item'\n      await page.waitForXPath(\"//*[contains(@class, 'video-item')]\", { timeout: 4000 });\n      videoItems = await page.$x(\"//*[contains(@class, 'video-item')]\");\n    }\n\n    // If still empty, try a generic search for cards with a likely structure (robustness for UI changes)\n    if (!videoItems || videoItems.length === 0) {\n      videoItems = await page.$$('[class*=\"video-item\"], [data-type=\"video\"], .card.video');\n    }\n\n    // Count visible video items (filter out those not displayed)\n    let visibleCount = 0;\n    for (const el of videoItems) {\n      if (await el.isVisible()) visibleCount++;\n    }\n\n    // If nothing found, force a wait and try again (dynamic rendering scenario)\n    if (visibleCount === 0) {\n      await page.waitForTimeout(2000);\n      videoItems = await page.$$('.video-item');\n      for (const el of videoItems) {\n        if (await el.isVisible()) visibleCount++;\n      }\n    }\n\n    // Take screenshot after collecting video items\n    const afterCollectScreenshot = path.join(screenshotsDir, 'step_2_videos_collected.png');\n    await page.screenshot({ path: afterCollectScreenshot });\n    screenshots.push(afterCollectScreenshot);\n\n    // Display in the console the count (inject code into page context)\n    await page.evaluate((count) => {\n      // eslint-disable-next-line no-console\n      console.log(\"Total visible video items on homepage:\", count);\n    }, visibleCount);\n\n    return {\n      success: true,\n      action: \"Counted and displayed the total number of visible video items on the homepage using multiple selector strategies.\",\n      extractedData: {\n        videoItemCount: visibleCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14218,
+      "timestamp": "2025-09-15T11:28:57.653Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the main content area to be visible\n    // Use a different selector strategy: select main content via role and text\n    await page.waitForSelector('main.main-content', { timeout: 5000 });\n\n    // Wait for at least one video item to be present using XPath and partial class match (robust to class name changes)\n    // This is different from previous attempts which may have used direct .video-item class\n    const videoItemXpath = \"//div[contains(@class, 'video-item')]\";\n    await page.waitForSelector('xpath=' + videoItemXpath, { timeout: 5000 });\n\n    // Give extra time in case videos are rendered dynamically\n    await page.waitForTimeout(800);\n\n    // Count all visible video items using multiple strategies:\n    // 1. Direct class (but via querySelectorAll)\n    // 2. Fallback: all divs under main-content with a data-video-id attribute\n    // 3. Fallback: all divs with role=\"article\" under main-content\n    let videoCount = 0;\n    let videoHandles = await page.$$('main.main-content .video-item');\n    if (videoHandles.length === 0) {\n      videoHandles = await page.$$('main.main-content div[data-video-id]');\n    }\n    if (videoHandles.length === 0) {\n      videoHandles = await page.$$('main.main-content div[role=\"article\"]');\n    }\n    videoCount = videoHandles.length;\n\n    // Take screenshot with video items highlighted (bounding box)\n    if (videoCount > 0) {\n      for (const handle of videoHandles) {\n        await handle.evaluate(el => el.style.outline = '2px solid #0f9d58');\n      }\n    }\n    const screenshotWithVideos = path.join(screenshotsDir, 'step_2_video_items_highlighted.png');\n    await page.screenshot({ path: screenshotWithVideos });\n    screenshots.push(screenshotWithVideos);\n\n    // Log the count to the browser console\n    await page.evaluate(count => {\n      console.log(`YouTube Homepage Video Item Count: ${count}`);\n    }, videoCount);\n\n    return {\n      success: true,\n      action: `Counted and displayed the total number of visible video items (${videoCount}) on the homepage in the browser console.`,\n      extractedData: {\n        videoItemCount: videoCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14832,
+      "timestamp": "2025-09-15T11:29:11.871Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 54388,
+  "timestamp": "2025-09-15T11:28:32.315Z",
+  "savedAt": "2025-09-15T11:29:26.703Z",
+  "version": "1.0"
+}

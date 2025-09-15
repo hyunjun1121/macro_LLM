@@ -1,0 +1,63 @@
+{
+  "id": "Amazon_T005_1757936800464",
+  "website": "Amazon",
+  "task": {
+    "id": "T005",
+    "description": "Switch to List View Mode",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Perform a search, then click the list view button to switch from grid view to list view.",
+    "category": ".view-btn[title='List View'], .products-list",
+    "tags": [
+      "1. Perform any search 2. Locate list view button 3. Click list view button"
+    ],
+    "notes": "Products display changes to list format, list view button becomes active, products show in single column with more details"
+  },
+  "websiteInfo": {
+    "name": "Amazon",
+    "htmlFiles": [
+      "index.html",
+      "test_website.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Perform search\n    await page.waitForSelector('#searchInput');\n    await page.fill('#searchInput', 'electronics');\n    await page.click('button.search-btn');\n    \n    // Wait for search results to load\n    await page.waitForSelector('.product-item, .product-card, [data-product]', { timeout: 5000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_search.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_search.png'));\n\n    // Switch to list view using multiple selector strategies\n    const listViewSelectors = [\n      '.view-btn[title=\"List View\"]',\n      '.products-list',\n      'button:has-text(\"List View\")',\n      'button[title*=\"List\"]'\n    ];\n\n    let listViewClicked = false;\n    for (const selector of listViewSelectors) {\n      try {\n        await page.waitForSelector(selector, { timeout: 2000 });\n        await page.click(selector);\n        listViewClicked = true;\n        break;\n      } catch (e) {\n        continue;\n      }\n    }\n\n    if (!listViewClicked) {\n      throw new Error('List view button not found');\n    }\n\n    // Wait for view change and take final screenshot\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_list_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_list_view.png'));\n\n    // Verify list view is active by checking for list-specific classes\n    const viewMode = await page.evaluate(() => {\n      const listViewElements = document.querySelectorAll('.products-list, [class*=\"list\"], [class*=\"List\"]');\n      return listViewElements.length > 0 ? 'list' : 'grid';\n    });\n\n    return {\n      success: true,\n      action: \"Performed search for 'electronics' and switched to list view mode\",\n      extractedData: {\n        searchTerm: 'electronics',\n        viewMode: viewMode,\n        productsDisplayed: await page.$$eval('.product-item, [data-product]', els => els.length)\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 206272,
+      "timestamp": "2025-09-15T11:46:40.464Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Perform search\n    await page.waitForSelector('#searchInput', { timeout: 5000 });\n    await page.fill('#searchInput', 'electronics');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_filled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_filled.png'));\n\n    // Click search button\n    await page.click('button.search-btn');\n    await page.waitForLoadState('networkidle');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_results.png'));\n\n    // Wait for products to load and switch to list view\n    await page.waitForSelector('.view-btn[title=\"List View\"], .products-list', { timeout: 5000 });\n    \n    // Try multiple selector strategies for list view button\n    const listViewButton = await page.$('.view-btn[title=\"List View\"]') || \n                          await page.$('.products-list') ||\n                          await page.$('button:has-text(\"List View\")');\n    \n    if (listViewButton) {\n      await listViewButton.click();\n      await page.waitForTimeout(1000); // Wait for view to change\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_4_list_view.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_4_list_view.png'));\n      \n      // Verify list view is active by checking for list view specific elements\n      const listViewActive = await page.$('.product-list-view') || \n                           await page.$('.products-list.active') ||\n                           await page.$('body.list-view');\n      \n      return {\n        success: true,\n        action: \"Performed search for 'electronics' and switched to list view mode\",\n        extractedData: {\n          viewMode: listViewActive ? 'list' : 'unknown',\n          searchTerm: 'electronics'\n        },\n        screenshots,\n        error: null\n      };\n    } else {\n      throw new Error('List view button not found');\n    }\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 88057,
+      "timestamp": "2025-09-15T11:50:06.736Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Perform search first\n    await page.fill('#searchInput', 'laptop');\n    await page.click('button.search-btn');\n    \n    // Wait for search results to load\n    await page.waitForSelector('.products-container', { timeout: 5000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search_results.png'));\n\n    // Switch to list view using multiple selector strategies\n    const listViewSelectors = [\n      '.view-btn[title=\"List View\"]',\n      'button:has-text(\"List View\")',\n      '.products-list',\n      'button.view-mode-btn:last-child'\n    ];\n\n    let listViewButton = null;\n    for (const selector of listViewSelectors) {\n      listViewButton = await page.$(selector);\n      if (listViewButton) break;\n    }\n\n    if (!listViewButton) {\n      throw new Error('List view button not found');\n    }\n\n    await listViewButton.click();\n    \n    // Wait for view mode change\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_list_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_list_view.png'));\n\n    // Verify the view mode changed\n    const viewMode = await page.$eval('.products-container', el => \n      el.classList.contains('list-view') ? 'list' : 'grid'\n    );\n\n    return {\n      success: true,\n      action: \"Performed search for 'laptop' and switched to list view mode\",\n      extractedData: {\n        currentViewMode: viewMode,\n        searchTerm: 'laptop'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to switch to list view mode\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 110003,
+      "timestamp": "2025-09-15T11:51:34.793Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 404332,
+  "timestamp": "2025-09-15T11:46:40.464Z",
+  "savedAt": "2025-09-15T11:53:24.796Z",
+  "version": "1.0"
+}

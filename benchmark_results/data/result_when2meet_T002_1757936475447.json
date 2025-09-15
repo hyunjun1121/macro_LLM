@@ -1,0 +1,66 @@
+{
+  "id": "when2meet_T002_1757936475447",
+  "website": "when2meet",
+  "task": {
+    "id": "T002",
+    "description": "Open Join Event Modal",
+    "objective": "General",
+    "expectedResult": "Easy",
+    "difficulty": "Click the 'Join Event' button on the homepage to open the join modal dialog",
+    "category": "button[onclick='showJoinModal()']",
+    "tags": [
+      "Click the 'Join Event' button"
+    ],
+    "notes": "Modal element with id 'joinModal' becomes visible (display: block)"
+  },
+  "websiteInfo": {
+    "name": "when2meet",
+    "htmlFiles": [
+      "404.html",
+      "create.html",
+      "dashboard.html",
+      "event.html",
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the \"Join Event\" button in the hero section to appear\n    // Try multiple selector strategies: class, text, and xpath\n    const joinEventButtonSelector = 'button.btn.btn-secondary.btn-large';\n    await page.waitForSelector(joinEventButtonSelector, { timeout: 5000 });\n\n    // Double-check by text content as well\n    const [joinEventButton] = await page.$x(\"//button[contains(., 'Join Event') and contains(@class, 'btn-secondary')]\");\n    let buttonHandle = joinEventButton;\n    if (!buttonHandle) {\n      // Fallback to CSS selector\n      buttonHandle = await page.$(joinEventButtonSelector);\n    }\n\n    if (!buttonHandle) {\n      throw new Error(\"Join Event button not found on the homepage\");\n    }\n\n    // Click the \"Join Event\" button\n    await buttonHandle.click();\n\n    // Wait for the join modal dialog to appear\n    // Look for modal input field or modal close button as evidence\n    // Try to wait for the input with placeholder \"Enter event code or paste URL\"\n    const modalInputSelector = '#eventCode';\n    await page.waitForSelector(modalInputSelector, { timeout: 5000 });\n\n    // Take a screenshot after modal opens\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_join_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_join_modal_open.png'));\n\n    // Extract modal dialog visibility and input placeholder as verification\n    const modalVisible = await page.$eval(modalInputSelector, el => !!el && window.getComputedStyle(el).display !== 'none');\n    const modalInputPlaceholder = await page.$eval(modalInputSelector, el => el.getAttribute('placeholder'));\n\n    return {\n      success: true,\n      action: \"Clicked the 'Join Event' button on the homepage and opened the join modal dialog.\",\n      extractedData: {\n        modalVisible,\n        modalInputPlaceholder\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 10475,
+      "timestamp": "2025-09-15T11:41:15.447Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the \"Join Event\" button in the hero section using a different selector strategy\n    // We'll use XPath targeting both tag and visible text, to avoid relying on class only\n    const joinBtnXPath = \"//main//button[contains(., 'Join Event') and contains(@onclick, 'showJoinModal')]\";\n    await page.waitForSelector(`xpath=${joinBtnXPath}`, { timeout: 5000 });\n\n    // Extra: Ensure button is visible and enabled\n    const joinEventButton = await page.$(`xpath=${joinBtnXPath}`);\n    if (!joinEventButton) {\n      throw new Error(\"Join Event button not found via XPath selector\");\n    }\n    // Take a screenshot before clicking\n    const preClickShot = path.join(screenshotsDir, 'step_2_pre_click.png');\n    await page.screenshot({ path: preClickShot });\n    screenshots.push(preClickShot);\n\n    // Click the \"Join Event\" button\n    await joinEventButton.click();\n\n    // Wait for the join modal dialog to appear\n    // We'll look for an input with placeholder matching \"Enter event code\" as evidence\n    await page.waitForSelector('input[placeholder=\"Enter event code or paste URL\"]', { timeout: 4000 });\n\n    // Take screenshot of modal opened\n    const modalShot = path.join(screenshotsDir, 'step_3_modal_opened.png');\n    await page.screenshot({ path: modalShot });\n    screenshots.push(modalShot);\n\n    // Extract modal dialog presence and content for verification\n    // Get a handle to the input and the join modal's primary action button\n    const eventCodeInput = await page.$('input[placeholder=\"Enter event code or paste URL\"]');\n    const joinModalPrimaryBtn = await page.$('button.btn.btn-primary');\n\n    let extractedData = {\n      modalInputExists: !!eventCodeInput,\n      modalPrimaryBtnText: null,\n      modalVisible: false\n    };\n\n    if (joinModalPrimaryBtn) {\n      extractedData.modalPrimaryBtnText = await joinModalPrimaryBtn.innerText();\n    }\n    // Check if the modal is visible by looking for a close button \"×\" inside a modal container\n    const closeBtn = await page.$('button.modal-close');\n    extractedData.modalVisible = !!closeBtn;\n\n    return {\n      success: true,\n      action: \"Clicked the 'Join Event' button and verified the join modal dialog opened\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 27205,
+      "timestamp": "2025-09-15T11:41:25.922Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the \"Join Event\" button in the hero section using text and class selector (alternative approach)\n    const joinEventButtonSelector = \"//button[contains(@class,'btn-secondary') and contains(@class,'btn-large') and normalize-space(text())='Join Event']\";\n    await page.waitForSelector(joinEventButtonSelector, { state: 'visible', timeout: 5000 });\n\n    // Click the \"Join Event\" button using XPath\n    const [joinButton] = await page.$x(joinEventButtonSelector);\n    if (!joinButton) throw new Error('Join Event button not found');\n    await joinButton.click();\n\n    // Wait for the join modal dialog to appear; look for a unique input in the modal\n    // The event code input field appears in the modal, so wait for it\n    const eventCodeInputSelector = '#eventCode';\n    await page.waitForSelector(eventCodeInputSelector, { state: 'visible', timeout: 5000 });\n\n    // Take a screenshot of the modal open state\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_join_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_join_modal_open.png'));\n\n    // Extract data to verify modal: grab the modal title and check input placeholder\n    let modalTitle = '';\n    let eventCodePlaceholder = '';\n    try {\n      // Modal title is usually near the input\n      modalTitle = await page.$eval('div[role=\"dialog\"] h2, .modal h2, .modal-title', el => el.textContent.trim());\n    } catch (e) {\n      // Try fallback to input placeholder if modal title isn't present\n      modalTitle = '';\n    }\n    try {\n      eventCodePlaceholder = await page.$eval('#eventCode', el => el.placeholder);\n    } catch (e) {\n      eventCodePlaceholder = '';\n    }\n\n    return {\n      success: true,\n      action: \"Clicked the 'Join Event' button on the homepage and verified that the join event modal dialog opened.\",\n      extractedData: {\n        modalTitle,\n        eventCodePlaceholder,\n        modalInputVisible: !!eventCodePlaceholder\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15981,
+      "timestamp": "2025-09-15T11:41:53.127Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 53661,
+  "timestamp": "2025-09-15T11:41:15.447Z",
+  "savedAt": "2025-09-15T11:42:09.108Z",
+  "version": "1.0"
+}

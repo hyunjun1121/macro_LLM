@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_005_1757928837924",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_005",
+    "description": "General",
+    "objective": "Listing Card Image Navigation",
+    "expectedResult": "첫 번째 숙소 카드의 이미지 갤러리에서 '다음' 버튼을 3번 클릭하고 현재 이미지 인덱스 확인하기",
+    "difficulty": "Medium",
+    "category": ".listing-gallery .gallery-nav.next, .listing-gallery-images",
+    "tags": [
+      "Gallery navigation",
+      "style inspection"
+    ],
+    "notes": "이미지 갤러리의 transform 값 또는 현재 이미지 인덱스"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for listings to load and find first accommodation card\n    await page.waitForSelector('.listing-card', { timeout: 10000 });\n    \n    // Find first listing gallery\n    const firstGallery = await page.$('.listing-gallery');\n    if (!firstGallery) {\n      throw new Error('No listing gallery found');\n    }\n\n    // Wait for gallery navigation elements\n    await page.waitForSelector('.listing-gallery .gallery-nav.next', { timeout: 5000 });\n\n    // Take screenshot of first gallery state\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_gallery_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_gallery_initial.png'));\n\n    // Get initial image index\n    let initialIndex = await page.evaluate(() => {\n      const activeImage = document.querySelector('.listing-gallery-images .image-item.active');\n      return activeImage ? parseInt(activeImage.dataset.index) || 0 : 0;\n    });\n\n    // Click next button 3 times\n    for (let i = 0; i < 3; i++) {\n      await page.click('.listing-gallery .gallery-nav.next');\n      await page.waitForTimeout(500); // Wait for animation\n      \n      // Take screenshot after each click\n      await page.screenshot({ \n        path: path.join(screenshotsDir, `step_3_click_${i+1}.png`) \n      });\n      screenshots.push(path.join(screenshotsDir, `step_3_click_${i+1}.png`));\n    }\n\n    // Get final image index\n    const finalIndex = await page.evaluate(() => {\n      const activeImage = document.querySelector('.listing-gallery-images .image-item.active');\n      return activeImage ? parseInt(activeImage.dataset.index) || 0 : 0;\n    });\n\n    // Take final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_final.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_final.png'));\n\n    return {\n      success: true,\n      action: \"Clicked next button 3 times in first accommodation gallery and verified image index\",\n      extractedData: {\n        initialImageIndex: initialIndex,\n        finalImageIndex: finalIndex,\n        clicksPerformed: 3\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete gallery navigation task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 145696,
+      "timestamp": "2025-09-15T09:33:57.924Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for listings to load\n    await page.waitForSelector('.listing-card', { timeout: 10000 });\n\n    // Get first listing card\n    const firstListing = await page.$('.listing-card:first-child');\n    if (!firstListing) throw new Error('No listing cards found');\n\n    // Find gallery elements within first listing\n    const gallery = await firstListing.$('.listing-gallery');\n    if (!gallery) throw new Error('Gallery not found in first listing');\n\n    // Find next button\n    const nextButton = await gallery.$('.gallery-nav.next');\n    if (!nextButton) throw new Error('Next button not found in gallery');\n\n    // Find gallery images container\n    const imagesContainer = await gallery.$('.listing-gallery-images');\n    if (!imagesContainer) throw new Error('Gallery images container not found');\n\n    // Function to get current image index\n    const getCurrentImageIndex = async () => {\n      return await imagesContainer.evaluate(el => {\n        const activeImg = el.querySelector('img.active');\n        if (!activeImg) return 0;\n        return Array.from(el.querySelectorAll('img')).indexOf(activeImg);\n      });\n    };\n\n    // Click next button 3 times and record indices\n    const imageIndices = [];\n    \n    // Record initial index\n    const initialIndex = await getCurrentImageIndex();\n    imageIndices.push(initialIndex);\n\n    for (let i = 0; i < 3; i++) {\n      await nextButton.click();\n      await page.waitForTimeout(500); // Wait for animation\n      \n      const currentIndex = await getCurrentImageIndex();\n      imageIndices.push(currentIndex);\n      \n      // Take screenshot after each click\n      const screenshotPath = path.join(screenshotsDir, `step_2_click_${i+1}.png`);\n      await page.screenshot({ path: screenshotPath });\n      screenshots.push(screenshotPath);\n    }\n\n    return {\n      success: true,\n      action: \"Clicked next button in first listing gallery 3 times and recorded image indices\",\n      extractedData: {\n        imageIndices: imageIndices,\n        finalIndex: imageIndices[imageIndices.length - 1]\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 134651,
+      "timestamp": "2025-09-15T09:36:23.620Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for listing cards to load\n    await page.waitForSelector('.listing-card', { timeout: 10000 });\n\n    // Find first listing card and its gallery\n    const firstListing = await page.$('.listing-card:first-child');\n    if (!firstListing) throw new Error('No listing cards found');\n\n    // Hover over the listing to make gallery controls visible\n    await firstListing.hover();\n\n    // Wait for gallery navigation to be available\n    await page.waitForSelector('.listing-gallery .gallery-nav.next', { timeout: 5000 });\n\n    // Click next button 3 times with delays for animation\n    for (let i = 0; i < 3; i++) {\n      await page.click('.listing-gallery .gallery-nav.next');\n      await page.waitForTimeout(500); // Wait for animation\n      \n      // Take screenshot after each click\n      await page.screenshot({ path: path.join(screenshotsDir, `step_2_click_${i+1}.png`) });\n      screenshots.push(path.join(screenshotsDir, `step_2_click_${i+1}.png`));\n    }\n\n    // Get current image index by finding active image\n    const activeImageIndex = await page.evaluate(() => {\n      const gallery = document.querySelector('.listing-gallery-images');\n      if (!gallery) return null;\n      \n      const images = gallery.querySelectorAll('img, .gallery-image');\n      for (let i = 0; i < images.length; i++) {\n        if (images[i].classList.contains('active') || \n            getComputedStyle(images[i]).display !== 'none') {\n          return i + 1; // Return 1-based index\n        }\n      }\n      return null;\n    });\n\n    // Take final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_final.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_final.png'));\n\n    return {\n      success: true,\n      action: \"Clicked next button 3 times in first listing gallery and extracted current image index\",\n      extractedData: {\n        currentImageIndex: activeImageIndex\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete gallery navigation task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 112490,
+      "timestamp": "2025-09-15T09:38:38.271Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 392837,
+  "timestamp": "2025-09-15T09:33:57.924Z",
+  "savedAt": "2025-09-15T09:40:30.761Z",
+  "version": "1.0"
+}

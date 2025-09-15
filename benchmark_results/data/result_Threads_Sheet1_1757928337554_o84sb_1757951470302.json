@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337554_o84sb_1757951470302",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337554_o84sb",
+    "description": "G008",
+    "objective": "Switch to Activity View",
+    "expectedResult": "Click on Activity navigation item to view activity feed",
+    "difficulty": ".nav-item[data-view='activity']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation to load and click Activity item\n    await page.waitForSelector('.nav-item[data-view=\"activity\"]');\n    await page.click('.nav-item[data-view=\"activity\"]');\n    \n    // Wait for activity view to load and verify it's active\n    await page.waitForSelector('#activity-view.active', { timeout: 5000 });\n    \n    // Take screenshot after navigation\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_activity_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_activity_view.png'));\n\n    // Extract activity feed data\n    const activityCount = await page.$eval('#activity-badge', el => el.textContent.trim());\n    const activityItems = await page.$$eval('.activity-item', items => items.length);\n\n    return {\n      success: true,\n      action: \"Clicked on Activity navigation item and viewed activity feed\",\n      extractedData: {\n        notificationCount: activityCount,\n        activityItemsCount: activityItems\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 97196,
+      "timestamp": "2025-09-15T15:51:10.302Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation menu to load\n    await page.waitForSelector('.nav-menu');\n\n    // Click on Activity navigation item using CSS selector\n    const activityNavItem = await page.waitForSelector('.nav-item[data-view=\"activity\"]');\n    await activityNavItem.click();\n\n    // Wait for activity view to load and become visible\n    await page.waitForSelector('#activity-view.active', { timeout: 5000 });\n\n    // Take screenshot after clicking activity\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_activity_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_activity_view.png'));\n\n    // Extract activity feed data to verify completion\n    const activityData = await page.evaluate(() => {\n      const activityItems = document.querySelectorAll('.activity-item');\n      return Array.from(activityItems).map(item => ({\n        text: item.textContent.trim(),\n        timestamp: item.querySelector('.activity-time')?.textContent || null\n      }));\n    });\n\n    return {\n      success: true,\n      action: \"Clicked on Activity navigation item and loaded activity feed\",\n      extractedData: {\n        activityItemsCount: activityData.length,\n        activityItems: activityData\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to click Activity navigation item\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 135061,
+      "timestamp": "2025-09-15T15:52:47.499Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for navigation menu to load\n    await page.waitForSelector('.nav-menu', { timeout: 5000 });\n\n    // Click Activity navigation item using multiple selector strategies\n    const activitySelector = '.nav-item[data-view=\"activity\"]';\n    await page.waitForSelector(activitySelector, { timeout: 5000 });\n    await page.click(activitySelector);\n\n    // Wait for activity view to become active\n    await page.waitForSelector('.nav-item[data-view=\"activity\"].active', { timeout: 5000 });\n\n    // Wait for activity feed to load (check for notification badge or activity content)\n    await page.waitForSelector('#activity-badge, .activity-feed', { timeout: 5000 });\n\n    // Take screenshot after clicking activity\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_activity_view.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_activity_view.png'));\n\n    // Extract activity data to verify success\n    const activityBadge = await page.$eval('#activity-badge', el => el.textContent).catch(() => null);\n    const isActiveView = await page.$eval('.nav-item[data-view=\"activity\"]', el => el.classList.contains('active'));\n\n    return {\n      success: true,\n      action: \"Clicked on Activity navigation item to view activity feed\",\n      extractedData: {\n        activityNotificationCount: activityBadge,\n        isActivityViewActive: isActiveView\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 85025,
+      "timestamp": "2025-09-15T15:55:02.560Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 317283,
+  "timestamp": "2025-09-15T15:51:10.302Z",
+  "savedAt": "2025-09-15T15:56:27.585Z",
+  "version": "1.0"
+}

@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928345711_7ikyp_1757935395043",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928345711_7ikyp",
+    "description": 6,
+    "objective": "Regular",
+    "expectedResult": "Show comments on first post",
+    "difficulty": "Easy",
+    "category": "Click the comments button on first post to toggle comments display",
+    "tags": [
+      ".post:first-child .comment-toggle .comments-section"
+    ],
+    "notes": "showComments() toggleComments()"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click the comments button on the first post\n    await page.waitForSelector('button.community-link'); // Wait for community buttons to load\n    const firstPostCommentsButton = await page.$('button.community-link'); // Select the first post's comments button\n    await firstPostCommentsButton.click(); // Click the comments button\n\n    // Wait for comments to load\n    await page.waitForSelector('.comments-section'); // Adjust selector based on actual comments section\n\n    // Take screenshot after clicking comments button\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comments_displayed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_comments_displayed.png'));\n\n    // Extract comments data (if needed)\n    const comments = await page.evaluate(() => {\n      return Array.from(document.querySelectorAll('.comment')).map(comment => comment.innerText); // Adjust selector based on actual comment elements\n    });\n\n    return {\n      success: true,\n      action: \"Displayed comments on the first post\",\n      extractedData: { comments },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14814,
+      "timestamp": "2025-09-15T11:23:15.043Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click the comments button on the first post\n    await page.waitForSelector('.community-link'); // Wait for community links to load\n    const firstPostCommentsButton = await page.waitForSelector('button[data-testid=\"comments-button\"]:first-child'); // Using a hypothetical data-testid for the first comments button\n    await firstPostCommentsButton.click(); // Click to toggle comments\n\n    // Take a screenshot after clicking to show comments\n    await page.waitForTimeout(1000); // Wait for comments to load\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comments_visible.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_comments_visible.png'));\n\n    // Extract comments data (assuming a class for comments)\n    const commentsVisible = await page.evaluate(() => {\n      const comments = Array.from(document.querySelectorAll('.comment')).map(comment => comment.innerText);\n      return comments;\n    });\n\n    return {\n      success: true,\n      action: \"Clicked comments button on the first post to toggle comments display\",\n      extractedData: { comments: commentsVisible },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13449,
+      "timestamp": "2025-09-15T11:23:29.857Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first post's comments button to be visible\n    await page.waitForSelector('button:has-text(\"View Comments\")');\n\n    // Click the comments button on the first post to toggle comments display\n    await page.click('button:has-text(\"View Comments\")');\n\n    // Wait for comments to load\n    await page.waitForSelector('.comment-section'); // Replace with the actual class or selector for comments\n\n    // Take a screenshot after comments are displayed\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comments_displayed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_comments_displayed.png'));\n\n    // Extracting data to verify task completion\n    const comments = await page.$$eval('.comment', elements => elements.map(el => el.innerText)); // Replace '.comment' with the actual selector for comments\n    const commentsCount = comments.length;\n\n    return {\n      success: true,\n      action: \"Displayed comments on the first post\",\n      extractedData: {\n        comments: comments,\n        commentsCount: commentsCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13474,
+      "timestamp": "2025-09-15T11:23:43.306Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 41737,
+  "timestamp": "2025-09-15T11:23:15.043Z",
+  "savedAt": "2025-09-15T11:23:56.780Z",
+  "version": "1.0"
+}

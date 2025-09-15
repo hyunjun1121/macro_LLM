@@ -1,0 +1,64 @@
+{
+  "id": "TikTok_Sheet1_1757928345671_gma78_1757932134718",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928345671_gma78",
+    "description": 9,
+    "objective": "General",
+    "expectedResult": "댓글 모달에서 'Great content!' 댓글을 작성하고 전송",
+    "difficulty": "#commentInput에 'Great content!' 입력 후 #commentSendBtn 클릭",
+    "category": "Medium",
+    "tags": [
+      "#commentInput",
+      "#commentSendBtn",
+      "#commentsList"
+    ],
+    "notes": "#commentInput에 'Great content!' 입력 후 #commentSendBtn 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the comment input and send button to be visible\n    await page.waitForSelector('#commentInput');\n    await page.waitForSelector('#commentSendBtn');\n\n    // Input the comment\n    await page.fill('#commentInput', 'Great content!');\n\n    // Click the send button\n    await page.click('#commentSendBtn');\n\n    // Take a screenshot after sending the comment\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comment_sent.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_comment_sent.png'));\n\n    // Verify that the comment was sent (this could be a check for the comment appearing in the UI)\n    const commentText = await page.locator('.comment-text').innerText();\n    const commentSent = commentText.includes('Great content!');\n\n    return {\n      success: commentSent,\n      action: \"Comment 'Great content!' was sent successfully\",\n      extractedData: { comment: commentText },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14107,
+      "timestamp": "2025-09-15T10:28:54.718Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the comment input field and send button to be available\n    await page.waitForSelector('#commentInput');\n    await page.waitForSelector('#commentSendBtn');\n\n    // Input the comment\n    await page.fill('#commentInput', 'Great content!');\n\n    // Click the send button\n    await page.click('#commentSendBtn');\n\n    // Wait for confirmation of comment submission (adjust selector as necessary)\n    await page.waitForSelector('.comment-confirmation', { timeout: 5000 });\n\n    // Take a screenshot after submitting the comment\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comment_submitted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_comment_submitted.png'));\n\n    return {\n      success: true,\n      action: \"Comment 'Great content!' was submitted successfully.\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13524,
+      "timestamp": "2025-09-15T10:29:08.825Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the comment button to be visible and click it to open the comment modal\n    await page.waitForSelector('button.action-btn.comment-btn', { timeout: 5000 });\n    await page.click('button.action-btn.comment-btn');\n\n    // Wait for the comment input field to be visible\n    await page.waitForSelector('#commentInput', { timeout: 5000 });\n\n    // Type 'Great content!' into the comment input\n    await page.fill('#commentInput', 'Great content!');\n\n    // Wait for the send button to be clickable and click it to submit the comment\n    await page.waitForSelector('#commentSendBtn', { timeout: 5000 });\n    await page.click('#commentSendBtn');\n\n    // Take a screenshot after submitting the comment\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comment_submitted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_comment_submitted.png'));\n\n    // Verify the comment was submitted (this may need adjustment based on the actual implementation)\n    const commentText = await page.evaluate(() => {\n      const commentElements = Array.from(document.querySelectorAll('.comment-text'));\n      return commentElements.map(el => el.textContent).includes('Great content!');\n    });\n\n    return {\n      success: true,\n      action: \"Comment 'Great content!' submitted successfully\",\n      extractedData: { commentSubmitted: commentText },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14257,
+      "timestamp": "2025-09-15T10:29:22.349Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 41888,
+  "timestamp": "2025-09-15T10:28:54.718Z",
+  "savedAt": "2025-09-15T10:29:36.606Z",
+  "version": "1.0"
+}

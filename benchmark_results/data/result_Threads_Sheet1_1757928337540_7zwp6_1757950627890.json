@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928337540_7zwp6_1757950627890",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928337540_7zwp6",
+    "description": "G006",
+    "objective": "Bookmark First Thread",
+    "expectedResult": "Click the bookmark button on the first thread in the feed",
+    "difficulty": ".thread-item:first-child .thread-action[data-action='bookmark']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the first thread's bookmark button\n    const bookmarkSelector = \".thread-item:first-child .thread-action[data-action='bookmark']\";\n    await page.waitForSelector(bookmarkSelector, { timeout: 5000 });\n    \n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Click the bookmark button\n    await page.click(bookmarkSelector);\n    \n    // Wait for potential state changes\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    // Extract thread information for verification\n    const threadInfo = await page.$eval('.thread-item:first-child', el => ({\n      content: el.querySelector('.thread-content')?.textContent?.trim() || 'No content found',\n      author: el.querySelector('.thread-username')?.textContent?.trim() || 'Unknown author'\n    }));\n\n    return {\n      success: true,\n      action: \"Clicked bookmark button on the first thread in the feed\",\n      extractedData: threadInfo,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 102666,
+      "timestamp": "2025-09-15T15:37:07.890Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for threads feed to load and ensure first thread is present\n    await page.waitForSelector('#threads-feed');\n    await page.waitForSelector('.thread-item:first-child');\n    \n    // Take screenshot after threads are loaded\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_threads_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_threads_loaded.png'));\n\n    // Click bookmark button using multiple selector strategies\n    const bookmarkButton = await page.waitForSelector('.thread-item:first-child .thread-action[data-action=\"bookmark\"]');\n    await bookmarkButton.click();\n\n    // Wait for bookmark action to complete and take final screenshot\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_bookmark_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_bookmark_clicked.png'));\n\n    // Extract data to verify bookmark action\n    const bookmarkState = await page.evaluate(() => {\n      const button = document.querySelector('.thread-item:first-child .thread-action[data-action=\"bookmark\"]');\n      return {\n        isBookmarked: button.classList.contains('active'),\n        buttonText: button.textContent.trim(),\n        dataAction: button.getAttribute('data-action')\n      };\n    });\n\n    return {\n      success: true,\n      action: \"Clicked bookmark button on the first thread in the feed\",\n      extractedData: bookmarkState,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 126184,
+      "timestamp": "2025-09-15T15:38:50.556Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for threads to load\n    await page.waitForSelector('.threads-feed', { timeout: 5000 });\n\n    // Wait for the first thread item to be visible\n    await page.waitForSelector('.thread-item:first-child', { timeout: 5000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_threads_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_threads_loaded.png'));\n\n    // Find and click the bookmark button using multiple selector strategies\n    const bookmarkButton = await page.$('.thread-item:first-child .thread-action[data-action=\"bookmark\"]');\n    \n    if (bookmarkButton) {\n      await bookmarkButton.click();\n      await page.waitForTimeout(1000); // Wait for animation/state change\n      \n      // Take screenshot after clicking bookmark\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_3_bookmark_clicked.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_3_bookmark_clicked.png'));\n      \n      // Extract data to verify success\n      const threadId = await page.$eval('.thread-item:first-child', el => el.dataset.threadId || 'unknown');\n      const isBookmarked = await page.$eval('.thread-item:first-child .thread-action[data-action=\"bookmark\"]', \n        el => el.classList.contains('active') || el.getAttribute('aria-pressed') === 'true');\n      \n      return {\n        success: true,\n        action: \"Clicked bookmark button on first thread\",\n        extractedData: {\n          threadId: threadId,\n          isBookmarked: isBookmarked\n        },\n        screenshots,\n        error: null\n      };\n    } else {\n      throw new Error('Bookmark button not found');\n    }\n  } catch (error) {\n    // Take error screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n    \n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 67704,
+      "timestamp": "2025-09-15T15:40:56.740Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 296554,
+  "timestamp": "2025-09-15T15:37:07.890Z",
+  "savedAt": "2025-09-15T15:42:04.445Z",
+  "version": "1.0"
+}

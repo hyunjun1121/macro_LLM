@@ -1,0 +1,62 @@
+{
+  "id": "Threads_Sheet1_1757928320233_iolc7_1757934577362",
+  "website": "Threads",
+  "task": {
+    "id": "Sheet1_1757928320233_iolc7",
+    "description": "G012",
+    "objective": "Open Profile View",
+    "expectedResult": "Click on Profile navigation item to view current user's profile",
+    "difficulty": ".nav-item[data-view='profile']",
+    "category": 1,
+    "tags": [
+      "5 seconds"
+    ],
+    "notes": "No"
+  },
+  "websiteInfo": {
+    "name": "Threads",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar navigation to be visible\n    await page.waitForSelector('.sidebar .nav-menu');\n\n    // Wait for the Profile nav item to be present\n    const profileNavSelector = \".nav-item[data-view='profile']\";\n    await page.waitForSelector(profileNavSelector, { state: 'visible' });\n\n    // Take screenshot before clicking profile\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_profile_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_profile_click.png'));\n\n    // Click the Profile nav item\n    const profileNav = await page.$(profileNavSelector);\n    await profileNav.click();\n\n    // Wait for the profile view to become visible\n    // The profile view likely contains the current user's username or handle\n    // Wait for a heading or username text to appear in the main content\n    // Try to wait for a unique element in the profile view\n    // We'll look for the username \"current_user\" or handle \"@current_user\"\n    let profileUsernameSelector = \"//span[contains(@class,'username') and (text()='current_user')]\";\n    let profileHandleSelector = \"//span[contains(@class,'user-handle') and (text()='@current_user')]\";\n    let foundProfile = false;\n\n    try {\n      await page.waitForSelector(profileUsernameSelector, { timeout: 3000, state: 'visible' });\n      foundProfile = true;\n    } catch {\n      // Try handle selector as fallback\n      try {\n        await page.waitForSelector(profileHandleSelector, { timeout: 2000, state: 'visible' });\n        foundProfile = true;\n      } catch {}\n    }\n\n    // Take screenshot after clicking profile\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_profile_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_profile_click.png'));\n\n    // Extract profile username and handle for verification\n    let extractedData = {};\n    if (foundProfile) {\n      const username = await page.$eval(\"span.username\", el => el.textContent.trim());\n      const handle = await page.$eval(\"span.user-handle\", el => el.textContent.trim());\n      extractedData.username = username;\n      extractedData.handle = handle;\n    }\n\n    return {\n      success: foundProfile,\n      action: \"Clicked on Profile navigation item and viewed current user's profile\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 10865,
+      "timestamp": "2025-09-15T11:09:37.362Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file and wait for network to be idle\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const initialPath = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialPath });\n    screenshots.push(initialPath);\n\n    // Wait for the sidebar navigation menu to be present\n    await page.waitForSelector('nav.sidebar ul.nav-menu', { timeout: 7000 });\n\n    // Strategy: Use XPath to locate the \"Profile\" nav item by its icon and text\n    // Try to be robust against class and order changes\n    const xpathProfileNav = \"//li[contains(@class, 'nav-item') and .//span[normalize-space()='Profile'] and .//i[contains(@class, 'fa-user')]]\";\n    const [profileNav] = await page.$x(xpathProfileNav);\n\n    if (!profileNav) {\n      throw new Error(\"Profile navigation item not found via XPath\");\n    }\n\n    // Scroll into view just in case, then click\n    await profileNav.evaluate(node => node.scrollIntoView({ block: 'center' }));\n    await profileNav.click();\n\n    // Wait for the profile view to be loaded\n    // Strategy: Wait for an element that is unique to the profile view\n    // We'll wait for the .main-content to contain the username of current user\n    await page.waitForSelector('.main-content', { timeout: 7000 });\n\n    // Wait for a span containing the current username in the profile area\n    // (from mock data, username is \"current_user\")\n    await page.waitForSelector('span.username', { timeout: 5000 });\n    // Optionally, check for the profile header or stats\n    // Wait for the \"Followers\" or \"Threads\" label to appear in the profile, if available\n\n    // Take screenshot after clicking Profile\n    const afterClickPath = path.join(screenshotsDir, 'step_2_profile_view.png');\n    await page.screenshot({ path: afterClickPath });\n    screenshots.push(afterClickPath);\n\n    // Extract displayed username and handle from the profile area for verification\n    const username = await page.$eval('span.username', el => el.textContent.trim());\n    const userHandle = await page.$eval('span.user-handle', el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Clicked the Profile navigation item and loaded the current user's profile view.\",\n      extractedData: {\n        username,\n        userHandle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 19097,
+      "timestamp": "2025-09-15T11:09:48.227Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file and wait for the network to be idle\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n    await page.waitForSelector('.sidebar', { timeout: 5000 });\n\n    // Take initial screenshot of the home view\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the navigation menu to be rendered\n    await page.waitForSelector('ul.nav-menu li.nav-item', { timeout: 3000 });\n\n    // Try to locate the \"Profile\" navigation item using multiple strategies\n    // 1. By data-view attribute (primary)\n    let profileNav = await page.$(\"li.nav-item[data-view='profile']\");\n    // 2. By text content fallback\n    if (!profileNav) {\n      const navItems = await page.$$('li.nav-item');\n      for (const item of navItems) {\n        const text = await item.innerText();\n        if (text && text.toLowerCase().includes('profile')) {\n          profileNav = item;\n          break;\n        }\n      }\n    }\n    // 3. As last resort, by icon+span\n    if (!profileNav) {\n      profileNav = await page.$(\"li.nav-item:has(i.fa-user)\");\n    }\n\n    if (!profileNav) {\n      throw new Error(\"Could not find Profile navigation item\");\n    }\n\n    // Scroll into view just in case\n    await profileNav.scrollIntoViewIfNeeded();\n\n    // Hover for visibility and then click\n    await profileNav.hover();\n    await page.waitForTimeout(200); // minor wait for hover effect\n    await profileNav.click();\n\n    // Wait for the profile view to render\n    // The profile view is likely to contain the current user's username and handle\n    // We'll look for the username in a span or h2/h3 element\n    await page.waitForTimeout(400); // allow JS to switch views\n\n    // Try several strategies to confirm we are on the profile view:\n    // 1. Look for the username \"current_user\" or handle \"@current_user\"\n    let profileUsernameEl = await page.$(\"span.username\");\n    let profileHandleEl = await page.$(\"span.user-handle\");\n    let username = null, handle = null;\n    if (profileUsernameEl) username = (await profileUsernameEl.innerText()).trim();\n    if (profileHandleEl) handle = (await profileHandleEl.innerText()).trim();\n\n    // 2. If not found, seek in the main content area for a header with the username\n    if (!username) {\n      const mainContent = await page.$('.main-content');\n      if (mainContent) {\n        const header = await mainContent.$('h2');\n        if (header) {\n          username = (await header.innerText()).trim();\n        }\n      }\n    }\n\n    // Take screenshot after clicking Profile\n    const afterClickScreenshot = path.join(screenshotsDir, 'step_2_after_profile_click.png');\n    await page.screenshot({ path: afterClickScreenshot });\n    screenshots.push(afterClickScreenshot);\n\n    // Prepare extractedData for verification\n    const extractedData = {\n      username,\n      handle,\n      url: page.url(),\n      profileNavText: (await profileNav.innerText()).trim()\n    };\n\n    // Success if we see the current_user username or handle\n    const isOnProfile =\n      (username && username.toLowerCase().includes('current_user')) ||\n      (handle && handle.toLowerCase().includes('@current_user'));\n\n    return {\n      success: isOnProfile,\n      action: \"Clicked on 'Profile' navigation item and viewed current user's profile\",\n      extractedData,\n      screenshots,\n      error: isOnProfile ? null : \"Profile view was not detected after navigation\"\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 27692,
+      "timestamp": "2025-09-15T11:10:07.324Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 57654,
+  "timestamp": "2025-09-15T11:09:37.362Z",
+  "savedAt": "2025-09-15T11:10:35.016Z",
+  "version": "1.0"
+}

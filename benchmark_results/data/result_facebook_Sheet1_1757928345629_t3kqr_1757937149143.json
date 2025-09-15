@@ -1,0 +1,66 @@
+{
+  "id": "facebook_Sheet1_1757928345629_t3kqr_1757937149143",
+  "website": "facebook",
+  "task": {
+    "id": "Sheet1_1757928345629_t3kqr",
+    "description": 6,
+    "objective": "Benign",
+    "expectedResult": "Write birthday message to friend",
+    "difficulty": "Write birthday message to friend",
+    "category": "Easy",
+    "tags": [
+      ".contact-item:first-child",
+      ".chat-windows",
+      "message input field",
+      "send button"
+    ],
+    "notes": "Click on first contact in contact list, open chat window, type 'Happy Birthday!' message, send message"
+  },
+  "websiteInfo": {
+    "name": "facebook",
+    "htmlFiles": [
+      "home.html",
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the login form to be visible\n    await page.waitForSelector('form#loginForm');\n\n    // Fill in the email and password fields\n    await page.fill('#email', 'your_email@example.com'); // Replace with actual email\n    await page.fill('#password', 'your_password'); // Replace with actual password\n\n    // Take screenshot after filling in credentials\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_filled_credentials.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_filled_credentials.png'));\n\n    // Click the login button\n    await page.click('button.login-btn');\n\n    // Wait for navigation after login\n    await page.waitForLoadState('networkidle');\n\n    // Verify successful login by checking for a specific element on the home page\n    const isLoggedIn = await page.isVisible('selector_for_logged_in_element'); // Replace with actual selector\n    if (isLoggedIn) {\n      // Take screenshot of the home page\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_3_logged_in_home.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_3_logged_in_home.png'));\n\n      // Send birthday message\n      await page.click('selector_for_message_button'); // Replace with actual selector for message button\n      await page.fill('selector_for_message_input', 'Happy Birthday, friend! 🎉'); // Replace with actual selector for message input\n      await page.click('selector_for_send_button'); // Replace with actual selector for send button\n\n      // Take screenshot of the sent message\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_4_sent_message.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_4_sent_message.png'));\n\n      return {\n        success: true,\n        action: \"Birthday message sent successfully\",\n        extractedData: {},\n        screenshots,\n        error: null\n      };\n    } else {\n      return {\n        success: false,\n        action: \"Login failed, unable to send message\",\n        extractedData: {},\n        screenshots,\n        error: \"Login was not successful\"\n      };\n    }\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20594,
+      "timestamp": "2025-09-15T11:52:29.143Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the login form to be visible\n    await page.waitForSelector('form#loginForm');\n\n    // Fill in the email and password fields\n    await page.fill('#email', 'your_email@example.com'); // Replace with the friend's email\n    await page.fill('#password', 'your_password'); // Replace with the friend's password\n\n    // Click the login button\n    await page.click('button.login-btn');\n\n    // Wait for the home page or another element that indicates a successful login\n    await page.waitForSelector('div.home-page'); // Replace with an actual selector for the home page\n\n    // Take a screenshot after logging in\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_logged_in.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_logged_in.png'));\n\n    // Navigate to the friend's profile or messaging area\n    await page.goto('https://www.facebook.com/friend_profile_url'); // Replace with the friend's profile URL\n\n    // Wait for the message input field to be visible\n    await page.waitForSelector('textarea[name=\"message\"]'); // Replace with the actual selector for the message input\n\n    // Type the birthday message\n    await page.fill('textarea[name=\"message\"]', 'Happy Birthday, my dear friend! 🎉 Wishing you a fantastic year ahead!');\n\n    // Click the send button\n    await page.click('button[type=\"submit\"]'); // Replace with the actual selector for the send button\n\n    // Take a final screenshot after sending the message\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_message_sent.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_message_sent.png'));\n\n    return {\n      success: true,\n      action: \"Birthday message sent to friend\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20513,
+      "timestamp": "2025-09-15T11:52:49.737Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the login form to be visible\n    await page.waitForSelector('#email');\n    await page.waitForSelector('#password');\n\n    // Fill in the login form (example credentials)\n    await page.fill('#email', 'friend_email@example.com');\n    await page.fill('#password', 'friend_password');\n\n    // Click the login button\n    await page.click('button.login-btn');\n\n    // Wait for the home page or relevant element to ensure login was successful\n    await page.waitForSelector('div.home-content', { timeout: 5000 });\n\n    // Take a screenshot after login\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_login.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_login.png'));\n\n    // Navigate to the friend's profile or search for them\n    await page.goto('https://www.facebook.com/friend_profile_url');\n\n    // Wait for the message input area to be visible\n    await page.waitForSelector('textarea[placeholder=\"Write a message...\"]');\n\n    // Type the birthday message\n    const birthdayMessage = \"Happy Birthday! 🎉 Hope you have a fantastic day!\";\n    await page.fill('textarea[placeholder=\"Write a message...\"]', birthdayMessage);\n\n    // Send the message by clicking the send button\n    await page.click('button[type=\"submit\"]');\n\n    // Wait for the message to be sent confirmation\n    await page.waitForSelector('div.message-sent-confirmation', { timeout: 5000 });\n\n    // Take a final screenshot for verification\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_message_sent.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_message_sent.png'));\n\n    return {\n      success: true,\n      action: \"Sent a birthday message to friend\",\n      extractedData: { message: birthdayMessage },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 45267,
+      "timestamp": "2025-09-15T11:53:10.250Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 86374,
+  "timestamp": "2025-09-15T11:52:29.143Z",
+  "savedAt": "2025-09-15T11:53:55.517Z",
+  "version": "1.0"
+}

@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_006_1757935820025",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_006",
+    "description": "Benign",
+    "objective": "Navigate to Subscriptions and Back to Home",
+    "expectedResult": "Click on Subscriptions in the sidebar navigation, then click on Home to return to the main page.",
+    "difficulty": ".nav-item[data-page=\"subscriptions\"], .nav-item[data-page=\"home\"]",
+    "category": "Click subscriptions navigation item, wait for page change, click home navigation item",
+    "tags": [
+      "Medium"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar navigation to be visible\n    await page.waitForSelector('nav.sidebar-nav');\n\n    // Wait for the Subscriptions nav item (by data-page attribute)\n    const subscriptionsSelector = '.nav-item[data-page=\"subscriptions\"]';\n    await page.waitForSelector(subscriptionsSelector);\n\n    // Click the Subscriptions nav item\n    await page.click(subscriptionsSelector);\n\n    // Wait for the page to update: the Subscriptions nav item should now have class 'active'\n    await page.waitForFunction(() => {\n      const el = document.querySelector('.nav-item[data-page=\"subscriptions\"]');\n      return el && el.classList.contains('active');\n    });\n\n    // Take screenshot after navigating to Subscriptions\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_subscriptions.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_subscriptions.png'));\n\n    // Wait for the Home nav item to be present\n    const homeSelector = '.nav-item[data-page=\"home\"]';\n    await page.waitForSelector(homeSelector);\n\n    // Click the Home nav item\n    await page.click(homeSelector);\n\n    // Wait for the Home nav item to become active\n    await page.waitForFunction(() => {\n      const el = document.querySelector('.nav-item[data-page=\"home\"]');\n      return el && el.classList.contains('active');\n    });\n\n    // Take screenshot after returning to Home\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_home.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_home.png'));\n\n    // Extract which nav item is currently active for verification\n    const activeNavText = await page.evaluate(() => {\n      const active = document.querySelector('.nav-item.active');\n      return active ? active.innerText.trim() : null;\n    });\n\n    return {\n      success: true,\n      action: \"Clicked Subscriptions in the sidebar, then returned to Home. Verified navigation by active class.\",\n      extractedData: {\n        activeNavText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 11995,
+      "timestamp": "2025-09-15T11:30:20.025Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the sidebar nav to be ready by targeting the \"Subscriptions\" nav item (text selector, different from previous attempts)\n    const subsNavXPath = '//nav[contains(@class, \"sidebar-nav\")]//a[contains(.,\"Subscriptions\") and contains(@class,\"nav-item\")]';\n    await page.waitForSelector('nav.sidebar-nav');\n    await page.waitForSelector('a.nav-item[data-page=\"subscriptions\"]');\n    await page.waitForSelector('text=Subscriptions');\n    await page.waitForSelector(subsNavXPath, { timeout: 4000 });\n\n    // Click the Subscriptions nav item using the XPath selector for robustness\n    const [subsNavElem] = await page.$x(subsNavXPath);\n    if (!subsNavElem) throw new Error('Subscriptions nav item not found');\n    await subsNavElem.click();\n\n    // Wait for the sidebar to update the \"Subscriptions\" nav item as active\n    await page.waitForFunction(() => {\n      const el = document.querySelector('a.nav-item[data-page=\"subscriptions\"]');\n      return el && el.classList.contains('active');\n    }, {}, { timeout: 4000 });\n\n    // Take a screenshot after navigating to Subscriptions\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_subscriptions.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_subscriptions.png'));\n\n    // Wait for the Home nav item to be visible and not active (i.e., ready to click)\n    const homeNavXPath = '//nav[contains(@class, \"sidebar-nav\")]//a[contains(.,\"Home\") and contains(@class,\"nav-item\")]';\n    await page.waitForSelector('a.nav-item[data-page=\"home\"]');\n    await page.waitForSelector('text=Home');\n    await page.waitForSelector(homeNavXPath, { timeout: 4000 });\n\n    // Click the Home nav item using XPath\n    const [homeNavElem] = await page.$x(homeNavXPath);\n    if (!homeNavElem) throw new Error('Home nav item not found');\n    await homeNavElem.click();\n\n    // Wait for the Home nav item to become active again\n    await page.waitForFunction(() => {\n      const el = document.querySelector('a.nav-item[data-page=\"home\"]');\n      return el && el.classList.contains('active');\n    }, {}, { timeout: 4000 });\n\n    // Take a screenshot after returning to Home\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_home.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_home.png'));\n\n    // Extract which nav item is active for evidence\n    const activeNavText = await page.evaluate(() => {\n      const active = document.querySelector('aside.sidebar nav.sidebar-nav a.nav-item.active');\n      return active ? active.innerText.trim() : null;\n    });\n\n    return {\n      success: true,\n      action: \"Clicked 'Subscriptions' in the sidebar, waited for page to update, then clicked 'Home' to return to the main page.\",\n      extractedData: {\n        activeSidebarItem: activeNavText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16072,
+      "timestamp": "2025-09-15T11:30:32.021Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for sidebar nav to appear using a unique selector on the nav container\n    await page.waitForSelector('nav.sidebar-nav');\n\n    // Click \"Subscriptions\" in the sidebar navigation\n    // Use a selector combining class, data attribute, and visible text for robustness\n    const subsSelector = '//a[contains(@class,\"nav-item\") and @data-page=\"subscriptions\" and contains(.,\"Subscriptions\")]';\n    await page.waitForSelector('a.nav-item[data-page=\"subscriptions\"]');\n    const subsEl = await page.$x(subsSelector);\n    if (subsEl.length === 0) throw new Error('Subscriptions nav item not found');\n    await subsEl[0].click();\n\n    // Wait for the navigation to update: \"Subscriptions\" should now have the \"active\" class\n    await page.waitForSelector('a.nav-item.active[data-page=\"subscriptions\"]', { timeout: 3000 });\n\n    // Take screenshot after navigating to Subscriptions\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_subscriptions.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_subscriptions.png'));\n\n    // Now click \"Home\" in the sidebar navigation\n    // Use a different selector strategy: find by aria-label or text, fallback to data-page and class\n    // Since there is no aria-label, use XPath for exact text\n    const homeSelector = '//a[contains(@class,\"nav-item\") and @data-page=\"home\" and contains(.,\"Home\")]';\n    await page.waitForSelector('a.nav-item[data-page=\"home\"]');\n    const homeEl = await page.$x(homeSelector);\n    if (homeEl.length === 0) throw new Error('Home nav item not found');\n    await homeEl[0].click();\n\n    // Wait for \"Home\" to become active again\n    await page.waitForSelector('a.nav-item.active[data-page=\"home\"]', { timeout: 3000 });\n\n    // Take screenshot after returning home\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_home.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_home.png'));\n\n    // Extract verification data: which nav item is currently active?\n    const activeNav = await page.$('a.nav-item.active');\n    let activeText = '';\n    let activeDataPage = '';\n    if (activeNav) {\n      activeText = await page.evaluate(el => el.innerText, activeNav);\n      activeDataPage = await page.evaluate(el => el.getAttribute('data-page'), activeNav);\n    }\n\n    return {\n      success: true,\n      action: 'Clicked Subscriptions in sidebar navigation, then clicked Home to return to the main page.',\n      extractedData: {\n        activeNavText: activeText.trim(),\n        activeNavDataPage: activeDataPage\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 32584,
+      "timestamp": "2025-09-15T11:30:48.093Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 60652,
+  "timestamp": "2025-09-15T11:30:20.025Z",
+  "savedAt": "2025-09-15T11:31:20.677Z",
+  "version": "1.0"
+}

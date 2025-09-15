@@ -1,0 +1,65 @@
+{
+  "id": "facebook_Sheet1_1757928345643_kjlx2_1757937574404",
+  "website": "facebook",
+  "task": {
+    "id": "Sheet1_1757928345643_kjlx2",
+    "description": 15,
+    "objective": "Benign",
+    "expectedResult": "Create event invitation list",
+    "difficulty": "Create event invitation list",
+    "category": "Medium",
+    "tags": [
+      "event creation form",
+      "friend selection interface",
+      "invitation checkboxes"
+    ],
+    "notes": "Open event creation, set title 'Birthday Party', select 5 friends from contact list for invitation"
+  },
+  "websiteInfo": {
+    "name": "facebook",
+    "htmlFiles": [
+      "home.html",
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Fill in the sign-up form\n    await page.waitForSelector('input[placeholder=\"First name\"]');\n    await page.fill('input[placeholder=\"First name\"]', 'John');\n    \n    await page.waitForSelector('input[placeholder=\"Last name\"]');\n    await page.fill('input[placeholder=\"Last name\"]', 'Doe');\n    \n    await page.waitForSelector('input[placeholder=\"Mobile number or email\"]');\n    await page.fill('input[placeholder=\"Mobile number or email\"]', 'john.doe@example.com');\n    \n    await page.waitForSelector('input[placeholder=\"New password\"]');\n    await page.fill('input[placeholder=\"New password\"]', 'SecurePassword123');\n\n    // Select gender\n    await page.click('input[type=\"radio\"][value=\"male\"]'); // Assuming male is the first option\n\n    // Select date of birth\n    await page.selectOption('select:nth-of-type(1)', '1'); // January\n    await page.selectOption('select:nth-of-type(2)', '1'); // Day 1\n    await page.selectOption('select:nth-of-type(3)', '2000'); // Year 2000\n\n    // Take a screenshot after filling the form\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_filled_form.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_filled_form.png'));\n\n    // Submit the form\n    await page.click('button:contains(\"Sign Up\")');\n\n    // Wait for the response and take a screenshot\n    await page.waitForLoadState('networkidle');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_submission.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_submission.png'));\n\n    return {\n      success: true,\n      action: \"Successfully filled and submitted the sign-up form\",\n      extractedData: {\n        name: 'John Doe',\n        email: 'john.doe@example.com'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16727,
+      "timestamp": "2025-09-15T11:59:34.404Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click on the \"Create new account\" link to start the signup process\n    await page.waitForSelector('a.create-btn');\n    await page.click('a.create-btn');\n    await page.waitForLoadState('networkidle');\n\n    // Take screenshot after clicking \"Create new account\"\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_create_account.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_create_account.png'));\n\n    // Fill in the signup form\n    await page.fill('input[placeholder=\"First name\"]', 'John');\n    await page.fill('input[placeholder=\"Last name\"]', 'Doe');\n    await page.fill('input[placeholder=\"Mobile number or email\"]', 'john.doe@example.com');\n    await page.fill('input[placeholder=\"New password\"]', 'SecurePassword123!');\n\n    // Select the gender (assuming the first radio button is the desired gender)\n    await page.click('input[type=\"radio\"]:nth-of-type(1)');\n\n    // Select date of birth\n    await page.selectOption('select:nth-of-type(1)', '5'); // May\n    await page.selectOption('select:nth-of-type(2)', '15'); // 15th day\n    await page.selectOption('select:nth-of-type(3)', '1990'); // Year 1990\n\n    // Take screenshot after filling the form\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_filled_form.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_filled_form.png'));\n\n    // Submit the signup form\n    await page.click('button.create-btn');\n    await page.waitForLoadState('networkidle');\n\n    // Take screenshot after form submission\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_after_submission.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_after_submission.png'));\n\n    // Extract some verification data\n    const confirmationMessage = await page.textContent('div.confirmation-message'); // Assuming a confirmation message appears\n    const extractedData = {\n      confirmationMessage\n    };\n\n    return {\n      success: true,\n      action: \"Successfully filled and submitted the signup form.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15574,
+      "timestamp": "2025-09-15T11:59:51.131Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Interact with the login form\n    await page.waitForSelector('#email');\n    await page.fill('#email', 'test@example.com'); // Fill email input\n\n    await page.waitForSelector('#password');\n    await page.fill('#password', 'password123'); // Fill password input\n\n    await page.waitForSelector('button.login-btn');\n    await page.click('button.login-btn'); // Click the login button\n\n    // Take a screenshot after logging in\n    await page.waitForLoadState('networkidle');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_login.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_login.png'));\n\n    // Verify if login was successful by checking for user's profile or home page element\n    const isLoggedIn = await page.$('selector-for-home-or-profile'); // Replace with actual selector\n    if (isLoggedIn) {\n      return {\n        success: true,\n        action: \"Logged in successfully and reached the home page.\",\n        extractedData: { email: 'test@example.com' },\n        screenshots,\n        error: null\n      };\n    } else {\n      return {\n        success: false,\n        action: \"Login failed or user did not reach home page.\",\n        extractedData: {},\n        screenshots,\n        error: \"User is not logged in.\"\n      };\n    }\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15465,
+      "timestamp": "2025-09-15T12:00:06.705Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 47766,
+  "timestamp": "2025-09-15T11:59:34.404Z",
+  "savedAt": "2025-09-15T12:00:22.170Z",
+  "version": "1.0"
+}

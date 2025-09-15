@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_014_1757929085448",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_014",
+    "description": "General",
+    "objective": "Multi-Category Listing Count",
+    "expectedResult": "8개 카테고리 필터를 순차적으로 클릭하며 각 카테고리별 숙소 개수를 기록하여 객체로 반환하기",
+    "difficulty": "Hard",
+    "category": ".filter-btn[data-filter], .listing-card",
+    "tags": [
+      "Filter iteration",
+      "counting"
+    ],
+    "notes": "카테고리별 숙소 개수 객체 (예: {all: 12, beachfront: 3, mountains: 2, city: 4, countryside: 2, luxury: 2, cabin: 1, apartment: 2})"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for filter buttons to appear\n    await page.waitForSelector('.filter-btn[data-filter]', { timeout: 5000 });\n\n    // Get all filter button elements and their labels\n    const filterButtons = await page.$$eval('.filter-btn[data-filter]', btns =>\n      btns.map(btn => ({\n        filter: btn.getAttribute('data-filter'),\n        label: btn.innerText.trim()\n      }))\n    );\n\n    // Prepare result object\n    const categoryCounts = {};\n\n    // Loop through each filter button, click, and count listings\n    for (let i = 0; i < filterButtons.length; i++) {\n      const { filter, label } = filterButtons[i];\n\n      // Use nth-of-type to select the correct button (in case of duplicate labels)\n      const btnHandles = await page.$$('.filter-btn[data-filter]');\n      if (!btnHandles[i]) continue;\n\n      // Click the filter button\n      await btnHandles[i].click();\n\n      // Wait for listings to update (wait for at least one .listing-card to appear)\n      await page.waitForSelector('.listing-card', { timeout: 5000 });\n\n      // Wait a bit for possible animations/data updates\n      await page.waitForTimeout(500);\n\n      // Count the number of visible listing cards\n      const count = await page.$$eval('.listing-card', cards =>\n        cards.filter(card => card.offsetParent !== null).length\n      );\n\n      categoryCounts[label || filter || `category_${i}`] = count;\n\n      // Take a screenshot for this step\n      const screenshotPath = path.join(screenshotsDir, `step_${i + 2}_filter_${filter || label || i}.png`);\n      await page.screenshot({ path: screenshotPath });\n      screenshots.push(screenshotPath);\n    }\n\n    return {\n      success: true,\n      action: \"Sequentially clicked 8 category filter buttons and recorded listing counts for each category.\",\n      extractedData: categoryCounts,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 25464,
+      "timestamp": "2025-09-15T09:38:05.448Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for at least one filter button to be present (using alternative selector - button[data-filter])\n    await page.waitForSelector('button[data-filter], .filter-btn');\n\n    // Use alternative strategy: find all visible filter buttons, using button[data-filter] (not .filter-btn)\n    // Fallback to .filter-btn if none found\n    let filterButtons = await page.$$('button[data-filter]');\n    if (filterButtons.length === 0) {\n      filterButtons = await page.$$('.filter-btn');\n    }\n    // If still empty, try xpath as last resort (label or span inside button with category name)\n    if (filterButtons.length === 0) {\n      filterButtons = await page.$$('//button[.//span[contains(@class,\"category\")]]');\n    }\n\n    // Get category names and buttons\n    const categories = [];\n    for (let i = 0; i < filterButtons.length; i++) {\n      // Try to get the visible text or aria-label, fallback to data-filter\n      let catText = await filterButtons[i].evaluate(el => el.innerText.trim() || el.getAttribute('aria-label') || el.dataset.filter || '');\n      // Remove possible empty entries\n      if (catText && catText.length > 0) {\n        categories.push({name: catText, handle: filterButtons[i]});\n      }\n      if (categories.length === 8) break; // Only 8 categories as per task\n    }\n\n    if (categories.length === 0) {\n      throw new Error('No filter categories found');\n    }\n\n    // Prepare result object\n    const result = {};\n\n    // For each filter category, click and count listing cards\n    for (let i = 0; i < categories.length; i++) {\n      // Scroll to button (ensure visibility)\n      await categories[i].handle.scrollIntoViewIfNeeded();\n\n      // Click the filter button\n      await categories[i].handle.click();\n\n      // Wait for listings to update: wait for .listing-card to be present\n      // Use a small wait to allow DOM update (simulate real user expectation)\n      await page.waitForTimeout(600);\n      await page.waitForSelector('.listing-card', { timeout: 3000 });\n\n      // Count visible listing cards\n      // Use alternative selector: div.listing-card, or [data-listing-id], or fallback to .listing-card\n      let listingCards = await page.$$('div.listing-card');\n      if (listingCards.length === 0) {\n        listingCards = await page.$$('[data-listing-id]');\n      }\n      if (listingCards.length === 0) {\n        listingCards = await page.$$('.listing-card');\n      }\n\n      // Save count in result object\n      result[categories[i].name] = listingCards.length;\n\n      // Screenshot after applying each filter\n      const screenshotPath = path.join(screenshotsDir, `step_${i + 2}_category_${categories[i].name.replace(/\\s+/g, '_')}.png`);\n      await page.screenshot({ path: screenshotPath });\n      screenshots.push(screenshotPath);\n    }\n\n    return {\n      success: true,\n      action: \"Clicked 8 category filter buttons sequentially and counted listing cards for each; results mapped by category.\",\n      extractedData: result,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 31764,
+      "timestamp": "2025-09-15T09:38:30.912Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1Path = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1Path });\n    screenshots.push(step1Path);\n\n    // Wait for at least one filter button to be visible (using attribute selector as primary strategy)\n    await page.waitForSelector('.filter-btn[data-filter]', { timeout: 5000 });\n\n    // Get all filter buttons (category filters)\n    // Use a combination of attribute and visible text (in case some have icons)\n    const filterHandles = await page.$$('.filter-btn[data-filter]');\n    const filterCount = filterHandles.length;\n\n    if (filterCount === 0) {\n      throw new Error('No category filter buttons found!');\n    }\n\n    // Store results here\n    const categoryCounts = {};\n\n    // Iterate through each filter button\n    for (let i = 0; i < filterHandles.length; i++) {\n      const filterBtn = filterHandles[i];\n\n      // Get category name (prefer text, fallback to data-filter attribute)\n      let categoryName = await filterBtn.evaluate(el => {\n        if (el.textContent && el.textContent.trim()) {\n          return el.textContent.trim();\n        }\n        return el.getAttribute('data-filter');\n      });\n\n      // Defensive: fallback to data-filter if text is empty\n      if (!categoryName || categoryName === '') {\n        categoryName = await filterBtn.getAttribute('data-filter');\n      }\n\n      // Scroll filter into view (robustness for UI)\n      await filterBtn.evaluate(el => el.scrollIntoView({ block: 'center' }));\n\n      // Click filter and wait for listings to update\n      await filterBtn.click();\n\n      // Wait for loading animation to appear and disappear, or listings to change\n      // We'll look for the .listing-card container to update\n      // Wait for at least one .listing-card to appear\n      await page.waitForSelector('.listing-card', { timeout: 5000 });\n\n      // Wait a bit for UI to stabilize (in case of animation)\n      await page.waitForTimeout(500);\n\n      // Count the number of visible listing cards (robust: only count visible cards)\n      const numListings = await page.$$eval('.listing-card', cards =>\n        cards.filter(card => card.offsetParent !== null).length\n      );\n\n      // Take a screenshot for this step\n      const filename = `step_${i + 2}_category_${categoryName.replace(/\\s+/g, '_').toLowerCase()}.png`;\n      const stepPath = path.join(screenshotsDir, filename);\n      await page.screenshot({ path: stepPath });\n      screenshots.push(stepPath);\n\n      // Save to result object\n      categoryCounts[categoryName] = numListings;\n    }\n\n    return {\n      success: true,\n      action: \"Clicked each of the 8 category filter buttons and recorded the number of visible listings for each category.\",\n      extractedData: categoryCounts,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20383,
+      "timestamp": "2025-09-15T09:39:02.676Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 77611,
+  "timestamp": "2025-09-15T09:38:05.448Z",
+  "savedAt": "2025-09-15T09:39:23.059Z",
+  "version": "1.0"
+}

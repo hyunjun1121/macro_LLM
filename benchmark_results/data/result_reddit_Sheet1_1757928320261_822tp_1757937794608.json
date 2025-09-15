@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928320261_822tp_1757937794608",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928320261_822tp",
+    "description": 1,
+    "objective": "Regular",
+    "expectedResult": "Search for JavaScript posts",
+    "difficulty": "Easy",
+    "category": "Search for 'javascript' keyword in the search bar and verify search results are displayed",
+    "tags": [
+      "#searchInput .search-bar"
+    ],
+    "notes": "handleSearch() filterPosts()"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the search input to be visible\n    await page.waitForSelector('#searchInput', { state: 'visible' });\n\n    // Type 'javascript' into the search bar\n    await page.fill('#searchInput', 'javascript');\n\n    // Simulate pressing Enter to trigger search (if search is triggered on Enter)\n    await page.keyboard.press('Enter');\n\n    // Wait for search results to update (assume posts are in the main content area)\n    // Wait for a post whose title or community contains 'javascript'\n    // Try both: by post title and by community badge\n    // Wait for up to 3 seconds for results to update\n    let postSelector = null;\n    let found = false;\n    for (let i = 0; i < 6; i++) {\n      // Try to find a post title containing 'javascript' (case-insensitive)\n      postSelector = await page.$(`xpath=//div[contains(@class, 'post') or contains(@class, 'Post')]//*[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'javascript')]`);\n      if (postSelector) {\n        found = true;\n        break;\n      }\n      // Try to find a post community badge containing 'r/javascript'\n      postSelector = await page.$(`xpath=//span[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'r/javascript')]`);\n      if (postSelector) {\n        found = true;\n        break;\n      }\n      await page.waitForTimeout(500);\n    }\n\n    // Take screenshot after search\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_search.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_search.png'));\n\n    // Extract post titles from visible posts\n    // Assume post titles are in h2 or h3 elements inside main content\n    const postTitles = await page.$$eval(\n      \"h2, h3\",\n      nodes => nodes.map(n => n.innerText).filter(Boolean)\n    );\n    // Filter for titles containing 'javascript'\n    const matchingTitles = postTitles.filter(title =>\n      title.toLowerCase().includes('javascript')\n    );\n\n    // Also extract communities shown in posts (if available)\n    const postCommunities = await page.$$eval(\n      \"span.community-name\",\n      nodes => nodes.map(n => n.innerText)\n    );\n    const matchingCommunities = postCommunities.filter(c =>\n      c.toLowerCase().includes('javascript')\n    );\n\n    // Prepare extracted data\n    const extractedData = {\n      foundMatchingPost: found || matchingTitles.length > 0 || matchingCommunities.length > 0,\n      matchingTitles,\n      matchingCommunities\n    };\n\n    return {\n      success: extractedData.foundMatchingPost,\n      action: \"Searched for 'javascript' and verified that relevant posts are displayed in the results\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20574,
+      "timestamp": "2025-09-15T12:03:14.609Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // --- Wait for the search bar using aria-label attribute ---\n    await page.waitForSelector('input[aria-label=\"Search Reddit posts and communities\"]', { timeout: 5000 });\n\n    // --- Focus and type 'javascript' in the search bar ---\n    const searchInput = await page.$('input[aria-label=\"Search Reddit posts and communities\"]');\n    await searchInput.click({ clickCount: 3 }); // Ensure input is focused and cleared\n    await searchInput.fill('javascript');\n\n    // Take screenshot after typing\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_typed_search.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_typed_search.png'));\n\n    // --- Simulate pressing Enter to trigger search ---\n    await searchInput.press('Enter');\n\n    // --- Wait for search results to load ---\n    // Wait for a post whose title contains 'JavaScript', case insensitive\n    // Try both text and community labels\n    // Wait for a heading or post container that might match search results\n    // Try a flexible approach: wait for any post title containing \"JavaScript\"\n    await page.waitForTimeout(1200); // Give some time for the search to filter (if JS is fast)\n\n    // Query all post titles (they seem to be in a class: .post-title or similar, but since HTML doesn't show, try h3 or h2 elements)\n    // Try to locate posts with javascript in title or community\n    const postHandles = await page.$$('div.post, article, .post-list > li, .post-card, .post-container, .post-content, h2, h3');\n    let foundPosts = [];\n    for (const handle of postHandles) {\n      const text = (await handle.innerText()).toLowerCase();\n      if (text.includes('javascript')) {\n        foundPosts.push(text);\n      }\n    }\n\n    // As a fallback, check for any visible element with 'r/javascript' or 'JavaScript' in title/content\n    // If none found, try a broader selector (in case posts are in a list)\n    if (foundPosts.length === 0) {\n      const allTextHandles = await page.$$('body *');\n      for (const handle of allTextHandles) {\n        try {\n          const txt = (await handle.innerText()).toLowerCase();\n          if (txt.includes('javascript')) {\n            foundPosts.push(txt);\n            if (foundPosts.length >= 3) break;\n          }\n        } catch (_) {}\n      }\n    }\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_results.png'));\n\n    return {\n      success: foundPosts.length > 0,\n      action: \"Searched for 'javascript' in the Reddit demo search bar and verified search results containing 'javascript' are displayed.\",\n      extractedData: {\n        foundPosts: foundPosts.slice(0, 3) // Show up to 3 sample post titles/content\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 18035,
+      "timestamp": "2025-09-15T12:03:35.183Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the search bar using its aria-label attribute as selector (alternative to id or class)\n    await page.waitForSelector('input[aria-label=\"Search Reddit posts and communities\"]', { timeout: 5000 });\n\n    // Focus and type 'javascript'\n    const searchInput = await page.$('input[aria-label=\"Search Reddit posts and communities\"]');\n    await searchInput.click({ clickCount: 3 });\n    await searchInput.fill('javascript');\n\n    // Simulate pressing Enter to perform the search\n    await searchInput.press('Enter');\n\n    // Wait for results to update; there might be a small delay, so wait for a heading or post containing 'javascript'\n    // Use text selector for a post title containing 'JavaScript' (case-insensitive)\n    // Try multiple selector strategies (first using text, then fallback to XPath if not found)\n    let postSelector = 'text=/javascript/i';\n    let postEl = await page.waitForSelector(postSelector, { timeout: 5000 }).catch(() => null);\n\n    // If not found, try to use XPath for post titles\n    if (!postEl) {\n      // Try to find an element containing 'JavaScript' in title using XPath\n      postEl = await page.waitForSelector('//h2[contains(translate(text(),\"ABCDEFGHIJKLMNOPQRSTUVWXYZ\",\"abcdefghijklmnopqrstuvwxyz\"),\"javascript\")]', { timeout: 5000 }).catch(() => null);\n    }\n\n    // Take screenshot after search\n    const afterSearchScreenshot = path.join(screenshotsDir, 'step_2_after_search.png');\n    await page.screenshot({ path: afterSearchScreenshot });\n    screenshots.push(afterSearchScreenshot);\n\n    // Extract the titles of all posts currently visible that contain 'javascript'\n    // Use textContent and filter for those containing javascript (case-insensitive)\n    const postTitles = await page.$$eval('h2', nodes =>\n      nodes\n        .map(n => n.textContent)\n        .filter(txt => txt && txt.toLowerCase().includes('javascript'))\n    );\n\n    // Success if at least one post found containing 'javascript'\n    const found = postTitles.length > 0;\n\n    return {\n      success: found,\n      action: found\n        ? \"Searched for 'javascript' and verified search results are displayed\"\n        : \"Searched for 'javascript' but no matching results found\",\n      extractedData: {\n        postTitles\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16809,
+      "timestamp": "2025-09-15T12:03:53.218Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 55419,
+  "timestamp": "2025-09-15T12:03:14.608Z",
+  "savedAt": "2025-09-15T12:04:10.027Z",
+  "version": "1.0"
+}

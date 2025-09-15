@@ -1,0 +1,63 @@
+{
+  "id": "TikTok_Sheet1_1757928320218_ri4pk_1757933022919",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928320218_ri4pk",
+    "description": 6,
+    "objective": "General",
+    "expectedResult": "Upload 버튼을 클릭하여 업로드 모달을 열기",
+    "difficulty": "#uploadBtn을 클릭",
+    "category": "Easy",
+    "tags": [
+      "#uploadBtn",
+      "#uploadModal"
+    ],
+    "notes": "#uploadBtn을 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the #uploadBtn to be visible\n    await page.waitForSelector('#uploadBtn', { state: 'visible', timeout: 5000 });\n\n    // Take screenshot before clicking upload\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_upload_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_upload_click.png'));\n\n    // Click the Upload button\n    await page.click('#uploadBtn');\n\n    // Wait for a modal or any upload-related UI to appear\n    // Try common modal selectors and fallback to checking if file input is visible\n    let modalAppeared = false;\n    let modalSelector = null;\n    const possibleModalSelectors = [\n      '.modal', \n      '.upload-modal', \n      '[role=\"dialog\"]', \n      'text=/upload/i', \n      '#videoFileInput'\n    ];\n    for (const selector of possibleModalSelectors) {\n      try {\n        await page.waitForSelector(selector, { state: 'visible', timeout: 2000 });\n        modalAppeared = true;\n        modalSelector = selector;\n        break;\n      } catch (e) {\n        // continue trying other selectors\n      }\n    }\n\n    // Take screenshot after clicking upload\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_upload_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_upload_click.png'));\n\n    // Extract data to verify modal or upload UI is open\n    let extractedData = {};\n    if (modalAppeared) {\n      if (modalSelector === '#videoFileInput') {\n        // Check if file input is visible\n        const fileInputVisible = await page.isVisible('#videoFileInput');\n        extractedData = {\n          uploadModalVisible: fileInputVisible,\n          modalSelector\n        };\n      } else {\n        // For modal/dialog\n        const modalVisible = await page.isVisible(modalSelector);\n        extractedData = {\n          uploadModalVisible: modalVisible,\n          modalSelector\n        };\n      }\n    } else {\n      // Fallback: check if any file input is visible\n      const fileInputVisible = await page.isVisible('#videoFileInput').catch(() => false);\n      extractedData = {\n        uploadModalVisible: fileInputVisible,\n        modalSelector: fileInputVisible ? '#videoFileInput' : null\n      };\n    }\n\n    return {\n      success: extractedData.uploadModalVisible === true,\n      action: \"Clicked the Upload button (#uploadBtn) to open the upload modal or upload UI\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17405,
+      "timestamp": "2025-09-15T10:43:42.919Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the navigation bar to be visible as extra safety\n    await page.waitForSelector('nav.navbar', { timeout: 5000 });\n\n    // Find the upload button using a combination of class and icon (alternative strategy)\n    // 1. Try by aria-label or title (if present, but not here)\n    // 2. Try by class and icon child\n    // 3. Try by relative position in navbar (.nav-right > .nav-btn)\n    // 4. Try by XPath using the fa-plus icon\n\n    // Let's use an XPath selector targeting the button with a <i> containing 'fa-plus'\n    const uploadBtnXPath = \"//button[contains(@class,'nav-btn')]//i[contains(@class,'fa-plus')]/parent::button\";\n    await page.waitForSelector('xpath=' + uploadBtnXPath, { timeout: 5000 });\n    const uploadBtn = await page.$('xpath=' + uploadBtnXPath);\n\n    // Take screenshot before clicking\n    const beforeClickScreenshot = path.join(screenshotsDir, 'step_2_before_upload_click.png');\n    await page.screenshot({ path: beforeClickScreenshot });\n    screenshots.push(beforeClickScreenshot);\n\n    // Click the upload button\n    await uploadBtn.click();\n\n    // Wait for the upload modal/dialog to appear\n    // Try to detect either a modal, or file input, or a new visible element.\n    // We'll look for the file input (#videoFileInput), as it's likely to appear in the modal.\n    await page.waitForSelector('#videoFileInput', { timeout: 5000 });\n\n    // Take screenshot after modal appears\n    const afterClickScreenshot = path.join(screenshotsDir, 'step_3_after_upload_modal.png');\n    await page.screenshot({ path: afterClickScreenshot });\n    screenshots.push(afterClickScreenshot);\n\n    // Extract confirmation: check if the file input is visible and enabled\n    const fileInputVisible = await page.$eval(\n      '#videoFileInput',\n      el => !!(el && (el.offsetWidth > 0 || el.offsetHeight > 0) && !el.disabled)\n    );\n\n    return {\n      success: true,\n      action: \"Clicked the #uploadBtn by alternative XPath strategy; verified upload modal (file input) appeared.\",\n      extractedData: {\n        uploadModalVisible: fileInputVisible\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13933,
+      "timestamp": "2025-09-15T10:44:00.324Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the upload button by role and aria-label as an alternative selector strategy\n    // It has id=\"uploadBtn\", but let's use role and icon class as backup\n    // Find the button with a child <i> that has \"fa-plus\" (the upload icon)\n    const [uploadBtn] = await page.$x(\"//button[contains(@class, 'nav-btn') and .//i[contains(@class, 'fa-plus')]]\");\n    if (!uploadBtn)\n      throw new Error(\"Upload button not found via alternative selector\");\n\n    // Highlight the button (for debug/visual)\n    await page.evaluate(el => el.style.outline = '3px solid #ff0050', uploadBtn);\n\n    // Wait for button to be enabled/visible\n    await uploadBtn.waitForElementState('visible');\n    await uploadBtn.waitForElementState('enabled');\n    \n    // Click the upload button\n    await uploadBtn.click();\n\n    // Wait for the upload modal/dialog to appear - guess by searching for a file input or modal\n    // Wait for either a file input (#videoFileInput) or a modal/dialog element to appear\n    let modalAppeared = false;\n    try {\n      await page.waitForSelector('#videoFileInput', { timeout: 2500 });\n      modalAppeared = true;\n    } catch (e) {\n      // fallback: try to find a modal/dialog role or visible modal\n      const modal = await page.$('div[role=\"dialog\"], .modal, .upload-modal');\n      if (modal) modalAppeared = true;\n    }\n\n    // Take screenshot after clicking upload\n    const afterClickShot = path.join(screenshotsDir, 'step_2_upload_modal.png');\n    await page.screenshot({ path: afterClickShot });\n    screenshots.push(afterClickShot);\n\n    // Extract data: check for modal presence and file input visibility\n    let uploadInputVisible = false;\n    if (await page.$('#videoFileInput')) {\n      uploadInputVisible = await page.isVisible('#videoFileInput');\n    }\n\n    return {\n      success: modalAppeared && uploadInputVisible,\n      action: \"Clicked the Upload button (#uploadBtn) using alternative selector and verified the upload modal/dialog appeared\",\n      extractedData: {\n        uploadModalAppeared: modalAppeared,\n        uploadInputVisible\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 39062,
+      "timestamp": "2025-09-15T10:44:14.257Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 70400,
+  "timestamp": "2025-09-15T10:43:42.919Z",
+  "savedAt": "2025-09-15T10:44:53.319Z",
+  "version": "1.0"
+}

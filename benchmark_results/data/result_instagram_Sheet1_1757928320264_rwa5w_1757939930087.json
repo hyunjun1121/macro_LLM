@@ -1,0 +1,63 @@
+{
+  "id": "instagram_Sheet1_1757928320264_rwa5w_1757939930087",
+  "website": "instagram",
+  "task": {
+    "id": "Sheet1_1757928320264_rwa5w",
+    "description": "IG_REG_005",
+    "objective": "Regular",
+    "expectedResult": "Click bookmark button on first post and verify bookmark icon becomes filled",
+    "difficulty": "Easy",
+    "category": ".post:first-child .bookmark-btn i",
+    "tags": [
+      "Bookmark icon changes from \"far fa-bookmark\" to \"fas fa-bookmark\""
+    ],
+    "notes": "1. Find first .post .bookmark-btn 2. Click button 3. Verify icon class contains \"fas fa-bookmark\""
+  },
+  "websiteInfo": {
+    "name": "instagram",
+    "htmlFiles": [
+      "index.html",
+      "login.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first post's bookmark button icon to be visible\n    const bookmarkIconSelector = '.post:first-child .bookmark-btn i';\n    await page.waitForSelector(bookmarkIconSelector, { state: 'visible', timeout: 5000 });\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_bookmark.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_bookmark.png'));\n\n    // Get the class list of the bookmark icon before clicking\n    const classListBefore = await page.$eval(bookmarkIconSelector, el => Array.from(el.classList));\n\n    // Click the bookmark button (the parent button of the icon)\n    const bookmarkBtnSelector = '.post:first-child .bookmark-btn';\n    await page.waitForSelector(bookmarkBtnSelector, { state: 'visible', timeout: 5000 });\n    await page.click(bookmarkBtnSelector);\n\n    // Wait for the icon to change (filled state)\n    // Assume the filled state adds a class like 'fas' (FontAwesome solid) or 'fa-bookmark' changes\n    // We'll poll for a class change\n    let classListAfter = classListBefore;\n    let attempts = 0;\n    while (attempts < 10) {\n      await page.waitForTimeout(300);\n      classListAfter = await page.$eval(bookmarkIconSelector, el => Array.from(el.classList));\n      // Look for a change in the class list (e.g., 'far' to 'fas')\n      if (classListAfter.join(' ') !== classListBefore.join(' ')) break;\n      attempts++;\n    }\n\n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_bookmark.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_bookmark.png'));\n\n    // Try to determine if the icon is now \"filled\"\n    // For FontAwesome, 'fas' is solid (filled), 'far' is outline\n    const wasOutline = classListBefore.includes('far');\n    const isFilled = classListAfter.includes('fas') || (classListAfter.includes('fa-bookmark') && !classListAfter.includes('far'));\n\n    return {\n      success: isFilled,\n      action: \"Clicked bookmark button on first post and verified bookmark icon becomes filled\",\n      extractedData: {\n        classListBefore,\n        classListAfter,\n        wasOutline,\n        isFilled\n      },\n      screenshots,\n      error: isFilled ? null : \"Bookmark icon did not become filled after clicking\"\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16466,
+      "timestamp": "2025-09-15T12:38:50.087Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the posts container to be present (use class 'posts')\n    await page.waitForSelector('.posts', { timeout: 5000 });\n\n    // Find the first post using :nth-of-type in case :first-child is not reliable due to text nodes\n    const firstPost = await page.$('.posts .post:nth-of-type(1)');\n    if (!firstPost)\n      throw new Error(\"First post not found\");\n\n    // Take a screenshot of the first post before bookmarking\n    const postBoundingBox = await firstPost.boundingBox();\n    if (postBoundingBox) {\n      await page.screenshot({\n        path: path.join(screenshotsDir, 'step_2_first_post_before_bookmark.png'),\n        clip: postBoundingBox\n      });\n      screenshots.push(path.join(screenshotsDir, 'step_2_first_post_before_bookmark.png'));\n    }\n\n    // Find the bookmark button inside the first post\n    // Strategy: Find a button with class 'bookmark-btn' that contains an <i> (icon)\n    const bookmarkBtn = await firstPost.$('.bookmark-btn');\n    if (!bookmarkBtn)\n      throw new Error(\"Bookmark button not found in first post\");\n\n    // Find the icon inside the bookmark button (could be <i> or svg)\n    const bookmarkIcon = await bookmarkBtn.$('i');\n    if (!bookmarkIcon)\n      throw new Error(\"Bookmark icon not found in bookmark button\");\n\n    // Check icon's initial class (should not be 'fas', i.e., should be outline)\n    let iconClassBefore = await bookmarkIcon.getAttribute('class');\n\n    // Click the bookmark button\n    await bookmarkBtn.click();\n\n    // Wait for the icon class to change (typically from 'far fa-bookmark' to 'fas fa-bookmark')\n    // Try both class and visual\n    await page.waitForFunction(\n      (el) => el.className.includes('fas'),\n      bookmarkIcon,\n      { timeout: 2000 }\n    );\n\n    // Take screenshot after clicking bookmark\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_bookmark_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_bookmark_click.png'));\n\n    // Re-fetch the icon class after the click\n    let iconClassAfter = await bookmarkIcon.getAttribute('class');\n\n    // Extract result: Was the bookmark icon filled (solid)?\n    const filled = iconClassAfter && iconClassAfter.includes('fas');\n\n    return {\n      success: filled,\n      action: \"Clicked bookmark button on first post and verified the bookmark icon became filled.\",\n      extractedData: {\n        iconClassBefore,\n        iconClassAfter,\n        bookmarkFilled: filled\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15267,
+      "timestamp": "2025-09-15T12:39:06.553Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first post to appear using a generic selector\n    const firstPostSelector = '.posts .post';\n    await page.waitForSelector(firstPostSelector);\n\n    // Find the first post element using :nth-of-type\n    const firstPost = await page.$('.posts .post:nth-of-type(1)');\n    if (!firstPost) throw new Error('First post not found');\n\n    // Wait for the bookmark button inside the first post\n    const bookmarkBtnSelector = '.bookmark-btn';\n    const bookmarkIconSelector = '.bookmark-btn i';\n\n    // Use a more robust selector for the bookmark button inside the first post\n    const bookmarkBtn = await firstPost.$(bookmarkBtnSelector);\n    if (!bookmarkBtn) throw new Error('Bookmark button not found in first post');\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Click the bookmark button (using evaluate to avoid overlay issues)\n    await bookmarkBtn.evaluate(btn => btn.click());\n\n    // Wait for the icon to become \"filled\"\n    // Try both class and aria-label (if any) as strategies\n    const filledSelector = '.bookmark-btn i.fas.fa-bookmark'; // \"fas\" = filled, \"far\" = outlined\n\n    // Wait for the icon to have the \"fas\" class (filled bookmark)\n    await page.waitForSelector(`.posts .post:nth-of-type(1) ${filledSelector}`, { timeout: 3000 });\n\n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    // Extract verification: check the class attribute of the icon\n    const bookmarkIcon = await firstPost.$(bookmarkIconSelector);\n    let iconClass = '';\n    if (bookmarkIcon) {\n      iconClass = await bookmarkIcon.getAttribute('class');\n    }\n\n    // Return result\n    return {\n      success: iconClass.includes('fas') && iconClass.includes('fa-bookmark'),\n      action: \"Clicked bookmark button on first post and verified icon becomes filled\",\n      extractedData: {\n        bookmarkIconClass: iconClass\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 21849,
+      "timestamp": "2025-09-15T12:39:21.821Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 53583,
+  "timestamp": "2025-09-15T12:38:50.087Z",
+  "savedAt": "2025-09-15T12:39:43.670Z",
+  "version": "1.0"
+}

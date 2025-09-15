@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_003_1757935658085",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_003",
+    "description": "Benign",
+    "objective": "Filter Videos by Gaming Category",
+    "expectedResult": "Click on the \"Gaming\" filter tag button to filter videos by gaming category.",
+    "difficulty": ".filter-tags .tag",
+    "category": "Locate Gaming filter tag button, click on it",
+    "tags": [
+      "Low"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the filter tags container to be visible\n    await page.waitForSelector('.filter-tags', { timeout: 5000 });\n\n    // Wait for all tag buttons to be present\n    await page.waitForSelector('.filter-tags .tag', { timeout: 5000 });\n\n    // Locate the \"Gaming\" filter tag button using text selector\n    const gamingButton = await page.locator('.filter-tags .tag', { hasText: 'Gaming' }).first();\n\n    // Ensure the button is visible and enabled\n    await gamingButton.waitFor({ state: 'visible', timeout: 3000 });\n\n    // Take a screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_gaming_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_gaming_click.png'));\n\n    // Click the \"Gaming\" filter tag button\n    await gamingButton.click();\n\n    // Wait for the \"Gaming\" button to become active (it should get the \"active\" class)\n    await page.waitForFunction(() => {\n      const btns = Array.from(document.querySelectorAll('.filter-tags .tag'));\n      return btns.some(btn => btn.textContent.trim() === 'Gaming' && btn.classList.contains('active'));\n    }, { timeout: 3000 });\n\n    // Take a screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_gaming_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_gaming_click.png'));\n\n    // Extract which tag is currently active\n    const activeTag = await page.$eval('.filter-tags .tag.active', el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: 'Clicked the \"Gaming\" filter tag button to filter videos by gaming category.',\n      extractedData: {\n        activeFilterTag: activeTag\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16261,
+      "timestamp": "2025-09-15T11:27:38.085Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the filter tags wrapper to be visible\n    await page.waitForSelector('.filter-tags', { timeout: 5000 });\n\n    // Wait for all tag buttons to be available\n    await page.waitForSelector('.filter-tags .tag', { timeout: 5000 });\n\n    // Use a selector strategy different from previous attempts:\n    // Instead of :text or only class, use XPath to target the \"Gaming\" button precisely by its text\n    const gamingButton = await page.waitForSelector(\n      '//div[contains(@class, \"filter-tags\")]//button[contains(@class, \"tag\") and normalize-space(text())=\"Gaming\"]',\n      { timeout: 5000 }\n    );\n\n    // Take screenshot before clicking Gaming\n    const step2 = path.join(screenshotsDir, 'step_2_before_gaming_click.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Click the \"Gaming\" filter tag button\n    await gamingButton.click();\n\n    // Wait for the \"Gaming\" tag button to become active\n    // Try using a CSS selector that matches both class and text, for robustness\n    await page.waitForSelector(\n      '.filter-tags .tag.active',\n      { timeout: 3000 }\n    );\n\n    // Confirm the \"active\" tag now has the text \"Gaming\"\n    // Extract the text from the active tag button\n    const activeTagText = await page.$eval('.filter-tags .tag.active', el => el.textContent.trim());\n\n    // Take screenshot after clicking\n    const step3 = path.join(screenshotsDir, 'step_3_after_gaming_click.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Compose result\n    return {\n      success: (activeTagText === 'Gaming'),\n      action: 'Clicked the \"Gaming\" filter tag button to filter videos by gaming category',\n      extractedData: {\n        activeTagText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20440,
+      "timestamp": "2025-09-15T11:27:54.346Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Wait for the filter tags container to be visible (using class selector)\n    await page.waitForSelector('.filter-tags', { timeout: 5000 });\n\n    // Take initial screenshot\n    const initialPath = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialPath });\n    screenshots.push(initialPath);\n\n    // Use a different selector strategy: XPath to locate the \"Gaming\" tag button by its text\n    const [gamingBtn] = await page.$x(\"//div[contains(@class,'filter-tags')]//button[contains(@class,'tag') and normalize-space(text())='Gaming']\");\n\n    if (!gamingBtn) {\n      throw new Error('Gaming filter tag button not found using XPath');\n    }\n\n    // Scroll into view in case it's not visible\n    await gamingBtn.evaluate(btn => btn.scrollIntoView({ block: \"center\", behavior: \"instant\" }));\n\n    // Click the \"Gaming\" filter tag button\n    await gamingBtn.click();\n\n    // Wait for the \"Gaming\" button to become active (get .active class)\n    await page.waitForFunction(() => {\n      const tags = document.querySelectorAll('.filter-tags .tag');\n      return Array.from(tags).some(btn => btn.textContent.trim() === 'Gaming' && btn.classList.contains('active'));\n    }, { timeout: 3000 });\n\n    // Take screenshot after clicking Gaming\n    const afterClickPath = path.join(screenshotsDir, 'step_2_gaming_clicked.png');\n    await page.screenshot({ path: afterClickPath });\n    screenshots.push(afterClickPath);\n\n    // Extract state: Check which filter tag is active now\n    const activeTagText = await page.evaluate(() => {\n      const active = document.querySelector('.filter-tags .tag.active');\n      return active ? active.textContent.trim() : null;\n    });\n\n    return {\n      success: activeTagText === 'Gaming',\n      action: `Clicked the \"Gaming\" filter tag button and verified it is now active.`,\n      extractedData: {\n        activeFilterTag: activeTagText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12381,
+      "timestamp": "2025-09-15T11:28:14.786Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 49082,
+  "timestamp": "2025-09-15T11:27:38.085Z",
+  "savedAt": "2025-09-15T11:28:27.167Z",
+  "version": "1.0"
+}

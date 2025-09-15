@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_003_1757928337698",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_003",
+    "description": "General",
+    "objective": "Guest Counter Interaction",
+    "expectedResult": "게스트 선택 메뉴를 열고 성인 2명, 아동 1명을 선택한 후 게스트 표시 텍스트 변화 확인하기",
+    "difficulty": "Medium",
+    "category": ".guest-selector, #guestMenu, [onclick*='updateGuests'], #guestCount",
+    "tags": [
+      "Menu interaction",
+      "counter manipulation"
+    ],
+    "notes": "'2 guests, 1 infant' 형태의 게스트 표시 텍스트"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open guest selector menu\n    await page.waitForSelector('.guest-selector');\n    await page.click('.guest-selector');\n    await page.waitForSelector('#guestMenu', { state: 'visible' });\n    \n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_menu_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_menu_open.png'));\n\n    // Select 2 adults\n    const adultPlus = await page.waitForSelector('button[onclick*=\"updateGuests(\\'adults\\', 1)\"]');\n    for (let i = 0; i < 2; i++) {\n        await adultPlus.click();\n        await page.waitForTimeout(300); // Wait for counter update\n    }\n\n    // Select 1 child\n    const childPlus = await page.waitForSelector('button[onclick*=\"updateGuests(\\'children\\', 1)\"]');\n    await childPlus.click();\n    await page.waitForTimeout(300);\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_guests_selected.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_guests_selected.png'));\n\n    // Get updated guest count text\n    const guestText = await page.$eval('#guestCount', el => el.textContent.trim());\n    const adultCount = await page.$eval('#adults', el => parseInt(el.textContent));\n    const childCount = await page.$eval('#children', el => parseInt(el.textContent));\n\n    return {\n      success: true,\n      action: \"Opened guest menu and selected 2 adults and 1 child\",\n      extractedData: {\n        guestDisplayText: guestText,\n        adultCount: adultCount,\n        childCount: childCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 99639,
+      "timestamp": "2025-09-15T09:25:37.699Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open guest menu using multiple selector strategies\n    const guestSelector = await page.waitForSelector('.guest-selector');\n    await guestSelector.click();\n    await page.waitForSelector('#guestMenu', { state: 'visible' });\n    \n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_menu_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_menu_opened.png'));\n\n    // Set adults to 2 using different selector approaches\n    const adultPlus = await page.waitForSelector('button[onclick*=\"updateGuests(\\'adults\\', 1)\"]');\n    await adultPlus.click();\n    await adultPlus.click();\n    \n    // Set children to 1 using XPath selector\n    const childPlus = await page.waitForSelector('xpath=//button[contains(@onclick, \"updateGuests(\\'children\\', 1)\")]');\n    await childPlus.click();\n\n    // Wait for counts to update\n    await page.waitForFunction(() => {\n      const adults = document.getElementById('adults');\n      const children = document.getElementById('children');\n      return adults && children && adults.textContent === '2' && children.textContent === '1';\n    });\n\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_counts_updated.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_counts_updated.png'));\n\n    // Verify guest display text\n    const guestCountText = await page.$eval('#guestCount', el => el.textContent.trim());\n    \n    return {\n      success: true,\n      action: \"Successfully selected 2 adults and 1 child in guest menu\",\n      extractedData: {\n        guestCountText: guestCountText,\n        adultsCount: 2,\n        childrenCount: 1\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete guest selection task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 96632,
+      "timestamp": "2025-09-15T09:27:17.338Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Open guest selector menu\n    await page.waitForSelector('button.guest-selector', { state: 'visible' });\n    await page.click('button.guest-selector');\n    \n    // Wait for guest menu to appear\n    await page.waitForSelector('#guestMenu', { state: 'visible' });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_menu_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_menu_opened.png'));\n\n    // Select 2 adults\n    const adultPlusButton = await page.locator('button[onclick*=\"updateGuests\"][onclick*=\"adults\"]:has-text(\"+\")');\n    await adultPlusButton.click();\n    await adultPlusButton.click();\n    \n    // Select 1 child\n    const childPlusButton = await page.locator('button[onclick*=\"updateGuests\"][onclick*=\"children\"]:has-text(\"+\")');\n    await childPlusButton.click();\n\n    // Wait for guest count to update\n    await page.waitForFunction(() => {\n      const guestCount = document.getElementById('guestCount');\n      return guestCount && guestCount.textContent.includes('guests');\n    });\n\n    // Verify guest count text\n    const guestCountText = await page.textContent('#guestCount');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_guests_selected.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_guests_selected.png'));\n\n    return {\n      success: true,\n      action: \"Opened guest menu and selected 2 adults, 1 child\",\n      extractedData: {\n        guestCountText: guestCountText.trim(),\n        adults: await page.textContent('#adults'),\n        children: await page.textContent('#children')\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete guest selection task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 111690,
+      "timestamp": "2025-09-15T09:28:53.970Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 307962,
+  "timestamp": "2025-09-15T09:25:37.698Z",
+  "savedAt": "2025-09-15T09:30:45.660Z",
+  "version": "1.0"
+}

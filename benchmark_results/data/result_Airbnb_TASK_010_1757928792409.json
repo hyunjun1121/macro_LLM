@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_010_1757928792409",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_010",
+    "description": "General",
+    "objective": "Price Sorting Verification",
+    "expectedResult": "모든 숙소의 가격을 추출하여 배열로 저장하고 가격 순서가 올바른지 검증하기",
+    "difficulty": "Medium",
+    "category": ".listing-price .amount",
+    "tags": [
+      "Data extraction",
+      "array manipulation"
+    ],
+    "notes": "가격 배열 (예: [65, 95, 110, 120, 140, 160, 180, 185, 220, 280, 350, 380, 420, 450, 750])"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the listings to be rendered\n    // Try to wait for at least one price element to appear\n    await page.waitForSelector('.listing-price .amount', { timeout: 7000 });\n\n    // Take screenshot after listings load\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_listings_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_listings_loaded.png'));\n\n    // Extract all price amounts from the listings\n    const prices = await page.$$eval('.listing-price .amount', nodes =>\n      nodes.map(node => {\n        // Remove any non-numeric characters except dot and comma\n        let text = node.textContent || '';\n        // Remove currency symbols and spaces, convert comma to dot if needed\n        text = text.replace(/[^\\d.,]/g, '').replace(',', '.');\n        // Parse as float\n        const num = parseFloat(text);\n        return isNaN(num) ? null : num;\n      }).filter(v => v !== null)\n    );\n\n    // Take screenshot of the price elements (highlighted if possible)\n    // We'll scroll to the first price element for clarity\n    const firstPrice = await page.$('.listing-price .amount');\n    if (firstPrice) {\n      await firstPrice.scrollIntoViewIfNeeded();\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_3_prices_visible.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_3_prices_visible.png'));\n    }\n\n    // Check if prices are sorted in ascending order\n    let isSorted = true;\n    for (let i = 1; i < prices.length; i++) {\n      if (prices[i - 1] > prices[i]) {\n        isSorted = false;\n        break;\n      }\n    }\n\n    return {\n      success: true,\n      action: \"모든 숙소의 가격을 배열로 추출하고, 가격이 올바른 순서(오름차순)로 정렬되어 있는지 검증함\",\n      extractedData: {\n        prices,\n        isSorted\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13552,
+      "timestamp": "2025-09-15T09:33:12.409Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Store screenshots\n    const screenshots = [];\n\n    // Take initial screenshot\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for at least one visible price element using alternative selector strategies\n    // Try by text, by class, and by XPath for robustness\n    let priceSelector = '.listing-price .amount';\n    await page.waitForSelector(priceSelector, { timeout: 5000 });\n\n    // Also try to ensure all listings are loaded (if lazy loading)\n    // Scroll to bottom slowly to trigger more listings (if any)\n    let prevCount = 0;\n    for (let i = 0; i < 6; i++) {\n      const pricesNow = await page.$$eval(priceSelector, nodes => nodes.length);\n      if (pricesNow === prevCount) break;\n      prevCount = pricesNow;\n      await page.evaluate(() => window.scrollBy(0, window.innerHeight));\n      await page.waitForTimeout(600);\n    }\n\n    // Take screenshot after ensuring all listings are loaded\n    const loadedShot = path.join(screenshotsDir, 'step_2_all_prices_loaded.png');\n    await page.screenshot({ path: loadedShot });\n    screenshots.push(loadedShot);\n\n    // Query all price nodes (use multiple strategies in fallback order)\n    let priceHandles = await page.$$(priceSelector);\n\n    // If none found, try a broader selector (e.g., by XPath for any text with ₩ or $)\n    if (priceHandles.length === 0) {\n      priceHandles = await page.$$('xpath=//*[contains(@class, \"amount\")]');\n    }\n\n    // If still none, try to find any span or div with price-like content\n    if (priceHandles.length === 0) {\n      priceHandles = await page.$$('xpath=//*[contains(text(), \"₩\") or contains(text(), \"$\")]');\n    }\n\n    // Extract prices as numbers (handle currency symbols and commas)\n    const pricesRaw = await page.$$eval(\n      priceSelector,\n      nodes => nodes.map(n => n.innerText)\n    );\n\n    // If fallback selectors were used:\n    let extractedTexts = pricesRaw;\n    if (pricesRaw.length === 0 && priceHandles.length > 0) {\n      extractedTexts = [];\n      for (const handle of priceHandles) {\n        const txt = await handle.evaluate(el => el.innerText || el.textContent || '');\n        extractedTexts.push(txt);\n      }\n    }\n\n    // Clean and parse prices\n    const priceNumbers = extractedTexts\n      .map(txt => {\n        // Remove currency, commas, spaces, '/night', and other text\n        let cleaned = txt.replace(/[^\\d]/g, '');\n        return cleaned ? parseInt(cleaned, 10) : null;\n      })\n      .filter(n => typeof n === 'number' && !isNaN(n));\n\n    // Take screenshot after extraction\n    const afterExtractShot = path.join(screenshotsDir, 'step_3_prices_extracted.png');\n    await page.screenshot({ path: afterExtractShot });\n    screenshots.push(afterExtractShot);\n\n    // Verify if the prices are in correct order (ascending)\n    let isSorted = true;\n    for (let i = 1; i < priceNumbers.length; i++) {\n      if (priceNumbers[i - 1] > priceNumbers[i]) {\n        isSorted = false;\n        break;\n      }\n    }\n\n    return {\n      success: true,\n      action: \"모든 숙소의 가격을 배열로 추출하고, 가격 정렬(오름차순) 여부를 검증함\",\n      extractedData: {\n        prices: priceNumbers,\n        isSortedAsc: isSorted\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 20527,
+      "timestamp": "2025-09-15T09:33:25.961Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('domcontentloaded');\n\n    const screenshots = [];\n    // Initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for listings to appear (use multiple selector strategies)\n    // Try class from task: '.listing-price .amount'\n    let priceElements = await page.$$('.listing-price .amount');\n    if (!priceElements || priceElements.length === 0) {\n      // Try alternative: look for spans or divs with Korean \"₩\" or \"$\" and \".amount\"\n      priceElements = await page.$$('xpath=//*[contains(@class, \"amount\") and (contains(text(), \"₩\") or contains(text(), \"$\"))]');\n    }\n    if (!priceElements || priceElements.length === 0) {\n      // Try to find price cards by visible text\n      priceElements = await page.$$('xpath=//*[contains(text(), \"₩\") or contains(text(), \"$\")]');\n    }\n    // Wait up to 5 seconds if still not found\n    let retries = 0;\n    while ((!priceElements || priceElements.length === 0) && retries < 5) {\n      await page.waitForTimeout(1000);\n      priceElements = await page.$$('.listing-price .amount');\n      retries++;\n    }\n\n    // Take screenshot after price list is loaded\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_price_list.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_price_list.png'));\n\n    // Extract price values as numbers\n    const prices = [];\n    for (const el of priceElements) {\n      let priceText = await el.innerText();\n      // Remove non-digit, non-dot, non-comma characters (for parsing)\n      priceText = priceText.replace(/[^\\d.,]/g, '');\n      // Remove commas for thousands, handle integer/float\n      const normalized = priceText.replace(/,/g, '');\n      const priceNum = parseFloat(normalized);\n      if (!isNaN(priceNum)) {\n        prices.push(priceNum);\n      }\n    }\n\n    // Take screenshot with prices highlighted (if possible)\n    // Highlight first 3 prices if available\n    if (priceElements.length > 0) {\n      for (let i = 0; i < Math.min(3, priceElements.length); i++) {\n        await priceElements[i].evaluate((node) => {\n          node.style.background = 'yellow';\n          node.style.color = 'black';\n        });\n      }\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_3_highlighted_prices.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_3_highlighted_prices.png'));\n    }\n\n    // Validate if the extracted prices are in ascending order\n    let isAscending = true;\n    for (let i = 1; i < prices.length; i++) {\n      if (prices[i] < prices[i - 1]) {\n        isAscending = false;\n        break;\n      }\n    }\n\n    return {\n      success: true,\n      action: \"Extracted all visible accommodation prices into an array and verified price sorting order.\",\n      extractedData: {\n        prices,\n        isAscending\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15119,
+      "timestamp": "2025-09-15T09:33:46.488Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 49198,
+  "timestamp": "2025-09-15T09:33:12.409Z",
+  "savedAt": "2025-09-15T09:34:01.607Z",
+  "version": "1.0"
+}

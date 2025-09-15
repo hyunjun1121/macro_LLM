@@ -1,0 +1,62 @@
+{
+  "id": "TikTok_Sheet1_1757928320254_d9ed7_1757933435509",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928320254_d9ed7",
+    "description": 13,
+    "objective": "General",
+    "expectedResult": "첫 번째 비디오를 전체화면으로 전환",
+    "difficulty": "data-video-id='1'인 컨테이너의 .fullscreen-btn을 클릭",
+    "category": "Medium",
+    "tags": [
+      ".video-container[data-video-id='1'] .fullscreen-btn"
+    ],
+    "notes": "data-video-id='1'인 컨테이너의 .fullscreen-btn을 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the first video container with data-video-id=\"1\" to be visible\n    const videoContainerSelector = 'div.video-container[data-video-id=\"1\"]';\n    await page.waitForSelector(videoContainerSelector, { state: 'visible', timeout: 5000 });\n\n    // Wait for the fullscreen button inside this container\n    const fullscreenBtnSelector = `${videoContainerSelector} button.fullscreen-btn`;\n    await page.waitForSelector(fullscreenBtnSelector, { state: 'visible', timeout: 5000 });\n\n    // Take screenshot before clicking fullscreen\n    const beforeFullscreenShot = path.join(screenshotsDir, 'step_2_before_fullscreen.png');\n    await page.screenshot({ path: beforeFullscreenShot });\n    screenshots.push(beforeFullscreenShot);\n\n    // Click the fullscreen button\n    await page.click(fullscreenBtnSelector);\n\n    // Wait for possible fullscreen effect (simulate, since local HTML may not trigger real fullscreen API)\n    // We'll check for a possible class or style change on the video container or player\n    // Wait a short time for UI to update\n    await page.waitForTimeout(800);\n\n    // Take screenshot after clicking fullscreen\n    const afterFullscreenShot = path.join(screenshotsDir, 'step_3_after_fullscreen.png');\n    await page.screenshot({ path: afterFullscreenShot });\n    screenshots.push(afterFullscreenShot);\n\n    // Extract some data to verify the fullscreen action\n    // For demo, check if the video container or player has a style or class indicating fullscreen\n    const videoContainerClass = await page.$eval(videoContainerSelector, el => el.className);\n    let isFullscreen = false;\n\n    // Try to detect if the video element is in fullscreen (may not work in all local HTML)\n    // We'll check if document.fullscreenElement is set to the video or its container\n    try {\n      isFullscreen = await page.evaluate(() => {\n        if (document.fullscreenElement) {\n          // Check if it's the video or its parent container\n          const fs = document.fullscreenElement;\n          if (\n            fs.classList.contains('video-container') ||\n            fs.classList.contains('video-player')\n          ) {\n            return true;\n          }\n        }\n        // Some apps use a .fullscreen class toggle\n        const container = document.querySelector('div.video-container[data-video-id=\"1\"]');\n        if (container && container.classList.contains('fullscreen')) {\n          return true;\n        }\n        // Or check if the video player has a fullscreen class\n        const player = container && container.querySelector('.video-player');\n        if (player && player.classList.contains('fullscreen')) {\n          return true;\n        }\n        return false;\n      });\n    } catch (e) {\n      // Ignore, fallback to false\n      isFullscreen = false;\n    }\n\n    return {\n      success: true,\n      action: \"Clicked the fullscreen button for the first video (data-video-id='1') and attempted to switch to fullscreen mode.\",\n      extractedData: {\n        videoContainerClass,\n        isFullscreen\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 17032,
+      "timestamp": "2025-09-15T10:50:35.510Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the first video container by XPath (alternative to CSS)\n    const videoContainerXpath = \"//div[contains(@class, 'video-container') and @data-video-id='1']\";\n    await page.waitForSelector(`xpath=${videoContainerXpath}`, { timeout: 5000 });\n\n    // Locate the fullscreen button inside the first video container\n    const fullscreenBtnHandle = await page.$(`xpath=${videoContainerXpath}//button[contains(@class, 'fullscreen-btn')]`);\n\n    if (!fullscreenBtnHandle) {\n      throw new Error('Fullscreen button for first video not found');\n    }\n\n    // Take screenshot before clicking fullscreen\n    const step2 = path.join(screenshotsDir, 'step_2_before_fullscreen.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Click the fullscreen button\n    await fullscreenBtnHandle.click();\n\n    // Wait for some indication of fullscreen (e.g., body or video having a 'fullscreen' class, or check the bounding box)\n    // Try waiting for a style change or DOM state that indicates fullscreen; fallback to a delay for UI to update\n    await page.waitForTimeout(1000);\n\n    // Extract video container and button state for verification\n    const extractedData = await page.evaluate(() => {\n      const container = document.querySelector('.video-container[data-video-id=\"1\"]');\n      let isFullscreen = false;\n      // Check for fullscreen via class or document.fullscreenElement\n      if (\n        (container && container.classList.contains('fullscreen')) ||\n        (document.fullscreenElement && document.fullscreenElement.contains(container))\n      ) {\n        isFullscreen = true;\n      }\n      // Or check if window size matches the video bounding box (not always reliable)\n      const video = container ? container.querySelector('video') : null;\n      const rect = video ? video.getBoundingClientRect() : null;\n      let coversViewport = false;\n      if (rect) {\n        coversViewport =\n          Math.abs(rect.width - window.innerWidth) < 10 &&\n          Math.abs(rect.height - window.innerHeight) < 10;\n      }\n      return {\n        isFullscreen,\n        coversViewport,\n        containerClass: container ? container.className : null,\n        videoRect: rect ? { width: rect.width, height: rect.height } : null,\n        window: { width: window.innerWidth, height: window.innerHeight }\n      };\n    });\n\n    // Final screenshot after fullscreen\n    const step3 = path.join(screenshotsDir, 'step_3_after_fullscreen.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    return {\n      success: true,\n      action: \"Clicked the fullscreen button of the first video (data-video-id='1'); attempted to switch to fullscreen mode.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13942,
+      "timestamp": "2025-09-15T10:50:52.543Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the first video container with data-video-id=\"1\"\n    const videoContainerSelector = '[data-video-id=\"1\"]';\n    await page.waitForSelector(videoContainerSelector, { timeout: 5000 });\n\n    // Wait for the fullscreen button inside the correct video container\n    // Use a CSS selector that scopes the search to the video container\n    const fullscreenBtnSelector = '[data-video-id=\"1\"] .fullscreen-btn';\n    await page.waitForSelector(fullscreenBtnSelector, { timeout: 5000 });\n\n    // Take screenshot before clicking\n    const beforeClickScreenshot = path.join(screenshotsDir, 'step_2_before_fullscreen_click.png');\n    await page.screenshot({ path: beforeClickScreenshot });\n    screenshots.push(beforeClickScreenshot);\n\n    // Click the fullscreen button using a precise selector\n    const fullscreenBtn = await page.$(fullscreenBtnSelector);\n    if (!fullscreenBtn) throw new Error('Fullscreen button not found for first video');\n\n    await fullscreenBtn.click();\n\n    // Wait for possible fullscreen state (simulate by waiting for CSS class or style change)\n    // Since we don't have JS events, check for style changes on the video container after click\n    // Wait a bit for UI update\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after clicking fullscreen\n    const afterClickScreenshot = path.join(screenshotsDir, 'step_3_after_fullscreen_click.png');\n    await page.screenshot({ path: afterClickScreenshot });\n    screenshots.push(afterClickScreenshot);\n\n    // Try to detect fullscreen mode by extracting a property (e.g., does the container/video have a 'fullscreen' class or attribute?)\n    // We'll check for a class or style attribute that indicates fullscreen\n    const extractedData = await page.evaluate(() => {\n      const container = document.querySelector('[data-video-id=\"1\"]');\n      const video = container ? container.querySelector('video') : null;\n      return {\n        containerClass: container ? container.className : null,\n        containerStyle: container ? container.getAttribute('style') : null,\n        videoClass: video ? video.className : null,\n        videoStyle: video ? video.getAttribute('style') : null,\n        bodyClass: document.body.className,\n        isFullscreen: !!(\n          document.fullscreenElement ||\n          (container && container.classList.contains('fullscreen')) ||\n          (video && video.classList.contains('fullscreen'))\n        )\n      };\n    });\n\n    return {\n      success: true,\n      action: \"Clicked the fullscreen button for the first video (data-video-id='1') and attempted to enter fullscreen mode.\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12756,
+      "timestamp": "2025-09-15T10:51:06.484Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 43731,
+  "timestamp": "2025-09-15T10:50:35.509Z",
+  "savedAt": "2025-09-15T10:51:19.240Z",
+  "version": "1.0"
+}

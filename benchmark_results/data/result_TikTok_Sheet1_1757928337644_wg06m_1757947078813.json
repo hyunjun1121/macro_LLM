@@ -1,0 +1,62 @@
+{
+  "id": "TikTok_Sheet1_1757928337644_wg06m_1757947078813",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928337644_wg06m",
+    "description": 13,
+    "objective": "General",
+    "expectedResult": "첫 번째 비디오를 전체화면으로 전환",
+    "difficulty": "data-video-id='1'인 컨테이너의 .fullscreen-btn을 클릭",
+    "category": "Medium",
+    "tags": [
+      ".video-container[data-video-id='1'] .fullscreen-btn"
+    ],
+    "notes": "data-video-id='1'인 컨테이너의 .fullscreen-btn을 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the fullscreen button of the first video\n    await page.waitForSelector('div.video-container[data-video-id=\"1\"]');\n    await page.waitForSelector('div.video-container[data-video-id=\"1\"] button.fullscreen-btn');\n    \n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_fullscreen.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_fullscreen.png'));\n\n    // Click the fullscreen button using multiple selector strategies\n    await page.click('div.video-container[data-video-id=\"1\"] button.fullscreen-btn');\n    \n    // Wait for potential fullscreen transition and take final screenshot\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_fullscreen.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_fullscreen.png'));\n\n    return {\n      success: true,\n      action: \"Clicked fullscreen button for first video (data-video-id='1')\",\n      extractedData: {\n        videoId: '1',\n        actionPerformed: 'fullscreen-mode-activated'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to switch first video to fullscreen\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 52725,
+      "timestamp": "2025-09-15T14:37:58.813Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for video container with data-video-id='1' to be present\n    await page.waitForSelector('div.video-container[data-video-id=\"1\"]', { timeout: 5000 });\n\n    // Take screenshot of the video container\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_video_container_found.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_video_container_found.png'));\n\n    // Click the fullscreen button using multiple selector strategies\n    const fullscreenBtn = await page.$('div.video-container[data-video-id=\"1\"] button.fullscreen-btn');\n    \n    if (fullscreenBtn) {\n      // Scroll into view to ensure button is clickable\n      await fullscreenBtn.scrollIntoViewIfNeeded();\n      \n      // Wait for button to be visible and enabled\n      await page.waitForSelector('div.video-container[data-video-id=\"1\"] button.fullscreen-btn:not([disabled])', { timeout: 3000 });\n      \n      // Click the fullscreen button\n      await fullscreenBtn.click();\n      \n      // Wait briefly for fullscreen transition\n      await page.waitForTimeout(1000);\n      \n      // Take screenshot after clicking fullscreen\n      await page.screenshot({ path: path.join(screenshotsDir, 'step_3_fullscreen_activated.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_3_fullscreen_activated.png'));\n\n      return {\n        success: true,\n        action: \"Successfully clicked fullscreen button for first video (data-video-id='1')\",\n        extractedData: {\n          videoId: '1',\n          fullscreenStatus: 'activated'\n        },\n        screenshots,\n        error: null\n      };\n    } else {\n      throw new Error('Fullscreen button not found in the specified video container');\n    }\n  } catch (error) {\n    // Take error screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_error.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to click fullscreen button for first video\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 81453,
+      "timestamp": "2025-09-15T14:38:51.538Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for video container with data-video-id='1'\n    const videoContainerSelector = '[data-video-id=\"1\"]';\n    await page.waitForSelector(videoContainerSelector, { timeout: 5000 });\n\n    // Take screenshot after container is visible\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_container_visible.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_container_visible.png'));\n\n    // Click fullscreen button using multiple selector strategies\n    const fullscreenBtnSelector = `${videoContainerSelector} .fullscreen-btn`;\n    await page.waitForSelector(fullscreenBtnSelector, { timeout: 3000 });\n    \n    // Verify button is visible and enabled\n    const isButtonVisible = await page.isVisible(fullscreenBtnSelector);\n    if (!isButtonVisible) {\n      throw new Error('Fullscreen button is not visible');\n    }\n\n    // Click the fullscreen button\n    await page.click(fullscreenBtnSelector);\n\n    // Wait for potential fullscreen transition\n    await page.waitForTimeout(1000);\n\n    // Take final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_fullscreen_activated.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_fullscreen_activated.png'));\n\n    // Extract verification data\n    const extractedData = {\n      videoId: await page.getAttribute(videoContainerSelector, 'data-video-id'),\n      buttonClicked: await page.textContent(fullscreenBtnSelector),\n      timestamp: new Date().toISOString()\n    };\n\n    return {\n      success: true,\n      action: \"Clicked fullscreen button for first video (data-video-id='1')\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    const errorScreenshot = path.join(screenshotsDir, 'error.png');\n    await page.screenshot({ path: errorScreenshot });\n    screenshots.push(errorScreenshot);\n\n    return {\n      success: false,\n      action: \"Failed to activate fullscreen for first video\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 73961,
+      "timestamp": "2025-09-15T14:40:12.991Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 208139,
+  "timestamp": "2025-09-15T14:37:58.813Z",
+  "savedAt": "2025-09-15T14:41:26.952Z",
+  "version": "1.0"
+}

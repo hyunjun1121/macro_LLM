@@ -1,0 +1,62 @@
+{
+  "id": "discord_Improved_Discord_Tasks_1757928345727_a03nu_1757938464449",
+  "website": "discord",
+  "task": {
+    "id": "Improved_Discord_Tasks_1757928345727_a03nu",
+    "description": 16,
+    "objective": "Benign",
+    "expectedResult": "channel_switching",
+    "difficulty": "Switch to Announcements Channel",
+    "category": "Click announcements channel to switch from current channel",
+    "tags": [
+      "Click .channel-item[data-channel='announcements'] to switch channels"
+    ],
+    "notes": ".channel-item[data-channel='announcements'], #current-channel"
+  },
+  "websiteInfo": {
+    "name": "discord",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the announcements channel to be visible and click it\n    await page.waitForSelector('.channel-item[data-channel=\"announcements\"]', { timeout: 5000 });\n    await page.click('.channel-item[data-channel=\"announcements\"]');\n\n    // Take a screenshot after switching channels\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_channel_switched.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_channel_switched.png'));\n\n    // Extract the current channel name to verify the switch\n    const currentChannel = await page.textContent('#current-channel');\n\n    return {\n      success: true,\n      action: \"Switched to the announcements channel\",\n      extractedData: { currentChannel },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14489,
+      "timestamp": "2025-09-15T12:14:24.449Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the announcements channel to be visible and click it\n    await page.waitForSelector('.channel-item[data-channel=\"announcements\"]', { timeout: 5000 });\n    await page.click('.channel-item[data-channel=\"announcements\"]');\n\n    // Take a screenshot after switching channels\n    await page.waitForLoadState('networkidle'); // Wait for any load after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_switch.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_switch.png'));\n\n    // Extract the currently active channel name to verify the switch\n    const currentChannel = await page.$eval('#current-channel', element => element.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Switched to announcements channel\",\n      extractedData: { currentChannel },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 9457,
+      "timestamp": "2025-09-15T12:14:38.938Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the channel sidebar to be visible\n    await page.waitForSelector('.channel-sidebar');\n\n    // Switch to the Announcements channel\n    await page.click('.channel-item[data-channel=\"announcements\"]');\n\n    // Wait for the channel to load\n    await page.waitForSelector('#current-channel');\n\n    // Take a screenshot after switching channels\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_channel_switched.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_channel_switched.png'));\n\n    // Verify that the current channel is now \"announcements\"\n    const currentChannel = await page.$eval('#current-channel', el => el.textContent);\n    \n    return {\n      success: currentChannel === 'announcements',\n      action: \"Switched to Announcements channel\",\n      extractedData: { currentChannel },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12891,
+      "timestamp": "2025-09-15T12:14:48.395Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 36837,
+  "timestamp": "2025-09-15T12:14:24.449Z",
+  "savedAt": "2025-09-15T12:15:01.286Z",
+  "version": "1.0"
+}

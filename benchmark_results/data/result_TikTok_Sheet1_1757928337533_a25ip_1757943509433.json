@@ -1,0 +1,62 @@
+{
+  "id": "TikTok_Sheet1_1757928337533_a25ip_1757943509433",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928337533_a25ip",
+    "description": 1,
+    "objective": "General",
+    "expectedResult": "첫 번째 비디오의 재생/일시정지 버튼을 클릭",
+    "difficulty": "data-video-id='1'인 컨테이너의 .play-pause-btn을 클릭",
+    "category": "Easy",
+    "tags": [
+      ".video-container[data-video-id='1'] .play-pause-btn"
+    ],
+    "notes": "data-video-id='1'인 컨테이너의 .play-pause-btn을 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for video container with data-video-id='1' and its play button\n    await page.waitForSelector('div.video-container[data-video-id=\"1\"]');\n    await page.waitForSelector('div.video-container[data-video-id=\"1\"] button.play-pause-btn');\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Click the play/pause button using multiple selector strategies\n    await page.click('div.video-container[data-video-id=\"1\"] button.play-pause-btn');\n\n    // Wait for state change and take screenshot after clicking\n    await page.waitForTimeout(500);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    // Extract button state to verify action\n    const buttonState = await page.$eval(\n      'div.video-container[data-video-id=\"1\"] button.play-pause-btn',\n      btn => btn.innerHTML\n    );\n\n    return {\n      success: true,\n      action: \"Clicked play/pause button of first video (data-video-id='1')\",\n      extractedData: {\n        buttonIcon: buttonState,\n        videoId: '1',\n        buttonClass: 'play-pause-btn'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to click first video's play/pause button\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 91491,
+      "timestamp": "2025-09-15T13:38:29.433Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first video container with data-video-id='1'\n    await page.waitForSelector('div[data-video-id=\"1\"]', { timeout: 5000 });\n\n    // Find the play/pause button within the first video container\n    const playPauseBtn = await page.$('div[data-video-id=\"1\"] button.play-pause-btn');\n    \n    if (!playPauseBtn) {\n      throw new Error('Play/Pause button not found in the first video container');\n    }\n\n    // Take screenshot before clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Click the play/pause button\n    await playPauseBtn.click();\n    \n    // Wait for any UI changes after click\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after clicking\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    // Extract video state to verify the action\n    const videoState = await page.evaluate(() => {\n      const video = document.querySelector('div[data-video-id=\"1\"] video');\n      return {\n        isPaused: video ? video.paused : null,\n        currentTime: video ? video.currentTime : null\n      };\n    });\n\n    return {\n      success: true,\n      action: \"Clicked play/pause button of first video (data-video-id='1')\",\n      extractedData: {\n        videoState: videoState,\n        buttonClicked: \"First video's play/pause button\"\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    const errorScreenshot = path.join(screenshotsDir, 'error.png');\n    await page.screenshot({ path: errorScreenshot });\n    screenshots.push(errorScreenshot);\n\n    return {\n      success: false,\n      action: \"Failed to click first video's play/pause button\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 53145,
+      "timestamp": "2025-09-15T13:40:00.924Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for video container with data-video-id='1'\n    const videoContainer = await page.waitForSelector('[data-video-id=\"1\"]', { timeout: 5000 });\n    \n    // Wait for play/pause button within the container\n    const playPauseBtn = await videoContainer.waitForSelector('.play-pause-btn', { timeout: 5000 });\n    \n    // Take screenshot before interaction\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n    \n    // Click the play/pause button\n    await playPauseBtn.click();\n    \n    // Wait for UI to update\n    await page.waitForTimeout(1000);\n    \n    // Take screenshot after interaction\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    // Extract button state information\n    const buttonState = await playPauseBtn.$eval('i', el => el.className);\n    const isPaused = buttonState.includes('fa-play'); // If icon changed to play, video is paused\n\n    return {\n      success: true,\n      action: \"Clicked play/pause button of first video (data-video-id='1')\",\n      extractedData: {\n        videoId: 1,\n        buttonState: buttonState,\n        isVideoPaused: isPaused\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 79378,
+      "timestamp": "2025-09-15T13:40:54.069Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 224014,
+  "timestamp": "2025-09-15T13:38:29.433Z",
+  "savedAt": "2025-09-15T13:42:13.447Z",
+  "version": "1.0"
+}

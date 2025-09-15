@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_012_1757928916338",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_012",
+    "description": "General",
+    "objective": "Amenities Count Analysis",
+    "expectedResult": "jun_1 숙소 모달을 열고 편의시설(amenities) 개수를 정확히 카운트하여 반환하기",
+    "difficulty": "Medium",
+    "category": "[data-listing-id='jun_1'], .amenity-tag",
+    "tags": [
+      "Modal navigation",
+      "element counting"
+    ],
+    "notes": "jun_1 숙소의 편의시설 개수 (예: 20개)"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the listing card with data-listing-id='jun_1' to appear\n    await page.waitForSelector(\"[data-listing-id='jun_1']\", { timeout: 5000 });\n\n    // Take screenshot before opening modal\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_jun1_listing_visible.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_jun1_listing_visible.png'));\n\n    // Click the jun_1 listing to open the modal\n    const jun1Element = await page.$(\"[data-listing-id='jun_1']\");\n    if (!jun1Element) throw new Error(\"jun_1 listing not found\");\n    await jun1Element.click();\n\n    // Wait for the modal/dialog to appear\n    // Try to find a modal or a unique selector that appears after clicking\n    // We'll wait for an amenity-tag to appear (since amenities are in the modal)\n    await page.waitForSelector('.amenity-tag', { timeout: 5000 });\n\n    // Take screenshot of the modal open\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_modal_open.png'));\n\n    // Count the number of amenities inside the modal\n    // We assume .amenity-tag are direct children or descendants of the modal\n    const amenityCount = await page.$$eval('.amenity-tag', els => els.length);\n\n    // Take screenshot of amenities\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_amenities_counted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_amenities_counted.png'));\n\n    return {\n      success: true,\n      action: \"Opened jun_1 숙소 modal and counted the amenities accurately.\",\n      extractedData: {\n        amenityCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 24886,
+      "timestamp": "2025-09-15T09:35:16.338Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // 1. Wait for the listing card of jun_1 to appear (try attribute selector)\n    const listingSelector = \"[data-listing-id='jun_1']\";\n    await page.waitForSelector(listingSelector, { timeout: 5000 });\n\n    // Take screenshot of the listing card\n    const listingScreenshot = path.join(screenshotsDir, 'step_2_listing_visible.png');\n    await page.locator(listingSelector).screenshot({ path: listingScreenshot });\n    screenshots.push(listingScreenshot);\n\n    // 2. Try to open the modal/dialog for 'jun_1'\n    // Try clicking the card directly (if it's clickable)\n    const cardClickable = await page.$(`${listingSelector} a, ${listingSelector} button, ${listingSelector}`);\n    if (cardClickable) {\n      await cardClickable.click();\n    } else {\n      throw new Error(\"Could not find clickable element for jun_1 listing\");\n    }\n\n    // 3. Wait for the modal/dialog to appear\n    // Heuristic: Wait for a modal/dialog containing amenities tags\n    // Try to wait for any .amenity-tag that appears AFTER clicking\n    await page.waitForSelector('.amenity-tag', { timeout: 5000 });\n\n    // Screenshot of modal opened\n    const modalScreenshot = path.join(screenshotsDir, 'step_3_modal_opened.png');\n    await page.screenshot({ path: modalScreenshot });\n    screenshots.push(modalScreenshot);\n\n    // 4. Count the number of amenities\n    // Use strict selector for only amenities inside the open modal for jun_1\n    // Try to scope by finding the closest modal/dialog ancestor\n    let amenitiesCount = 0;\n    let amenitiesTexts = [];\n    // Try common modal containers\n    const modalHandles = await page.$$('div[role=\"dialog\"], .modal, .listing-modal, .modal-content, .modal-container');\n    let amenityNodes = [];\n    for (const modal of modalHandles) {\n      // Check if this modal contains .amenity-tag\n      const tags = await modal.$$('.amenity-tag');\n      if (tags.length > 0) {\n        amenityNodes = tags;\n        break;\n      }\n    }\n    if (amenityNodes.length === 0) {\n      // fallback: global count (could be risky if multiple modals, but otherwise fallback)\n      amenityNodes = await page.$$('.amenity-tag');\n    }\n    amenitiesCount = amenityNodes.length;\n    for (const node of amenityNodes) {\n      const text = await node.innerText();\n      amenitiesTexts.push(text.trim());\n    }\n\n    // Screenshot amenities section only\n    if (amenityNodes.length > 0) {\n      const amenitiesSectionScreenshot = path.join(screenshotsDir, 'step_4_amenities_section.png');\n      await amenityNodes[0].evaluate(node => node.scrollIntoView());\n      // Try to get the bounding box of the parent of amenity tags for better screenshot\n      const parent = await amenityNodes[0].evaluateHandle(node => node.parentElement);\n      if (parent) {\n        await parent.screenshot({ path: amenitiesSectionScreenshot }).catch(() => {});\n        screenshots.push(amenitiesSectionScreenshot);\n      }\n    }\n\n    return {\n      success: true,\n      action: \"Opened jun_1 숙소 modal and counted the amenities tags.\",\n      extractedData: {\n        amenitiesCount,\n        amenitiesTexts\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 19029,
+      "timestamp": "2025-09-15T09:35:41.224Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialShot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialShot });\n    screenshots.push(initialShot);\n\n    // Wait for the listing card with data-listing-id='jun_1'\n    const listingSelector = \"[data-listing-id='jun_1']\";\n    await page.waitForSelector(listingSelector, { timeout: 5000 });\n\n    // Try to click the listing to open the modal\n    const listingHandle = await page.$(listingSelector);\n    if (!listingHandle) throw new Error(\"Cannot find listing jun_1\");\n\n    // Use bounding box click for robustness\n    const box = await listingHandle.boundingBox();\n    if (box) {\n      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);\n    } else {\n      // Fallback: try to click\n      await listingHandle.click();\n    }\n\n    // Wait for modal/dialog to appear\n    // Try to find an element inside modal that is unique (e.g. a title or close button)\n    // Wait for any element with class 'modal', or fallback to amenities\n    let modalAppeared = false;\n    let modalOrAmenitiesSelector = '.amenity-tag';\n    try {\n      await page.waitForSelector(modalOrAmenitiesSelector, { timeout: 5000 });\n      modalAppeared = true;\n    } catch {\n      // Try alternative: modal container\n      try {\n        await page.waitForSelector('.modal', { timeout: 3000 });\n        modalAppeared = true;\n      } catch {\n        throw new Error('Modal for jun_1 did not appear');\n      }\n    }\n\n    // Take screenshot after modal opens\n    const modalShot = path.join(screenshotsDir, 'step_2_modal_opened.png');\n    await page.screenshot({ path: modalShot });\n    screenshots.push(modalShot);\n\n    // Wait a bit for amenities to load (in case of animation)\n    await page.waitForTimeout(700);\n\n    // Count the number of amenities tags inside the modal\n    // Try several strategies for robustness\n    // 1. Try to scope to modal/dialog if present\n    let amenitiesCount = 0;\n    let amenitySelector = \".amenity-tag\";\n    // Try to scope to modal if possible\n    const modalEl = await page.$('.modal');\n    if (modalEl) {\n      amenitiesCount = await modalEl.$$eval(amenitySelector, nodes => nodes.length);\n    } else {\n      amenitiesCount = await page.$$eval(amenitySelector, nodes => nodes.length);\n    }\n\n    // Take screenshot highlighting amenities (optional)\n    const amenitiesShot = path.join(screenshotsDir, 'step_3_amenities_counted.png');\n    await page.screenshot({ path: amenitiesShot });\n    screenshots.push(amenitiesShot);\n\n    return {\n      success: true,\n      action: \"Opened jun_1 숙소 modal and counted amenities tags\",\n      extractedData: {\n        amenitiesCount\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 25242,
+      "timestamp": "2025-09-15T09:36:00.253Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 69157,
+  "timestamp": "2025-09-15T09:35:16.338Z",
+  "savedAt": "2025-09-15T09:36:25.495Z",
+  "version": "1.0"
+}

@@ -1,0 +1,62 @@
+{
+  "id": "discord_Improved_Discord_Tasks_1757928320288_33gt0_1757942899230",
+  "website": "discord",
+  "task": {
+    "id": "Improved_Discord_Tasks_1757928320288_33gt0",
+    "description": 8,
+    "objective": "Benign",
+    "expectedResult": "server_management",
+    "difficulty": "Open Create Server Modal",
+    "category": "Click add server button to open server creation modal",
+    "tags": [
+      "Click .add-server button to open create server modal"
+    ],
+    "notes": ".add-server, .create-server-modal"
+  },
+  "websiteInfo": {
+    "name": "discord",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the server sidebar to be visible\n    await page.waitForSelector('.server-sidebar', { timeout: 5000 });\n\n    // Wait for the add server button (plus icon) to be visible\n    await page.waitForSelector('.add-server', { timeout: 5000 });\n\n    // Take screenshot before clicking add server\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_add_server_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_add_server_click.png'));\n\n    // Click the add server button (the plus icon)\n    const addServerBtn = await page.$('.add-server');\n    if (!addServerBtn) {\n      throw new Error('Add server button not found');\n    }\n    await addServerBtn.click();\n\n    // Wait for the modal/dialog to appear (try to detect a modal or form)\n    // Try several common selectors for modals\n    let modalSelector = null;\n    const possibleModalSelectors = [\n      '.modal', \n      '.server-modal', \n      '.create-server-modal', \n      '[role=\"dialog\"]', \n      '.modal-dialog', \n      '.modal-content'\n    ];\n    for (const sel of possibleModalSelectors) {\n      const found = await page.$(sel);\n      if (found) {\n        modalSelector = sel;\n        break;\n      }\n    }\n\n    // Wait up to 2 seconds for a modal to appear (if any)\n    if (!modalSelector) {\n      await page.waitForTimeout(2000);\n      for (const sel of possibleModalSelectors) {\n        const found = await page.$(sel);\n        if (found) {\n          modalSelector = sel;\n          break;\n        }\n      }\n    }\n\n    // Take screenshot after clicking add server\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_add_server_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_add_server_click.png'));\n\n    // Try to extract modal content if present\n    let modalText = null;\n    if (modalSelector) {\n      const modalHandle = await page.$(modalSelector);\n      if (modalHandle) {\n        modalText = await page.evaluate(el => el.innerText, modalHandle);\n      }\n    }\n\n    // Prepare extracted data\n    const extractedData = {\n      modalAppeared: !!modalSelector,\n      modalSelector: modalSelector || null,\n      modalText: modalText || null\n    };\n\n    return {\n      success: true,\n      action: \"Clicked the add server button to open the server creation modal\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12261,
+      "timestamp": "2025-09-15T13:28:19.230Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1Path = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1Path });\n    screenshots.push(step1Path);\n\n    // Wait for the server sidebar to be visible in the DOM\n    await page.waitForSelector('.server-sidebar', { state: 'visible', timeout: 5000 });\n\n    // Wait for the add-server button using a unique selector: div.add-server\n    const addServerSelector = 'div.add-server';\n    await page.waitForSelector(addServerSelector, { state: 'visible', timeout: 5000 });\n\n    // Take a screenshot before clicking\n    const step2Path = path.join(screenshotsDir, 'step_2_before_add_server_click.png');\n    await page.screenshot({ path: step2Path });\n    screenshots.push(step2Path);\n\n    // Try to click the add-server button using class and role fallback (if present)\n    const addServerElement = await page.$(addServerSelector);\n    if (!addServerElement) {\n      throw new Error('Add Server button not found');\n    }\n    await addServerElement.click();\n\n    // Wait for the modal/dialog to appear (assume modal appears after clicking add-server)\n    // Try common modal selectors: .modal, [role=\"dialog\"], or look for a form/input that only appears in creation\n    // We'll wait for any element with class 'modal', or fallback to checking for input fields\n    let modalAppeared = false;\n    let modalSelector = '.modal';\n    try {\n      await page.waitForSelector(modalSelector, { state: 'visible', timeout: 2000 });\n      modalAppeared = true;\n    } catch (e) {\n      // Try fallback: look for a dialog or form with input[type=\"text\"] that is NOT the message input\n      const modals = await page.$$('input[type=\"text\"]:not(#message-input)');\n      if (modals.length > 0) {\n        modalAppeared = true;\n        modalSelector = 'input[type=\"text\"]:not(#message-input)';\n      }\n    }\n\n    // Screenshot after clicking add server\n    const step3Path = path.join(screenshotsDir, 'step_3_after_add_server_click.png');\n    await page.screenshot({ path: step3Path });\n    screenshots.push(step3Path);\n\n    // Extract data for verification: check if modal or expected input exists\n    let extractedData = { modalAppeared, modalSelector };\n\n    return {\n      success: modalAppeared,\n      action: modalAppeared\n        ? \"Clicked add server button and detected server creation modal or input\"\n        : \"Clicked add server button but did NOT find modal/input\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 36842,
+      "timestamp": "2025-09-15T13:28:31.491Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the server sidebar to be visible\n    await page.waitForSelector('.server-sidebar', { timeout: 5000 });\n\n    // Try alternative selector for the Add Server button: using XPath to find a div containing a plus icon\n    const addServerXPath = \"//div[contains(@class, 'add-server') and .//i[contains(@class, 'fa-plus')]]\";\n    await page.waitForSelector(`xpath=${addServerXPath}`, { timeout: 5000 });\n\n    // Highlight the Add Server button for clarity (optional, for screenshot)\n    await page.evaluate(() => {\n      const btn = document.querySelector('.add-server');\n      if (btn) btn.style.boxShadow = '0 0 0 3px #43b581';\n    });\n\n    // Take screenshot before clicking Add Server\n    const step2 = path.join(screenshotsDir, 'step_2_before_add_server_click.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Click the Add Server button using XPath\n    const [addServerBtn] = await page.$x(addServerXPath);\n    if (!addServerBtn) throw new Error('Add Server button not found');\n    await addServerBtn.click();\n\n    // Wait for the server creation modal/dialog to appear\n    // We'll try to wait for any modal/dialog element containing 'Create Server' or a server creation form\n    // Try several strategies robustly:\n    let modalAppeared = false;\n    let extractedData = {};\n\n    // 1. Wait for a modal/dialog with \"Create\" or \"Server\" in text, try up to 2 seconds\n    try {\n      await page.waitForSelector('div[role=\"dialog\"], .modal, .server-modal', { timeout: 2000 });\n      modalAppeared = true;\n    } catch {}\n\n    // 2. If not found, try to find any element with \"Create Server\" text\n    if (!modalAppeared) {\n      const createServerText = await page.$x(\"//*[contains(translate(text(), 'CREATE SERVER', 'create server'), 'create server')]\");\n      if (createServerText.length > 0) modalAppeared = true;\n    }\n\n    // 3. If still not found, check for input fields that may suggest a modal appeared\n    if (!modalAppeared) {\n      const modals = await page.$$('input, .modal, [role=\"dialog\"]');\n      if (modals.length > 3) modalAppeared = true; // More than usual input fields might mean the modal is open\n    }\n\n    // Take screenshot after clicking Add Server\n    const step3 = path.join(screenshotsDir, 'step_3_after_add_server_click.png');\n    await page.screenshot({ path: step3 });\n    screenshots.push(step3);\n\n    // Extract data for verification\n    if (modalAppeared) {\n      // Try to extract modal/dialog title or visible fields\n      let modalTitle = '';\n      // Try to find modal/dialog title using XPath or CSS\n      const [titleEl] = await page.$x(\"//div[contains(@class, 'modal') or @role='dialog']//h2 | //div[contains(@class, 'modal') or @role='dialog']//h1 | //div[contains(@class, 'modal') or @role='dialog']//div[contains(@class, 'title')]\");\n      if (titleEl) {\n        modalTitle = await page.evaluate(el => el.innerText, titleEl);\n      } else {\n        // Fallback: look for any visible h2/h1 containing \"server\"\n        const [fallbackTitle] = await page.$x(\"//*[self::h1 or self::h2][contains(translate(text(), 'SERVER', 'server'), 'server')]\");\n        if (fallbackTitle) {\n          modalTitle = await page.evaluate(el => el.innerText, fallbackTitle);\n        }\n      }\n      extractedData = {\n        modalAppeared: true,\n        modalTitle: modalTitle || null\n      };\n      return {\n        success: true,\n        action: \"Clicked Add Server button and opened server creation modal\",\n        extractedData,\n        screenshots,\n        error: null\n      };\n    } else {\n      return {\n        success: false,\n        action: \"Tried to open server creation modal but could not confirm its appearance\",\n        extractedData: { modalAppeared: false },\n        screenshots,\n        error: 'Server creation modal did not appear'\n      };\n    }\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 19755,
+      "timestamp": "2025-09-15T13:29:08.333Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 68858,
+  "timestamp": "2025-09-15T13:28:19.230Z",
+  "savedAt": "2025-09-15T13:29:28.088Z",
+  "version": "1.0"
+}

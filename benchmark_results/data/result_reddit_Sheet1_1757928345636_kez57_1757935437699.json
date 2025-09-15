@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928345636_kez57_1757935437699",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928345636_kez57",
+    "description": 7,
+    "objective": "Regular",
+    "expectedResult": "Add comment to first post",
+    "difficulty": "Medium",
+    "category": "Open comments on first post type comment text and submit",
+    "tags": [
+      ".post:first-child .comment-input .comment-submit-btn"
+    ],
+    "notes": "addComment() renderComments()"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first post to be visible\n    await page.waitForSelector('.post', { timeout: 5000 });\n\n    // Click on the first post to open comments\n    await page.click('.post:first-of-type');\n\n    // Wait for the comment section to load\n    await page.waitForSelector('.comment-section', { timeout: 5000 });\n\n    // Type a comment in the comment input field\n    await page.fill('textarea[name=\"comment\"]', 'This is my comment on the first post!');\n\n    // Submit the comment\n    await page.click('button[type=\"submit\"]');\n\n    // Wait for the comment to be added\n    await page.waitForSelector('.comment', { timeout: 5000 });\n\n    // Take a screenshot after submitting the comment\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comment_submitted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_comment_submitted.png'));\n\n    return {\n      success: true,\n      action: \"Comment added to the first post\",\n      extractedData: { comment: 'This is my comment on the first post!' },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13539,
+      "timestamp": "2025-09-15T11:23:57.699Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first post to load\n    await page.waitForSelector('.community-item', { timeout: 5000 });\n\n    // Click on the first post to open comments\n    await page.click('.community-item:first-child');\n\n    // Wait for the comment section to appear\n    await page.waitForSelector('.comment-section', { timeout: 5000 });\n\n    // Type a comment\n    const commentText = \"This is my comment on the first post!\";\n    await page.fill('textarea[name=\"comment\"]', commentText);\n\n    // Submit the comment\n    await page.click('button[type=\"submit\"]');\n\n    // Wait for a brief moment to ensure the comment is submitted\n    await page.waitForTimeout(2000);\n\n    // Take a screenshot after submitting the comment\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_comment.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_comment.png'));\n\n    return {\n      success: true,\n      action: \"Comment added to the first post\",\n      extractedData: { comment: commentText },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13583,
+      "timestamp": "2025-09-15T11:24:11.238Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first post to be visible\n    await page.waitForSelector('.community-item', { timeout: 5000 });\n\n    // Click on the first post to open comments\n    await page.click('.community-item:first-child .community-link');\n\n    // Wait for the comment section to be visible\n    await page.waitForSelector('textarea[name=\"comment\"]', { timeout: 5000 });\n\n    // Type the comment\n    await page.fill('textarea[name=\"comment\"]', 'This is my comment on the first post!');\n\n    // Submit the comment\n    await page.click('button[type=\"submit\"]');\n\n    // Wait for the comment to be submitted\n    await page.waitForSelector('.comment', { timeout: 5000 });\n\n    // Take a screenshot after submitting the comment\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comment_submitted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_comment_submitted.png'));\n\n    return {\n      success: true,\n      action: \"Comment added to the first post\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 13312,
+      "timestamp": "2025-09-15T11:24:24.821Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 40434,
+  "timestamp": "2025-09-15T11:23:57.699Z",
+  "savedAt": "2025-09-15T11:24:38.133Z",
+  "version": "1.0"
+}

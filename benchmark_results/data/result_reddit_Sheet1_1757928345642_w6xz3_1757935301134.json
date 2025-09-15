@@ -1,0 +1,64 @@
+{
+  "id": "reddit_Sheet1_1757928345642_w6xz3_1757935301134",
+  "website": "reddit",
+  "task": {
+    "id": "Sheet1_1757928345642_w6xz3",
+    "description": 4,
+    "objective": "Regular",
+    "expectedResult": "Create a new post",
+    "difficulty": "Medium",
+    "category": "Click create post button open modal fill title and submit",
+    "tags": [
+      ".create-post-btn #postModal #postTitle .submit-btn"
+    ],
+    "notes": "openModal() handlePostSubmit()"
+  },
+  "websiteInfo": {
+    "name": "reddit",
+    "htmlFiles": [
+      "community.html",
+      "index.html",
+      "profile.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click the \"Create Post\" button\n    await page.waitForSelector('button.create-post-btn');\n    await page.click('button.create-post-btn');\n\n    // Wait for the post modal to appear\n    await page.waitForSelector('#postTitle');\n\n    // Fill in the post title\n    await page.fill('#postTitle', 'My First Post Title');\n\n    // Select a community from the dropdown\n    await page.selectOption('#postCommunity', 'programming');\n\n    // Submit the post\n    await page.click('button[type=\"submit\"]'); // Assuming there's a submit button in the modal\n\n    // Wait for the post to be created (you may need to adjust the selector based on the actual implementation)\n    await page.waitForSelector('.post-success-message'); // Adjust this selector based on the actual success message\n\n    // Take a screenshot after submitting\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_post_submitted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_post_submitted.png'));\n\n    return {\n      success: true,\n      action: \"Created a new post with title 'My First Post Title'\",\n      extractedData: {\n        title: 'My First Post Title',\n        community: 'programming'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14238,
+      "timestamp": "2025-09-15T11:21:41.134Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click the Create Post button\n    await page.waitForSelector('button.create-post-btn');\n    await page.click('button.create-post-btn');\n    \n    // Wait for the post modal to appear\n    await page.waitForSelector('#postTitle');\n\n    // Fill in the title for the post\n    const postTitle = \"My New Post Title\";\n    await page.fill('#postTitle', postTitle);\n\n    // Optionally select a community (uncomment if needed)\n    // await page.selectOption('#postCommunity', 'programming');\n\n    // Submit the post\n    await page.click('button[type=\"submit\"]'); // Adjust selector if necessary\n\n    // Take a screenshot after submission\n    await page.waitForTimeout(1000); // Wait for any transition\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_post_submitted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_post_submitted.png'));\n\n    return {\n      success: true,\n      action: \"Created a new post with title: \" + postTitle,\n      extractedData: { title: postTitle },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15076,
+      "timestamp": "2025-09-15T11:21:55.372Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Click the 'Create Post' button\n    await page.waitForSelector('button.create-post-btn', { timeout: 5000 });\n    await page.click('button.create-post-btn');\n\n    // Take screenshot of the modal after opening\n    await page.waitForSelector('#postTitle', { timeout: 5000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_modal_opened.png'));\n\n    // Fill in the post title\n    const postTitle = \"My New Post Title\";\n    await page.fill('#postTitle', postTitle);\n\n    // Submit the form (assuming there's a submit button that appears after filling the title)\n    await page.waitForSelector('button[type=\"submit\"]', { timeout: 5000 });\n    await page.click('button[type=\"submit\"]');\n\n    // Wait for the post to be created and verify by checking for a confirmation message or the new post\n    await page.waitForSelector('.post-confirmation', { timeout: 5000 }); // Adjust selector based on actual confirmation element\n\n    // Take final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_post_created.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_post_created.png'));\n\n    return {\n      success: true,\n      action: \"Created a new post with the title\",\n      extractedData: {\n        title: postTitle\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16980,
+      "timestamp": "2025-09-15T11:22:10.448Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 46294,
+  "timestamp": "2025-09-15T11:21:41.134Z",
+  "savedAt": "2025-09-15T11:22:27.428Z",
+  "version": "1.0"
+}

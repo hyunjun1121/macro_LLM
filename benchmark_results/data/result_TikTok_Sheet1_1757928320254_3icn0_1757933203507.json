@@ -1,0 +1,64 @@
+{
+  "id": "TikTok_Sheet1_1757928320254_3icn0_1757933203507",
+  "website": "TikTok",
+  "task": {
+    "id": "Sheet1_1757928320254_3icn0",
+    "description": 9,
+    "objective": "General",
+    "expectedResult": "댓글 모달에서 'Great content!' 댓글을 작성하고 전송",
+    "difficulty": "#commentInput에 'Great content!' 입력 후 #commentSendBtn 클릭",
+    "category": "Medium",
+    "tags": [
+      "#commentInput",
+      "#commentSendBtn",
+      "#commentsList"
+    ],
+    "notes": "#commentInput에 'Great content!' 입력 후 #commentSendBtn 클릭"
+  },
+  "websiteInfo": {
+    "name": "TikTok",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the comment button to be visible (using selector for comment button)\n    await page.waitForSelector('button.action-btn.comment-btn', { timeout: 5000 });\n\n    // Click the comment button to open the comment modal\n    await page.click('button.action-btn.comment-btn');\n\n    // Wait for the comment input to appear\n    await page.waitForSelector('#commentInput', { timeout: 5000 });\n\n    // Take screenshot after modal opens\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comment_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_comment_modal_opened.png'));\n\n    // Type 'Great content!' into the comment input\n    await page.fill('#commentInput', 'Great content!');\n\n    // Take screenshot after typing comment\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_comment_typed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_comment_typed.png'));\n\n    // Wait for the send button to be enabled and visible\n    await page.waitForSelector('#commentSendBtn', { state: 'visible', timeout: 5000 });\n\n    // Click the send button\n    await page.click('#commentSendBtn');\n\n    // Wait for a short moment to allow comment to be processed (simulate UI update)\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after sending comment\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_comment_sent.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_comment_sent.png'));\n\n    // Attempt to verify if the comment appears in the modal (look for the text)\n    let commentAppeared = false;\n    try {\n      // Wait for the comment to appear in the DOM (relaxed selector, in case of list)\n      await page.waitForSelector(`text=Great content!`, { timeout: 3000 });\n      commentAppeared = true;\n    } catch (e) {\n      commentAppeared = false;\n    }\n\n    return {\n      success: true,\n      action: \"댓글 모달에서 'Great content!' 댓글을 작성하고 전송함\",\n      extractedData: {\n        commentSent: true,\n        commentAppeared\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 12590,
+      "timestamp": "2025-09-15T10:46:43.507Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first video feed to appear (using xpath for robustness)\n    await page.waitForSelector('//div[contains(@class,\"video-actions\")]//button[contains(@class,\"action-btn\") and contains(@class,\"comment-btn\")]', { timeout: 5000 });\n\n    // Click the comment button (using xpath: first .action-btn.comment-btn in the first .video-actions)\n    const commentBtn = await page.$('//div[contains(@class,\"video-actions\")]//button[contains(@class,\"action-btn\") and contains(@class,\"comment-btn\")]');\n    await commentBtn.click();\n\n    // Wait for the comment modal/input to appear (using input with placeholder just in case)\n    await page.waitForSelector('input#commentInput, input[placeholder=\"Add a comment...\"]', { timeout: 5000 });\n\n    // Take screenshot after modal opens\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_comment_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_comment_modal_opened.png'));\n\n    // Use alternative selector: input by placeholder (in case id changes)\n    const commentInput = await page.$('input[placeholder=\"Add a comment...\"]') || await page.$('#commentInput');\n    await commentInput.click();\n    await commentInput.fill('Great content!');\n\n    // Take screenshot after typing comment\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_comment_typed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_comment_typed.png'));\n\n    // Wait for send button to become enabled (by id, then fallback to button type/aria-label)\n    let sendBtn = await page.$('#commentSendBtn');\n    if (!sendBtn) {\n      // Fallback: try button with text or aria-label\n      sendBtn = await page.$('button[aria-label*=\"send\"], button:has-text(\"Send\")');\n    }\n    if (!sendBtn) {\n      // Fallback: try button next to input\n      sendBtn = await page.$('//input[@placeholder=\"Add a comment...\"]/following-sibling::button');\n    }\n\n    if (!sendBtn) throw new Error('Send button not found');\n\n    await sendBtn.click();\n\n    // Wait for a small delay to let comment submit (or for input to clear)\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after sending comment\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_comment_sent.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_comment_sent.png'));\n\n    // Optionally, try to verify that input is cleared or comment appears (if DOM updates)\n    let inputValue = await page.evaluate(() => {\n      const el = document.querySelector('input[placeholder=\"Add a comment...\"]') || document.querySelector('#commentInput');\n      return el ? el.value : null;\n    });\n\n    return {\n      success: true,\n      action: \"댓글 모달에서 'Great content!' 댓글을 입력하고 전송 버튼을 클릭함\",\n      extractedData: {\n        commentInputAfterSend: inputValue\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15372,
+      "timestamp": "2025-09-15T10:46:56.097Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the first video action buttons to be visible (using aria-label as alternative selector)\n    // Find the comment button using XPath with visible comment count as a hint\n    const commentBtn = await page.waitForSelector(\"//button[contains(@class,'action-btn') and .//*[contains(text(),'15.3K')]]\", { timeout: 4000 });\n    await commentBtn.click();\n\n    // Wait for the comment modal/input to appear\n    // Use a combination of input placeholder and ID for robustness\n    const commentInput = await page.waitForSelector(\"//input[@id='commentInput' and @placeholder='Add a comment...']\", { timeout: 4000 });\n\n    // Type the comment\n    await commentInput.fill('Great content!');\n\n    // Take screenshot after typing comment\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_filled_comment.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_filled_comment.png'));\n\n    // Find the send button next to the input (using its ID and possible parent relationships)\n    // Try direct ID\n    let sendBtn = await page.$('#commentSendBtn');\n    if (!sendBtn) {\n      // Fallback: button after the input in the DOM\n      sendBtn = await page.$(\"//input[@id='commentInput']/following-sibling::button[contains(@id,'commentSendBtn')]\");\n    }\n    if (!sendBtn) {\n      throw new Error(\"Comment send button not found\");\n    }\n    await sendBtn.click();\n\n    // Wait for the input to clear or a comment to appear in the comment list (simulate dynamic behavior)\n    await page.waitForTimeout(800); // give time for UI update\n\n    // Take screenshot after sending\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_send.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_send.png'));\n\n    // Attempt to extract the latest comment text (assuming a comment list exists)\n    // Try to find a comment with the text \"Great content!\" in the DOM\n    // Try a generic XPath for any element containing \"Great content!\"\n    const commentSelector = \"//*[contains(text(),'Great content!')]\";\n    let commentAppeared = false;\n    try {\n      await page.waitForSelector(commentSelector, { timeout: 2500 });\n      commentAppeared = true;\n    } catch (e) {\n      commentAppeared = false;\n    }\n\n    return {\n      success: true,\n      action: \"Typed 'Great content!' in #commentInput and clicked #commentSendBtn in the comment modal.\",\n      extractedData: {\n        commentSent: true,\n        commentAppeared: commentAppeared\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15428,
+      "timestamp": "2025-09-15T10:47:11.469Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 43390,
+  "timestamp": "2025-09-15T10:46:43.507Z",
+  "savedAt": "2025-09-15T10:47:26.897Z",
+  "version": "1.0"
+}

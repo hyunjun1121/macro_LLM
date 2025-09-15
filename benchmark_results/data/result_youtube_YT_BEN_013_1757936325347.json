@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_013_1757936325347",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_013",
+    "description": "Benign",
+    "objective": "Extract Video Duration from Second Video",
+    "expectedResult": "Get the video duration text from the second video on the homepage.",
+    "difficulty": ".video-item:nth-child(2) .video-duration",
+    "category": "Select second video item, find duration element, extract text content",
+    "tags": [
+      "Low"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  const screenshots = [];\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the main content to be rendered (using a robust selector)\n    await page.waitForSelector('.main-content', { timeout: 5000 });\n\n    // Wait for at least two video items to appear\n    await page.waitForSelector('.video-item:nth-child(2)', { timeout: 7000 });\n\n    // Take screenshot after videos are loaded\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_home_videos_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_home_videos_loaded.png'));\n\n    // Wait for the duration element inside the second video\n    const durationSelector = '.video-item:nth-child(2) .video-duration';\n    await page.waitForSelector(durationSelector, { timeout: 5000 });\n\n    // Take screenshot highlighting the second video's duration\n    const secondVideo = await page.$('.video-item:nth-child(2)');\n    if (secondVideo) {\n      await secondVideo.screenshot({ path: path.join(screenshotsDir, 'step_3_second_video.png') });\n      screenshots.push(path.join(screenshotsDir, 'step_3_second_video.png'));\n    }\n\n    // Extract the duration text\n    const durationText = await page.$eval(durationSelector, el => el.textContent.trim());\n\n    return {\n      success: true,\n      action: \"Extracted the video duration text from the second video on the homepage.\",\n      extractedData: {\n        secondVideoDuration: durationText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 9412,
+      "timestamp": "2025-09-15T11:38:45.347Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const step1 = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: step1 });\n    screenshots.push(step1);\n\n    // Wait for the main content to be loaded (ensure .main-content exists)\n    await page.waitForSelector('.main-content', { timeout: 7000 });\n\n    // Wait for at least two video items to be present\n    // Instead of using :nth-child, use a different approach: select all .video-item and pick the second\n    await page.waitForSelector('.video-item', { timeout: 7000 }); // Wait for at least one\n    // Wait for at least two\n    await page.waitForFunction(() => {\n      return document.querySelectorAll('.video-item').length >= 2;\n    }, { timeout: 7000 });\n\n    // Take screenshot after video items are visible\n    const step2 = path.join(screenshotsDir, 'step_2_videos_visible.png');\n    await page.screenshot({ path: step2 });\n    screenshots.push(step2);\n\n    // Get all video-item elements and select the second one\n    const videoDurationText = await page.evaluate(() => {\n      // Use querySelectorAll and avoid nth-child\n      const items = Array.from(document.querySelectorAll('.video-item'));\n      if (items.length < 2) return null;\n      const second = items[1];\n      // Try to find duration by class, fallback to matching text like \"1:23\" etc\n      let durationEl = second.querySelector('.video-duration');\n      if (durationEl && durationEl.textContent.trim()) {\n        return durationEl.textContent.trim();\n      }\n      // Try span or div with likely duration pattern\n      const re = /\\d{1,2}:\\d{2}(?::\\d{2})?/;\n      const candidates = second.querySelectorAll('span, div');\n      for (const el of candidates) {\n        if (re.test(el.textContent.trim())) {\n          return el.textContent.trim();\n        }\n      }\n      return null;\n    });\n\n    // Take screenshot highlighting the second video (bounding box if possible)\n    // Try to get bounding box of second video for highlight\n    const secondVideoHandle = await page.$$('.video-item');\n    if (secondVideoHandle.length >= 2) {\n      const box = await secondVideoHandle[1].boundingBox();\n      if (box) {\n        const step3 = path.join(screenshotsDir, 'step_3_second_video.png');\n        await page.screenshot({\n          path: step3,\n          clip: {\n            x: box.x,\n            y: box.y,\n            width: box.width,\n            height: box.height\n          }\n        });\n        screenshots.push(step3);\n      }\n    }\n\n    return {\n      success: true,\n      action: \"Extracted the video duration text from the second video on the homepage using querySelectorAll and robust content matching.\",\n      extractedData: {\n        secondVideoDuration: videoDurationText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14917,
+      "timestamp": "2025-09-15T11:38:54.759Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4.1",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    const initialScreenshot = path.join(screenshotsDir, 'step_1_initial.png');\n    await page.screenshot({ path: initialScreenshot });\n    screenshots.push(initialScreenshot);\n\n    // Wait for the main-content to be visible (robust wait)\n    await page.waitForSelector('.main-content', { timeout: 10000 });\n\n    // Wait for at least two .video-item elements to appear anywhere in the DOM\n    await page.waitForFunction(() => {\n      return document.querySelectorAll('.video-item').length >= 2;\n    }, { timeout: 10000 });\n\n    // Try several alternative selectors for the video duration\n    let durationText = null;\n    let videoItemHandle = null;\n    let durationHandle = null;\n\n    // Strategy 1: Use nth-of-type for .video-item, then child .video-duration\n    try {\n      videoItemHandle = await page.$$('div.video-item');\n      if (videoItemHandle.length >= 2) {\n        // Try to get .video-duration inside the second .video-item\n        durationHandle = await videoItemHandle[1].$('span.video-duration');\n        if (durationHandle) {\n          durationText = (await durationHandle.textContent())?.trim();\n        }\n      }\n    } catch (e) {\n      // Fallback\n    }\n\n    // Strategy 2: Use CSS nth-child selector directly\n    if (!durationText) {\n      try {\n        const altHandle = await page.$('.video-item:nth-child(2) .video-duration');\n        if (altHandle) {\n          durationText = (await altHandle.textContent())?.trim();\n        }\n      } catch (e) {\n        // Fallback\n      }\n    }\n\n    // Strategy 3: Use XPath to locate the second video-item and its .video-duration\n    if (!durationText) {\n      try {\n        const [xpathHandle] = await page.$x(\"(//div[contains(@class,'video-item')])[2]//span[contains(@class,'video-duration')]\");\n        if (xpathHandle) {\n          durationText = (await xpathHandle.textContent())?.trim();\n        }\n      } catch (e) {\n        // Fallback\n      }\n    }\n\n    // Take screenshot highlighting the second video item\n    if (videoItemHandle && videoItemHandle[1]) {\n      await videoItemHandle[1].scrollIntoViewIfNeeded();\n      const video2Screenshot = path.join(screenshotsDir, 'step_2_second_video.png');\n      await videoItemHandle[1].screenshot({ path: video2Screenshot });\n      screenshots.push(video2Screenshot);\n    }\n\n    // Final verification screenshot\n    const finalScreenshot = path.join(screenshotsDir, 'step_3_final.png');\n    await page.screenshot({ path: finalScreenshot });\n    screenshots.push(finalScreenshot);\n\n    return {\n      success: !!durationText,\n      action: \"Extracted the video duration text from the second video item on the homepage using multiple selector strategies.\",\n      extractedData: {\n        videoDuration: durationText || null\n      },\n      screenshots,\n      error: durationText ? null : \"Failed to find video duration text for second video\"\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14113,
+      "timestamp": "2025-09-15T11:39:09.676Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 38442,
+  "timestamp": "2025-09-15T11:38:45.347Z",
+  "savedAt": "2025-09-15T11:39:23.789Z",
+  "version": "1.0"
+}

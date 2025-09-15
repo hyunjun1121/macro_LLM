@@ -1,0 +1,66 @@
+{
+  "id": "facebook_Sheet1_1757928345643_n8oc4_1757937328950",
+  "website": "facebook",
+  "task": {
+    "id": "Sheet1_1757928345643_n8oc4",
+    "description": 10,
+    "objective": "Benign",
+    "expectedResult": "Share post to specific group",
+    "difficulty": "Share post to specific group",
+    "category": "Medium",
+    "tags": [
+      ".post:first-child .share-btn",
+      "#shareModal",
+      ".share-option",
+      "group selection dropdown"
+    ],
+    "notes": "Find first post in feed, click share button, select 'Share to Group' option, choose first available group"
+  },
+  "websiteInfo": {
+    "name": "facebook",
+    "htmlFiles": [
+      "home.html",
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Log in to Facebook\n    await page.waitForSelector('#email');\n    await page.fill('#email', 'your_email@example.com'); // Replace with your email\n    await page.fill('#password', 'your_password'); // Replace with your password\n    await page.click('button.login-btn');\n    await page.waitForLoadState('networkidle');\n\n    // Take screenshot after logging in\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_logged_in.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_logged_in.png'));\n\n    // Navigate to the specific group\n    await page.goto('https://www.facebook.com/groups/your_group_id'); // Replace with your group ID\n    await page.waitForLoadState('networkidle');\n\n    // Share a post in the group\n    await page.waitForSelector('div[aria-label=\"Create a post\"]');\n    await page.click('div[aria-label=\"Create a post\"]');\n    await page.waitForSelector('div[contenteditable=\"true\"]');\n    await page.fill('div[contenteditable=\"true\"]', 'Your post content here'); // Replace with your post content\n    await page.click('button[type=\"submit\"]'); // Click the share button\n    await page.waitForLoadState('networkidle');\n\n    // Take screenshot after sharing the post\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_post_shared.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_post_shared.png'));\n\n    return {\n      success: true,\n      action: \"Successfully shared a post to the specified group\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 15230,
+      "timestamp": "2025-09-15T11:55:28.950Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the email input field and enter email\n    await page.waitForSelector('input[placeholder=\"Email or phone number\"]');\n    await page.fill('input[placeholder=\"Email or phone number\"]', 'your_email@example.com');\n\n    // Wait for the password input field and enter password\n    await page.waitForSelector('input[placeholder=\"Password\"]');\n    await page.fill('input[placeholder=\"Password\"]', 'your_password');\n\n    // Click the \"Log In\" button\n    await page.waitForSelector('button.login-btn');\n    await page.click('button.login-btn');\n\n    // Wait for navigation to complete\n    await page.waitForLoadState('networkidle');\n\n    // Take a screenshot after login\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_login.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_login.png'));\n\n    // Navigate to the specific group page (you need to replace the URL with the actual group URL)\n    await page.goto('https://www.facebook.com/groups/your_group_id');\n\n    // Wait for the post input area and enter the post content\n    await page.waitForSelector('div[aria-label=\"Create a post\"]');\n    await page.click('div[aria-label=\"Create a post\"]');\n    await page.fill('div[aria-label=\"Create a post\"] textarea', 'Your post content here');\n\n    // Click the \"Post\" button\n    await page.waitForSelector('div[aria-label=\"Post\"]');\n    await page.click('div[aria-label=\"Post\"]');\n\n    // Wait for the post to be submitted\n    await page.waitForTimeout(2000); // Adjust timeout as necessary\n\n    // Take a final screenshot to confirm the post was made\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_post_confirmed.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_post_confirmed.png'));\n\n    return {\n      success: true,\n      action: \"Successfully shared a post to the specific group\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 16491,
+      "timestamp": "2025-09-15T11:55:44.180Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "openai/gpt-4o-mini",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for the login form to be visible\n    await page.waitForSelector('#email');\n\n    // Fill in the login form\n    await page.fill('#email', 'your-email@example.com'); // Use your email here\n    await page.fill('#password', 'your-password'); // Use your password here\n    await page.click('button.login-btn'); // Click the login button\n\n    // Wait for the navigation to the home page after login\n    await page.waitForLoadState('networkidle');\n\n    // Take a screenshot after logging in\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_after_login.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_after_login.png'));\n\n    // Navigate to the specific group page\n    await page.goto('https://www.facebook.com/groups/your-group-id'); // Replace with your group ID\n    await page.waitForLoadState('networkidle');\n\n    // Wait for the post box to be visible\n    await page.waitForSelector('div[aria-label=\"Create a post\"]');\n\n    // Create a new post\n    await page.click('div[aria-label=\"Create a post\"]');\n    await page.fill('div[role=\"textbox\"]', 'This is a test post to the group.'); // Enter your post content\n    await page.click('button:has-text(\"Post\")'); // Click the Post button\n\n    // Wait for post confirmation\n    await page.waitForTimeout(2000); // Adjust time as necessary\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_post_confirmation.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_post_confirmation.png'));\n\n    return {\n      success: true,\n      action: \"Successfully shared a post to the specific group\",\n      extractedData: {},\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 14415,
+      "timestamp": "2025-09-15T11:56:00.671Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 46136,
+  "timestamp": "2025-09-15T11:55:28.950Z",
+  "savedAt": "2025-09-15T11:56:15.086Z",
+  "version": "1.0"
+}

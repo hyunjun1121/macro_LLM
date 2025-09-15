@@ -1,0 +1,68 @@
+{
+  "id": "Airbnb_TASK_015_1757931824502",
+  "website": "Airbnb",
+  "task": {
+    "id": "TASK_015",
+    "description": "General",
+    "objective": "Complete Search Workflow",
+    "expectedResult": "'Gangnam'을 검색하고 luxury 필터 적용 후 jun_2를 선택하여 모달까지 열고 각 단계별 성공 여부 기록하기",
+    "difficulty": "Hard",
+    "category": "#locationInput, .search-btn, [data-filter='luxury'], [data-listing-id='jun_2'], .modal-overlay",
+    "tags": [
+      "Multi-step workflow",
+      "validation"
+    ],
+    "notes": "워크플로우 성공 객체 (예: {search: true, filter: true, selection: true, modal: true})"
+  },
+  "websiteInfo": {
+    "name": "Airbnb",
+    "htmlFiles": [
+      "experiences.html",
+      "host-dashboard.html",
+      "index.html",
+      "profile.html",
+      "property.html",
+      "trips.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Step 1: Search for 'Gangnam'\n    await page.waitForSelector('#locationInput');\n    await page.fill('#locationInput', 'Gangnam');\n    await page.click('.search-btn');\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_search.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_search.png'));\n\n    // Step 2: Apply luxury filter\n    await page.waitForSelector('[data-filter=\"luxury\"]');\n    await page.click('[data-filter=\"luxury\"]');\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_luxury_filter.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_luxury_filter.png'));\n\n    // Step 3: Select jun_2 listing\n    await page.waitForSelector('[data-listing-id=\"jun_2\"]');\n    await page.click('[data-listing-id=\"jun_2\"]');\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_select_listing.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_select_listing.png'));\n\n    // Step 4: Verify modal opens\n    await page.waitForSelector('.modal-overlay');\n    const modalVisible = await page.isVisible('.modal-overlay');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_5_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_5_modal_open.png'));\n\n    // Extract listing details from modal\n    const listingData = await page.evaluate(() => {\n      const modal = document.querySelector('.modal-overlay');\n      return {\n        title: modal.querySelector('h1')?.innerText,\n        price: modal.querySelector('.price')?.innerText,\n        rating: modal.querySelector('.rating')?.innerText,\n        isVisible: !!modal\n      };\n    });\n\n    return {\n      success: true,\n      action: \"Successfully searched for 'Gangnam', applied luxury filter, selected jun_2 listing, and opened modal\",\n      extractedData: {\n        searchTerm: 'Gangnam',\n        filterApplied: 'luxury',\n        listingSelected: 'jun_2',\n        modalOpened: modalVisible,\n        listingDetails: listingData\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [...screenshots, path.join(screenshotsDir, 'error.png')],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 89726,
+      "timestamp": "2025-09-15T10:23:44.502Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    const screenshots = [];\n    const extractedData = {\n      searchStep: false,\n      filterStep: false,\n      selectionStep: false,\n      modalStep: false\n    };\n\n    // Step 1: Take initial screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Step 2: Enter 'Gangnam' in location input\n    await page.waitForSelector('#locationInput', { timeout: 10000 });\n    await page.fill('#locationInput', 'Gangnam');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_location_filled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_location_filled.png'));\n\n    // Step 3: Click search button using alternative selector strategy\n    await page.waitForSelector('button.search-btn', { timeout: 10000 });\n    await page.click('button.search-btn');\n    await page.waitForLoadState('networkidle');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_clicked.png'));\n    extractedData.searchStep = true;\n\n    // Step 4: Apply luxury filter\n    await page.waitForSelector('[data-filter=\"luxury\"]', { timeout: 10000 });\n    await page.click('[data-filter=\"luxury\"]');\n    await page.waitForTimeout(2000); // Wait for filter to apply\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_luxury_filter.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_luxury_filter.png'));\n    extractedData.filterStep = true;\n\n    // Step 5: Find and click jun_2 listing\n    await page.waitForSelector('[data-listing-id=\"jun_2\"]', { timeout: 10000 });\n    await page.click('[data-listing-id=\"jun_2\"]');\n    await page.waitForLoadState('networkidle');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_5_jun2_selected.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_5_jun2_selected.png'));\n    extractedData.selectionStep = true;\n\n    // Step 6: Verify modal is open\n    await page.waitForSelector('.modal-overlay', { timeout: 10000 });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_6_modal_open.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_6_modal_open.png'));\n    extractedData.modalStep = true;\n\n    return {\n      success: true,\n      action: \"Successfully searched 'Gangnam', applied luxury filter, selected jun_2 listing, and opened modal\",\n      extractedData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take final screenshot on error\n    await page.screenshot({ path: path.join(screenshotsDir, 'error_final_state.png') });\n    screenshots.push(path.join(screenshotsDir, 'error_final_state.png'));\n    \n    return {\n      success: false,\n      action: \"Failed to complete automation task\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 145628,
+      "timestamp": "2025-09-15T10:25:14.228Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Step 1: Type 'Gangnam' in location input\n    await page.waitForSelector('#locationInput', { state: 'visible' });\n    await page.fill('#locationInput', 'Gangnam');\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_location_filled.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_location_filled.png'));\n\n    // Step 2: Click search button\n    await page.click('.search-btn');\n    await page.waitForTimeout(1000); // Wait for results to load\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_search_results.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_search_results.png'));\n\n    // Step 3: Apply luxury filter\n    await page.waitForSelector('[data-filter=\"luxury\"]', { state: 'visible' });\n    await page.click('[data-filter=\"luxury\"]');\n    await page.waitForTimeout(1000); // Wait for filter to apply\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_4_luxury_filter.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_4_luxury_filter.png'));\n\n    // Step 4: Select jun_2 listing\n    await page.waitForSelector('[data-listing-id=\"jun_2\"]', { state: 'visible' });\n    await page.click('[data-listing-id=\"jun_2\"]');\n    \n    // Step 5: Wait for modal to open\n    await page.waitForSelector('.modal-overlay', { state: 'visible' });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_5_modal_opened.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_5_modal_opened.png'));\n\n    // Extract data from modal\n    const modalData = await page.evaluate(() => {\n      const modal = document.querySelector('.modal-overlay');\n      return {\n        title: modal.querySelector('h2')?.innerText || '',\n        price: modal.querySelector('.price')?.innerText || '',\n        rating: modal.querySelector('.rating')?.innerText || ''\n      };\n    });\n\n    return {\n      success: true,\n      action: \"Successfully searched 'Gangnam', applied luxury filter, selected jun_2 listing, and opened modal\",\n      extractedData: modalData,\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 75706,
+      "timestamp": "2025-09-15T10:27:39.856Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 311060,
+  "timestamp": "2025-09-15T10:23:44.502Z",
+  "savedAt": "2025-09-15T10:28:55.562Z",
+  "version": "1.0"
+}
