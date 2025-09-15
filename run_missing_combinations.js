@@ -126,17 +126,27 @@ class MissingCombinationRunner {
 
     async runSingleTask(task) {
         const { BenchmarkRunner } = await import('./src/benchmarkRunner.js');
-        const runner = new BenchmarkRunner();
+        const { TaskExtractor } = await import('./src/taskExtractor.js');
 
         try {
+            const runner = new BenchmarkRunner();
+            const taskExtractor = new TaskExtractor();
+
+            // Get website info and task details
+            const websiteInfo = await taskExtractor.getWebsiteInfo(task.website);
+            const tasks = await taskExtractor.extractTasksFromWebsite(task.website);
+            const taskDetails = tasks.find(t => t.id === task.taskId);
+
+            if (!taskDetails) {
+                throw new Error(`Task ${task.taskId} not found for website ${task.website}`);
+            }
+
+            // Set the model for this run
+            runner.selectedModels = [task.model];
+            runner.config.maxRetries = MAX_TRIALS;
+
             const result = await Promise.race([
-                runner.runSingleTaskWithModel(
-                    task.website,
-                    task.taskId,
-                    task.model,
-                    MAX_TRIALS,
-                    task.id
-                ),
+                runner.runSingleTask(task.website, websiteInfo, taskDetails),
                 new Promise((_, reject) =>
                     setTimeout(() => reject(new Error('Task timeout')), TIMEOUT_MS)
                 )
