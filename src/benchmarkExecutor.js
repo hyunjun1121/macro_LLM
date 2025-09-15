@@ -11,10 +11,10 @@ export class BenchmarkExecutor {
     this.executionLog = [];
     this.screenshots = [];
     this.validator = new TaskValidator();
+    this.isServerMode = process.env.SERVER_MODE === 'true';
   }
 
   async initialize() {
-    const isServerMode = process.env.SERVER_MODE === 'true';
 
     this.browser = await chromium.launch({
       headless: true, // Always headless for server
@@ -27,7 +27,7 @@ export class BenchmarkExecutor {
         '--disable-renderer-backgrounding',
         '--disable-features=TranslateUI',
         '--disable-extensions',
-        ...(isServerMode ? [
+        ...(this.isServerMode ? [
           '--no-zygote',
           '--single-process',
           '--disable-gpu',
@@ -40,7 +40,7 @@ export class BenchmarkExecutor {
     // Configure context based on server mode
     const contextOptions = {};
 
-    if (!isServerMode) {
+    if (!this.isServerMode) {
       // Only record video in local/development mode
       contextOptions.recordVideo = {
         dir: './recordings',
@@ -122,7 +122,6 @@ export class BenchmarkExecutor {
     try {
       await this.initialize();
 
-      const isServerMode = process.env.SERVER_MODE === 'true';
       const screenshotsDir = path.join(
         process.cwd(),
         'benchmark_results',
@@ -131,7 +130,7 @@ export class BenchmarkExecutor {
       );
 
       // Only create screenshots directory in non-server mode
-      if (!isServerMode) {
+      if (!this.isServerMode) {
         await fs.mkdir(screenshotsDir, { recursive: true });
       }
 
@@ -178,7 +177,7 @@ export class BenchmarkExecutor {
       const llmResult = await Promise.race([executionPromise, timeoutPromise]);
 
       // Take final screenshot (only in non-server mode)
-      if (!isServerMode) {
+      if (!this.isServerMode) {
         const finalScreenshot = path.join(screenshotsDir, 'final_state.png');
         await this.page.screenshot({
           path: finalScreenshot,
@@ -232,7 +231,7 @@ export class BenchmarkExecutor {
 
     } catch (error) {
       // Take error screenshot (only in non-server mode)
-      if (!isServerMode) {
+      if (!this.isServerMode) {
         try {
           const errorScreenshot = path.join(
             process.cwd(),
@@ -286,8 +285,7 @@ export class BenchmarkExecutor {
 
   async takeScreenshot(filename, fullPage = true) {
     // Skip screenshots in server mode
-    const isServerMode = process.env.SERVER_MODE === 'true';
-    if (isServerMode) {
+    if (this.isServerMode) {
       return null;
     }
 

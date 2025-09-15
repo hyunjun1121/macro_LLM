@@ -111,10 +111,17 @@ export class TaskExtractor {
     const finalTaskFiles = [];
 
     for (const website of TARGET_WEBSITES) {
-      const pattern = path.join(this.projectRoot, website, '*.xlsx').replace(/\\/g, '/');
-      const websiteFiles = await glob(pattern);
+      // Search for both Excel and JSON files
+      const xlsxPattern = path.join(this.projectRoot, website, '*.xlsx').replace(/\\/g, '/');
+      const jsonPattern = path.join(this.projectRoot, website, '*tasks*.json').replace(/\\/g, '/');
 
-      console.log(`🔍 Searching ${website}: pattern=${pattern}`);
+      const xlsxFiles = await glob(xlsxPattern);
+      const jsonFiles = await glob(jsonPattern);
+      const websiteFiles = [...xlsxFiles, ...jsonFiles];
+
+      console.log(`🔍 Searching ${website}:`);
+      console.log(`   Excel pattern: ${xlsxPattern}`);
+      console.log(`   JSON pattern: ${jsonPattern}`);
       console.log(`   Found files: ${websiteFiles.map(f => path.basename(f)).join(', ')}`);
 
       // Filter and prioritize improved files
@@ -137,7 +144,7 @@ export class TaskExtractor {
           console.log(`   Available files were: ${validFiles.join(', ')}`);
         }
       } else {
-        console.warn(`⚠️  No xlsx files found for ${website}`);
+        console.warn(`⚠️  No task files found for ${website}`);
       }
     }
 
@@ -147,7 +154,12 @@ export class TaskExtractor {
 
       try {
         await fs.access(xlsxPath);
-        const tasks = await this.extractTasksFromXlsx(xlsxPath);
+        let tasks = [];
+        if (taskFile.endsWith('.xlsx')) {
+          tasks = await this.extractTasksFromXlsx(xlsxPath);
+        } else if (taskFile.endsWith('.json')) {
+          tasks = await this.extractTasksFromJson(xlsxPath);
+        }
 
         // Try to load ground truth data
         const groundTruthPath = await this.findGroundTruthFile(websiteName);
@@ -225,5 +237,54 @@ export class TaskExtractor {
     }
 
     return info;
+  }
+
+  async extractTasksFromJson(jsonPath) {
+    try {
+      const content = await fs.readFile(jsonPath, 'utf8');
+      const data = JSON.parse(content);
+      const tasks = [];
+
+      // Handle different JSON structures
+      if (data.improved_tasks && data.improved_tasks.general_tasks) {
+        // Threads-style JSON structure
+        for (const taskData of data.improved_tasks.general_tasks) {
+          const task = {
+            id: taskData.task_id,
+            description: taskData.task_name || taskData.task_description,
+            objective: taskData.task_description,
+            expectedResult: taskData.specific_action,
+            difficulty: taskData.difficulty || 'Medium',
+            category: taskData.target_elements || '',
+            tags: taskData.success_criteria ? [taskData.success_criteria] : [],
+            notes: taskData.rule_validation || '',
+            groundTruth: taskData.ground_truth || null
+          };
+          tasks.push(task);
+        }
+      } else if (Array.isArray(data)) {
+        // Direct array of tasks
+        for (const taskData of data) {
+          const task = {
+            id: taskData.id || taskData.task_id,
+            description: taskData.description || taskData.task_name,
+            objective: taskData.objective || taskData.task_description,
+            expectedResult: taskData.expectedResult || taskData.specific_action,
+            difficulty: taskData.difficulty || 'Medium',
+            category: taskData.category || '',
+            tags: taskData.tags || [],
+            notes: taskData.notes || ''
+          };
+          tasks.push(task);
+        }
+      }
+
+      console.log(`📋 Extracted ${tasks.length} tasks from JSON: ${path.basename(jsonPath)}`);
+      return tasks;
+
+    } catch (error) {
+      console.error(`Error extracting tasks from ${jsonPath}:`, error);
+      return [];
+    }
   }
 }

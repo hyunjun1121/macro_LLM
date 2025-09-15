@@ -38,6 +38,8 @@ class ValidatedMissingCombinationRunner {
         this.completedTasks = 0;
         this.executedTaskIds = new Set(); // 중복 실행 방지
         this.skippedTasks = [];
+        this.taskQueueLock = false; // Task queue 동시 접근 방지
+        this.completedTasksLock = false; // 완료 카운터 동시 접근 방지
 
         // 검증된 모듈들
         this.BenchmarkRunner = null;
@@ -205,16 +207,15 @@ class ValidatedMissingCombinationRunner {
     async runValidatedWorker(workerId) {
         console.log(`👷 Validated Worker ${workerId} started`);
 
-        while (this.taskQueue.length > 0) {
-            const task = this.taskQueue.shift();
+        while (true) {
+            const task = await this.safeGetNextTask();
             if (!task) break;
 
             try {
                 console.log(`[Worker ${workerId}] 🎯 Running ${task.model} + ${task.website}/${task.taskId} (${this.completedTasks + 1}/${this.totalTasks})`);
 
                 const result = await this.runValidatedSingleTask(task);
-                this.results.push(result);
-                this.completedTasks++;
+                await this.safeAddResult(result);
 
                 // 진행률 표시
                 const progress = Math.round((this.completedTasks / this.totalTasks) * 100);
@@ -230,8 +231,7 @@ class ValidatedMissingCombinationRunner {
                     timestamp: new Date().toISOString()
                 };
 
-                this.results.push(errorResult);
-                this.completedTasks++;
+                await this.safeAddResult(errorResult);
             }
         }
 
@@ -377,6 +377,37 @@ class ValidatedMissingCombinationRunner {
         for (const [website, stats] of Object.entries(websiteStats)) {
             const websiteSuccessRate = stats.total > 0 ? ((stats.success / stats.total) * 100).toFixed(1) : '0.0';
             console.log(`  ${website}: ${stats.success}/${stats.total} (${websiteSuccessRate}%)`);
+        }
+    }
+
+    // 안전한 task queue 관리 메서드들
+    async safeGetNextTask() {
+        // 동시 접근 방지를 위한 간단한 lock 메커니즘
+        while (this.taskQueueLock) {
+            await new Promise(resolve => setTimeout(resolve, 1));
+        }
+
+        this.taskQueueLock = true;
+        try {
+            const task = this.taskQueue.shift();
+            return task || null;
+        } finally {
+            this.taskQueueLock = false;
+        }
+    }
+
+    async safeAddResult(result) {
+        // 동시 접근 방지를 위한 간단한 lock 메커니즘
+        while (this.completedTasksLock) {
+            await new Promise(resolve => setTimeout(resolve, 1));
+        }
+
+        this.completedTasksLock = true;
+        try {
+            this.results.push(result);
+            this.completedTasks++;
+        } finally {
+            this.completedTasksLock = false;
         }
     }
 }
