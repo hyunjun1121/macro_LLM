@@ -14,9 +14,27 @@ export class BenchmarkExecutor {
   }
 
   async initialize() {
+    const isServerMode = process.env.SERVER_MODE === 'true';
+
     this.browser = await chromium.launch({
-      headless: false, // Set to true for faster execution
-      slowMo: 100     // Slow down for better observation
+      headless: true, // Always headless for server
+      args: [
+        '--no-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-setuid-sandbox',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding',
+        '--disable-features=TranslateUI',
+        '--disable-extensions',
+        ...(isServerMode ? [
+          '--no-zygote',
+          '--single-process',
+          '--disable-gpu',
+          '--disable-software-rasterizer',
+          '--memory-pressure-off'
+        ] : [])
+      ]
     });
 
     this.context = await this.browser.newContext({
@@ -129,17 +147,14 @@ export class BenchmarkExecutor {
         timestamp: new Date().toISOString()
       });
 
-      // Create macro function with proper error handling
-      const wrappedMacroCode = this.wrapMacroCode(macroCode);
-
       // Save the macro code for debugging
       const macroCodePath = path.join(screenshotsDir, 'macro_code.js');
-      await fs.writeFile(macroCodePath, wrappedMacroCode);
+      await fs.writeFile(macroCodePath, macroCode);
 
-      // Create temp file and execute
+      // Create temp file and execute - use LLM code directly
       const tempMacroPath = path.join(process.cwd(), 'generated', `benchmark_macro_${Date.now()}.mjs`);
       await fs.mkdir(path.dirname(tempMacroPath), { recursive: true });
-      await fs.writeFile(tempMacroPath, wrappedMacroCode);
+      await fs.writeFile(tempMacroPath, macroCode);
 
       const macroModule = await import(`file://${tempMacroPath}`);
       const macroFunction = macroModule.default || macroModule;
@@ -240,26 +255,6 @@ export class BenchmarkExecutor {
     }
   }
 
-  wrapMacroCode(macroCode) {
-    // Remove any duplicate imports from LLM code and use it directly
-    let cleanedCode = macroCode.trim();
-
-    // If LLM code doesn't start with import, add necessary imports
-    if (!cleanedCode.includes('import path')) {
-      cleanedCode = `import path from 'path';\n\n${cleanedCode}`;
-    }
-
-    // If LLM code doesn't have export default, add it
-    if (!cleanedCode.includes('export default')) {
-      // Extract the function part and add export default
-      const functionMatch = cleanedCode.match(/async function[^{]*\{[\s\S]*\}$/);
-      if (functionMatch) {
-        cleanedCode = cleanedCode.replace(/async function/, 'export default async function');
-      }
-    }
-
-    return cleanedCode;
-  }
 
   async cleanup() {
     try {

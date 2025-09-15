@@ -38,9 +38,32 @@ export class ResultStorage {
     const htmlFilename = `benchmark_report_${timestamp}.html`;
     const jsonFilename = `benchmark_report_${timestamp}.json`;
 
-    // Save JSON data
+    // Save JSON data with memory safety
     const jsonPath = path.join(this.dataDir, jsonFilename);
-    await fs.writeFile(jsonPath, JSON.stringify(report, null, 2));
+    try {
+      const jsonString = JSON.stringify(report, null, 2);
+      await fs.writeFile(jsonPath, jsonString);
+    } catch (error) {
+      if (error.message.includes('Invalid string length')) {
+        console.warn('⚠️  Large data detected, saving summary only...');
+        // Save summary version without detailed logs
+        const summaryReport = {
+          ...report,
+          results: report.results.map(result => ({
+            id: result.id,
+            website: result.website,
+            task: { id: result.task.id, description: result.task.description },
+            success: result.success,
+            totalExecutionTime: result.totalExecutionTime,
+            attempts: result.attempts.length
+          }))
+        };
+        const summaryString = JSON.stringify(summaryReport, null, 2);
+        await fs.writeFile(jsonPath, summaryString);
+      } else {
+        throw error;
+      }
+    }
 
     // Generate HTML report
     const htmlPath = path.join(this.reportsDir, htmlFilename);
@@ -455,6 +478,11 @@ export class ResultStorage {
     } catch (error) {
       throw new Error(`Could not load result ${resultId}: ${error.message}`);
     }
+  }
+
+  async getResultFilenames() {
+    const files = await fs.readdir(this.dataDir);
+    return files.filter(f => f.startsWith('result_') && f.endsWith('.json'));
   }
 
   async getAllResults() {

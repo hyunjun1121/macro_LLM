@@ -33,7 +33,10 @@ export class BenchmarkRunner {
       websites = [],
       taskLimit = null,
       skipFailedTasks = true,
-      parallel = false
+      parallel = false,
+      concurrency = 1,
+      resume = false,
+      model = null
     } = options;
 
     console.log('🚀 Starting LLM Macro Benchmark');
@@ -42,6 +45,12 @@ export class BenchmarkRunner {
     // 1. Extract all tasks
     console.log('📋 Extracting tasks from xlsx files...');
     const allTasks = await this.taskExtractor.discoverAllTasks();
+
+    // 2. If resuming, filter out already completed tasks
+    if (resume && model) {
+      console.log('🔄 Resume mode: Analyzing completed tasks...');
+      await this.filterCompletedTasks(allTasks, model);
+    }
 
     let totalTaskCount = 0;
     for (const [website, tasks] of Object.entries(allTasks)) {
@@ -64,6 +73,7 @@ export class BenchmarkRunner {
       const websiteInfo = await this.taskExtractor.getWebsiteInfo(website);
       const tasksToRun = taskLimit ? tasks.slice(0, taskLimit) : tasks;
 
+      // Sequential processing only (removed parallel for stability)
       for (const [taskIndex, task] of tasksToRun.entries()) {
         console.log(`\\n  📝 Task ${taskIndex + 1}/${tasksToRun.length}: ${task.description}`);
 
@@ -89,6 +99,74 @@ export class BenchmarkRunner {
     console.log(`📊 Results saved to: ${this.storage.getReportPath()}`);
 
     return report;
+  }
+
+  async runTasksInParallel(website, websiteInfo, tasks, concurrency, skipFailedTasks) {
+    console.log(`\\n⚡ Running ${tasks.length} tasks with concurrency: ${concurrency}`);
+
+    const results = [];
+    const semaphore = new Array(concurrency).fill(null);
+    let taskIndex = 0;
+    let completed = 0;
+    let failed = 0;
+
+    const runTask = async (task, index) => {
+      console.log(`\\n  📝 Task ${index + 1}/${tasks.length}: ${task.description}`);
+
+      try {
+        const result = await this.runSingleTask(website, websiteInfo, task);
+
+        // Save intermediate results
+        await this.storage.saveResult(result);
+
+        if (result.success) {
+          console.log(`    ✅ Task ${index + 1} completed successfully`);
+        } else {
+          console.log(`    ❌ Task ${index + 1} failed`);
+          failed++;
+        }
+
+        completed++;
+        console.log(`    📊 Progress: ${completed}/${tasks.length} (${failed} failed)`);
+
+        return result;
+      } catch (error) {
+        console.error(`    ❌ Task ${index + 1} error:`, error.message);
+        failed++;
+        completed++;
+
+        return {
+          id: `${website}_${task.id}_${Date.now()}`,
+          website,
+          task,
+          websiteInfo,
+          attempts: [],
+          success: false,
+          finalResult: { error: error.message },
+          totalExecutionTime: 0,
+          timestamp: new Date().toISOString()
+        };
+      }
+    };
+
+    // Process tasks in batches with concurrency limit
+    for (let i = 0; i < tasks.length; i += concurrency) {
+      const batch = tasks.slice(i, Math.min(i + concurrency, tasks.length));
+      const batchPromises = batch.map((task, batchIndex) =>
+        runTask(task, i + batchIndex)
+      );
+
+      const batchResults = await Promise.all(batchPromises);
+      results.push(...batchResults);
+
+      // Check if we should stop on failures
+      if (!skipFailedTasks && batchResults.some(r => !r.success)) {
+        console.log('❌ Task failed and skipFailedTasks is false, stopping parallel execution...');
+        break;
+      }
+    }
+
+    return results;
   }
 
   async runSingleTask(website, websiteInfo, task) {
@@ -191,6 +269,60 @@ export class BenchmarkRunner {
 
     attemptResult.executionTime = Date.now() - startTime;
     return attemptResult;
+  }
+
+  async filterCompletedTasks(allTasks, model) {
+    const completedResults = new Set();
+
+    try {
+      // Get only filenames without loading file contents (memory efficient)
+      const resultFiles = await this.storage.getResultFilenames();
+
+      console.log(`🔍 Scanning ${resultFiles.length} result files for ${model}...`);
+
+      // Parse filenames to identify completed tasks
+      for (const filename of resultFiles) {
+        // Example filename: result_youtube_YT_MAL_001_1757845110779.json
+        // Pattern: result_{website}_{taskId}_{timestamp}.json
+        if (filename.startsWith('result_') && filename.endsWith('.json')) {
+          // Extract website and task info from filename
+          const parts = filename.replace('result_', '').replace('.json', '').split('_');
+          if (parts.length >= 3) {
+            const website = parts[0];
+            // Reconstruct task ID from remaining parts (excluding timestamp at end)
+            const taskIdParts = parts.slice(1, -1); // Remove website and timestamp
+            const taskId = taskIdParts.join('_');
+
+            // Add to completed set (assume successful for filename-based approach)
+            const completedTaskId = `${website}_${taskId}`;
+            completedResults.add(completedTaskId);
+          }
+        }
+      }
+
+      console.log(`✅ Found ${completedResults.size} completed tasks for model ${model} (filename-based)`);
+
+      // Filter out completed tasks
+      let totalRemoved = 0;
+      for (const [website, tasks] of Object.entries(allTasks)) {
+        const originalCount = tasks.length;
+        allTasks[website] = tasks.filter(task => {
+          const taskId = `${website}_${task.id}`;
+          return !completedResults.has(taskId);
+        });
+        const removedCount = originalCount - allTasks[website].length;
+        totalRemoved += removedCount;
+
+        if (removedCount > 0) {
+          console.log(`   🔄 ${website}: ${removedCount} tasks already completed, ${allTasks[website].length} remaining`);
+        }
+      }
+
+      console.log(`📊 Resume Summary: ${totalRemoved} tasks skipped, continuing with remaining tasks`);
+
+    } catch (error) {
+      console.warn('⚠️  Could not scan previous results for resume, starting fresh:', error.message);
+    }
   }
 
   async generateBenchmarkReport(results) {
