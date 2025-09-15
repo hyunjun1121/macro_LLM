@@ -31,6 +31,12 @@ class CompleteBenchmarkRunner {
     this.totalTasks = 0;
     this.results = [];
     this.startTime = Date.now();
+
+    // For duplicate prevention
+    this.taskQueue = [];
+    this.queueLock = false;
+    this.processingTasks = new Set(); // Track tasks currently being processed
+    this.lockFilePath = 'benchmark_results/.lock';
   }
 
   async initialize() {
@@ -97,6 +103,9 @@ class CompleteBenchmarkRunner {
 
   async runBenchmark() {
     try {
+      // Create lock directory
+      await fs.mkdir('benchmark_results', { recursive: true });
+
       const allTasks = await this.initialize();
 
       // Get completed tasks for resume functionality
@@ -104,7 +113,6 @@ class CompleteBenchmarkRunner {
       console.log(`\n🔄 Found ${completedTasks.size} already completed combinations`);
 
       // Build task queue
-      const taskQueue = [];
       let skippedCount = 0;
 
       for (const [website, tasks] of Object.entries(allTasks)) {
@@ -118,7 +126,7 @@ class CompleteBenchmarkRunner {
               continue;
             }
 
-            taskQueue.push({
+            this.taskQueue.push({
               id: taskId,
               model,
               website,
@@ -130,15 +138,15 @@ class CompleteBenchmarkRunner {
         }
       }
 
-      console.log(`📋 Skipped ${skippedCount} completed tasks, ${taskQueue.length} remaining`);
+      console.log(`📋 Skipped ${skippedCount} completed tasks, ${this.taskQueue.length} remaining`);
 
-      this.totalTasks = taskQueue.length;
+      this.totalTasks = this.taskQueue.length;
       console.log(`\n🎯 Starting benchmark with ${this.totalTasks} total combinations`);
 
       // Process tasks with multiprocessing
       const workers = [];
-      for (let i = 0; i < Math.min(MAX_WORKERS, taskQueue.length); i++) {
-        workers.push(this.worker(taskQueue, i + 1));
+      for (let i = 0; i < Math.min(MAX_WORKERS, this.taskQueue.length); i++) {
+        workers.push(this.worker(i + 1));
       }
 
       await Promise.all(workers);
@@ -151,16 +159,67 @@ class CompleteBenchmarkRunner {
     }
   }
 
-  async worker(taskQueue, workerId) {
+  async getNextTask() {
+    // Thread-safe task queue management
+    while (this.queueLock) {
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+
+    this.queueLock = true;
+
+    try {
+      // Find a task that's not currently being processed
+      let taskIndex = -1;
+      for (let i = 0; i < this.taskQueue.length; i++) {
+        const task = this.taskQueue[i];
+        if (!this.processingTasks.has(task.id)) {
+          taskIndex = i;
+          break;
+        }
+      }
+
+      if (taskIndex === -1) {
+        return null; // No available tasks
+      }
+
+      const taskItem = this.taskQueue.splice(taskIndex, 1)[0];
+      this.processingTasks.add(taskItem.id);
+      return taskItem;
+
+    } finally {
+      this.queueLock = false;
+    }
+  }
+
+  async markTaskCompleted(taskId) {
+    this.processingTasks.delete(taskId);
+  }
+
+  async worker(workerId) {
     console.log(`👷 Worker ${workerId} started`);
 
-    while (taskQueue.length > 0) {
-      const taskItem = taskQueue.shift();
-      if (!taskItem) break;
+    while (true) {
+      const taskItem = await this.getNextTask();
+      if (!taskItem) {
+        // No more tasks available
+        break;
+      }
 
       this.activeWorkers++;
 
       try {
+        // Double-check if task is already completed (race condition protection)
+        const resultPath = `benchmark_results/data/result_${taskItem.model.replace(/[^a-zA-Z0-9]/g, '_')}_${taskItem.website}_${taskItem.task.id}_*.json`;
+        const { glob } = await import('glob');
+        const existingFiles = await glob(resultPath);
+
+        if (existingFiles.length > 0) {
+          console.log(`[Worker ${workerId}] ⏭️  Task ${taskItem.id} already exists, skipping`);
+          await this.markTaskCompleted(taskItem.id);
+          this.activeWorkers--;
+          continue;
+        }
+
         const result = await this.executeTask(taskItem, workerId);
         this.results.push(result);
 
@@ -183,9 +242,10 @@ class CompleteBenchmarkRunner {
         });
 
         this.completedTasks++;
+      } finally {
+        await this.markTaskCompleted(taskItem.id);
+        this.activeWorkers--;
       }
-
-      this.activeWorkers--;
     }
 
     console.log(`👷 Worker ${workerId} finished`);
