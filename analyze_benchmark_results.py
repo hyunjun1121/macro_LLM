@@ -35,10 +35,9 @@ class BenchmarkAnalyzer:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Target models and websites
+        # Target models and websites (excluding gemini)
         self.target_models = [
             'openai/gpt-4.1',
-            'google/gemini-2.5-pro-thinking-on',
             'deepseek-ai/DeepSeek-V3.1-thinking-on',
             'openai/gpt-4o-mini'
         ]
@@ -167,7 +166,6 @@ class BenchmarkAnalyzer:
         """Clean model names for display."""
         name_mapping = {
             'openai/gpt-4.1': 'GPT-4.1',
-            'google/gemini-2.5-pro-thinking-on': 'Gemini-2.5-Pro',
             'deepseek-ai/DeepSeek-V3.1-thinking-on': 'DeepSeek-V3.1',
             'openai/gpt-4o-mini': 'GPT-4o-Mini'
         }
@@ -686,7 +684,7 @@ class BenchmarkAnalyzer:
         overall_success = df['final_success'].mean()
 
         report.append(f"- **Total Tasks Evaluated**: {total_tasks}")
-        report.append(f"- **Models Tested**: {total_models}")
+        report.append(f"- **Models Tested**: {total_models} (GPT-4.1, DeepSeek-V3.1, GPT-4o-Mini)")
         report.append(f"- **Websites Covered**: {total_websites}")
         report.append(f"- **Overall Success Rate**: {overall_success:.1%}")
         report.append("")
