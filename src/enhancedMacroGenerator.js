@@ -176,7 +176,7 @@ Generate the macro code now:`;
   }
 
   extractMacroCode(rawResponse) {
-    // Try to extract code between the specified markers
+    // Method 1: Try to extract code between the specified markers
     const markerStart = '```MACRO_CODE_START';
     const markerEnd = '```MACRO_CODE_END';
 
@@ -187,14 +187,41 @@ Generate the macro code now:`;
       return rawResponse.substring(startIndex + markerStart.length, endIndex).trim();
     }
 
-    // Fallback: extract from standard code blocks
-    const codeBlocks = rawResponse.match(/```(?:javascript|js)?(.*?)```/gs);
-    if (codeBlocks && codeBlocks.length > 0) {
-      // Get the largest code block
-      const largestBlock = codeBlocks.reduce((prev, current) =>
-        current.length > prev.length ? current : prev
-      );
-      return largestBlock.replace(/```(?:javascript|js)?/g, '').trim();
+    // Method 2: Try standard code blocks with improved regex
+    const codeBlockPatterns = [
+      /```(?:javascript|js)\s*([\s\S]*?)```/gi,
+      /```\s*([\s\S]*?)```/gi,
+      /`{3,}\s*(?:javascript|js)?\s*([\s\S]*?)`{3,}/gi
+    ];
+
+    for (const pattern of codeBlockPatterns) {
+      const matches = rawResponse.match(pattern);
+      if (matches && matches.length > 0) {
+        // Get the largest code block that looks like valid JS
+        const validBlocks = matches.filter(block => {
+          const cleaned = block.replace(/```(?:javascript|js)?/gi, '').trim();
+          return cleaned.includes('export default') || cleaned.includes('async function') || cleaned.includes('import');
+        });
+
+        if (validBlocks.length > 0) {
+          const largestBlock = validBlocks.reduce((prev, current) =>
+            current.length > prev.length ? current : prev
+          );
+          return largestBlock.replace(/```(?:javascript|js)?/gi, '').trim();
+        }
+      }
+    }
+
+    // Method 3: Look for function declarations directly
+    const functionMatch = rawResponse.match(/export default async function[\s\S]*?(?=\n\n|\n```|$)/);
+    if (functionMatch) {
+      return functionMatch[0].trim();
+    }
+
+    // Method 4: Look for import statements and extract from there
+    const importMatch = rawResponse.match(/import[\s\S]*?export default async function[\s\S]*?(?=\n\n|\n```|$)/);
+    if (importMatch) {
+      return importMatch[0].trim();
     }
 
     // Final fallback: return the whole response if no code blocks found
