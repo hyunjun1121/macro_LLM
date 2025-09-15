@@ -62,6 +62,11 @@ class BenchmarkAnalyzer:
                 with open(json_file, 'r', encoding='utf-8') as f:
                     data = json.load(f)
 
+                # Skip if data is None or empty
+                if not data or data is None:
+                    print(f"⚠️  Empty or None data in {json_file}")
+                    continue
+
                 # Extract metadata from filename
                 filename = json_file.stem
                 parts = filename.replace('result_', '').split('_')
@@ -82,8 +87,11 @@ class BenchmarkAnalyzer:
 
                     self.results_data.append(data)
 
-            except Exception as e:
+            except (json.JSONDecodeError, FileNotFoundError, PermissionError) as e:
                 print(f"⚠️  Error loading {json_file}: {e}")
+                continue
+            except Exception as e:
+                print(f"⚠️  Unexpected error loading {json_file}: {e}")
                 continue
 
         print(f"✅ Loaded {len(self.results_data)} valid result files")
@@ -95,12 +103,18 @@ class BenchmarkAnalyzer:
         records = []
         for result in self.results_data:
             try:
-                # Basic info
+                # Skip if result is None or doesn't have metadata
+                if not result or 'metadata' not in result:
+                    print(f"⚠️  Skipping invalid result: missing metadata")
+                    continue
+
+                # Basic info with safe access
+                metadata = result.get('metadata', {})
                 record = {
-                    'filename': result['metadata']['filename'],
-                    'website': result['metadata']['website'],
-                    'task_id': result['metadata']['task_id'],
-                    'timestamp': result['metadata']['timestamp'],
+                    'filename': metadata.get('filename', 'unknown'),
+                    'website': metadata.get('website', 'unknown'),
+                    'task_id': metadata.get('task_id', 'unknown'),
+                    'timestamp': metadata.get('timestamp', '0'),
                     'model': result.get('model', 'unknown'),
                     'success': result.get('success', False),
                     'total_attempts': result.get('totalAttempts', 0),
@@ -108,42 +122,99 @@ class BenchmarkAnalyzer:
                 }
 
                 # Task details
-                if 'task' in result:
+                if 'task' in result and result['task'] is not None:
                     task = result['task']
                     record.update({
-                        'task_description': task.get('description', ''),
-                        'task_objective': task.get('objective', ''),
-                        'task_type': task.get('type', 'unknown'),
+                        'task_description': task.get('description', '') if isinstance(task, dict) else '',
+                        'task_objective': task.get('objective', '') if isinstance(task, dict) else '',
+                        'task_type': task.get('type', 'unknown') if isinstance(task, dict) else 'unknown',
+                    })
+                else:
+                    record.update({
+                        'task_description': '',
+                        'task_objective': '',
+                        'task_type': 'unknown',
                     })
 
                 # Final result details
-                if 'finalResult' in result:
+                if 'finalResult' in result and result['finalResult'] is not None:
                     final_result = result['finalResult']
+                    if isinstance(final_result, dict):
+                        validation_details = final_result.get('validationDetails', {})
+                        if not isinstance(validation_details, dict):
+                            validation_details = {}
+
+                        record.update({
+                            'final_success': final_result.get('success', False),
+                            'final_action': final_result.get('action', ''),
+                            'final_error': final_result.get('error', ''),
+                            'validation_type': validation_details.get('validationType', ''),
+                            'passed_checks': validation_details.get('passedChecks', 0),
+                            'total_checks': validation_details.get('totalChecks', 0),
+                        })
+                    else:
+                        record.update({
+                            'final_success': False,
+                            'final_action': '',
+                            'final_error': '',
+                            'validation_type': '',
+                            'passed_checks': 0,
+                            'total_checks': 0,
+                        })
+                else:
                     record.update({
-                        'final_success': final_result.get('success', False),
-                        'final_action': final_result.get('action', ''),
-                        'final_error': final_result.get('error', ''),
-                        'validation_type': final_result.get('validationDetails', {}).get('validationType', ''),
-                        'passed_checks': final_result.get('validationDetails', {}).get('passedChecks', 0),
-                        'total_checks': final_result.get('validationDetails', {}).get('totalChecks', 0),
+                        'final_success': False,
+                        'final_action': '',
+                        'final_error': '',
+                        'validation_type': '',
+                        'passed_checks': 0,
+                        'total_checks': 0,
                     })
 
                 # Attempt details
-                if 'attempts' in result:
+                if 'attempts' in result and result['attempts'] is not None:
                     attempts = result['attempts']
+                    if isinstance(attempts, list) and len(attempts) > 0:
+                        first_attempt = attempts[0] if isinstance(attempts[0], dict) else {}
+                        last_attempt = attempts[-1] if isinstance(attempts[-1], dict) else {}
+                        record.update({
+                            'first_attempt_success': first_attempt.get('success', False),
+                            'attempts_count': len(attempts),
+                            'final_attempt_error': last_attempt.get('error', ''),
+                        })
+                    else:
+                        record.update({
+                            'first_attempt_success': False,
+                            'attempts_count': 0,
+                            'final_attempt_error': '',
+                        })
+                else:
                     record.update({
-                        'first_attempt_success': len(attempts) > 0 and attempts[0].get('success', False),
-                        'attempts_count': len(attempts),
-                        'final_attempt_error': attempts[-1].get('error', '') if attempts else '',
+                        'first_attempt_success': False,
+                        'attempts_count': 0,
+                        'final_attempt_error': '',
                     })
 
                 # Performance metrics
-                if 'performanceMetrics' in result:
+                if 'performanceMetrics' in result and result['performanceMetrics'] is not None:
                     perf = result['performanceMetrics']
+                    if isinstance(perf, dict):
+                        record.update({
+                            'avg_response_time': perf.get('averageResponseTime', 0),
+                            'total_tokens': perf.get('totalTokens', 0),
+                            'avg_tokens_per_attempt': perf.get('averageTokensPerAttempt', 0),
+                        })
+                    else:
+                        record.update({
+                            'avg_response_time': 0,
+                            'total_tokens': 0,
+                            'avg_tokens_per_attempt': 0,
+                        })
+                else:
                     record.update({
-                        'avg_response_time': perf.get('averageResponseTime', 0),
-                        'total_tokens': perf.get('totalTokens', 0),
-                        'avg_tokens_per_attempt': perf.get('averageTokensPerAttempt', 0),
+                        'avg_response_time': 0,
+                        'total_tokens': 0,
+                        'avg_tokens_per_attempt': 0,
                     })
 
                 records.append(record)
