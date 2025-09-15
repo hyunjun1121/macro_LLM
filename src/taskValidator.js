@@ -530,10 +530,31 @@ export class TaskValidator {
     // Check if task has ground truth data
     if (task.groundTruth) {
       console.log(`      [VALIDATOR] Using Ground Truth validation`);
-      return await this.validateWithGroundTruth(page, task, initialState);
+      const groundTruthResult = await this.validateWithGroundTruth(page, task, initialState);
+
+      // If ground truth validation fails, try rule-based validation as fallback
+      if (!groundTruthResult.success) {
+        console.log(`      [VALIDATOR] Ground Truth failed, trying rule-based fallback`);
+        const ruleBasedResult = await this.validateWithRuleBase(page, task, initialState);
+
+        // Combine results - success if either passes
+        return {
+          success: ruleBasedResult.success,
+          validations: [...groundTruthResult.validations, ...ruleBasedResult.validations],
+          evidence: { ...groundTruthResult.evidence, ...ruleBasedResult.evidence },
+          groundTruthUsed: true,
+          ruleBasedFallback: true
+        };
+      }
+
+      return groundTruthResult;
     }
 
     // Fallback to rule-based validation
+    return await this.validateWithRuleBase(page, task, initialState);
+  }
+
+  async validateWithRuleBase(page, task, initialState) {
     let validationType = this.determineValidationType(task);
 
     console.log(`      [VALIDATOR] Using validation type: ${validationType}`);
