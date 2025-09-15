@@ -40,7 +40,8 @@ class CompleteBenchmarkRunner {
   }
 
   async initialize() {
-    console.log('🚀 Initializing Complete Benchmark Runner...');
+    console.log('🚀 Initializing Incomplete Websites Benchmark Runner...');
+    console.log('🎯 Target: Amazon, TikTok, reddit, instagram, facebook, discord (0% completed)');
     console.log(`📊 Server mode: ${process.env.SERVER_MODE === 'true'}`);
     console.log(`👥 Max workers: ${MAX_WORKERS}`);
     console.log(`🎯 Max trials per task: ${MAX_TRIALS}`);
@@ -48,14 +49,14 @@ class CompleteBenchmarkRunner {
     // Discover all tasks
     const allTasks = await this.taskExtractor.discoverAllTasks();
 
-    console.log('\n📋 Task Discovery Results:');
+    console.log('\n📋 Incomplete Websites Task Discovery:');
     let totalTaskCount = 0;
     Object.entries(allTasks).forEach(([website, tasks]) => {
-      console.log(`  ${website}: ${tasks.length} tasks`);
+      console.log(`  ${website}: ${tasks.length} tasks (0% completed)`);
       totalTaskCount += tasks.length;
     });
 
-    console.log(`\n✅ Total tasks discovered: ${totalTaskCount}`);
+    console.log(`\n✅ Total incomplete website tasks: ${totalTaskCount}`);
     console.log(`🎯 Expected combinations: ${totalTaskCount * ALL_MODELS.length} (${totalTaskCount} tasks × ${ALL_MODELS.length} models)`);
 
     return allTasks;
@@ -73,7 +74,7 @@ class CompleteBenchmarkRunner {
         file.startsWith('result_') && file.endsWith('.json')
       );
 
-      console.log(`🔍 Scanning ${resultFiles.length} result files for completed tasks...`);
+      console.log(`🔍 Scanning ${resultFiles.length} result files for completed incomplete website tasks...`);
 
       // Read result files to identify successful completions
       for (const filename of resultFiles) {
@@ -82,8 +83,10 @@ class CompleteBenchmarkRunner {
           const content = await fs.readFile(filePath, 'utf-8');
           const result = JSON.parse(content);
 
-          // Only consider successfully completed tasks
-          if (result.success) {
+          // Only consider successfully completed tasks for incomplete websites
+          const incompleteWebsites = ['Amazon', 'TikTok', 'reddit', 'instagram', 'facebook', 'discord'];
+
+          if (result.success && incompleteWebsites.includes(result.website)) {
             const taskId = `${result.model}__${result.website}__${result.task.id}`;
             completedTasks.add(taskId);
           }
@@ -93,7 +96,7 @@ class CompleteBenchmarkRunner {
         }
       }
 
-      console.log(`✅ Found ${completedTasks.size} successfully completed tasks`);
+      console.log(`✅ Found ${completedTasks.size} successfully completed incomplete website tasks`);
     } catch (error) {
       console.log(`⚠️  No previous results found, starting fresh: ${error.message}`);
     }
@@ -110,7 +113,7 @@ class CompleteBenchmarkRunner {
 
       // Get completed tasks for resume functionality
       const completedTasks = await this.getCompletedTasks();
-      console.log(`\n🔄 Found ${completedTasks.size} already completed combinations`);
+      console.log(`\n🔄 Found ${completedTasks.size} already completed incomplete website combinations`);
 
       // Build task queue
       let skippedCount = 0;
@@ -138,10 +141,17 @@ class CompleteBenchmarkRunner {
         }
       }
 
-      console.log(`📋 Skipped ${skippedCount} completed tasks, ${this.taskQueue.length} remaining`);
+      console.log(`📋 Skipped ${skippedCount} completed combinations, ${this.taskQueue.length} remaining`);
 
       this.totalTasks = this.taskQueue.length;
-      console.log(`\n🎯 Starting benchmark with ${this.totalTasks} total combinations`);
+
+      if (this.totalTasks === 0) {
+        console.log(`🎉 All incomplete website combinations already completed!`);
+        await this.generateFinalReport();
+        return;
+      }
+
+      console.log(`\n🎯 Starting incomplete websites benchmark with ${this.totalTasks} total combinations`);
 
       // Process tasks with multiprocessing
       const workers = [];
@@ -380,10 +390,10 @@ class CompleteBenchmarkRunner {
       }
     };
 
-    const reportPath = `benchmark_results/data/complete_benchmark_${Date.now()}.json`;
+    const reportPath = `benchmark_results/data/incomplete_websites_benchmark_${Date.now()}.json`;
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
 
-    console.log('\n🎉 COMPLETE BENCHMARK FINISHED!');
+    console.log('\n🎉 INCOMPLETE WEBSITES BENCHMARK FINISHED!');
     console.log(`⏱️  Total execution time: ${duration} seconds`);
     console.log(`📝 Tasks processed: ${this.results.length}`);
     console.log(`✅ Successful: ${successful} (${successRate}%)`);

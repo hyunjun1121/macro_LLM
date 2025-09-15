@@ -100,10 +100,9 @@ export class TaskExtractor {
   async discoverAllTasks() {
     const allTasks = {};
 
-    // Define exactly 10 target websites
+    // Define only incomplete websites (0% completion)
     const TARGET_WEBSITES = [
-      'Airbnb', 'Amazon', 'TikTok', 'Threads', 'youtube',
-      'when2meet', 'reddit', 'instagram', 'facebook', 'discord'
+      'Amazon', 'TikTok', 'reddit', 'instagram', 'facebook', 'discord'
     ];
 
     // Find task files for target websites only
