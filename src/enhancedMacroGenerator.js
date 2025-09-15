@@ -121,6 +121,8 @@ export default async function(page, fileUrl, screenshotsDir) {
 - Use the exact function signature shown above
 - End with triple backticks
 - NO explanation text before or after the code
+- DO NOT handle page dialogs (alerts, confirms) - they are auto-handled
+- DO NOT use page.on('dialog') or dialog.accept() in your code
 
 Generate ONLY the JavaScript code:`;
 

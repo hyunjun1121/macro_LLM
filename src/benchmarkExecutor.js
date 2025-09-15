@@ -103,7 +103,7 @@ export class BenchmarkExecutor {
       }
     });
 
-    // Dialog boxes (alerts, confirms)
+    // Dialog boxes (alerts, confirms) - safely handle with error protection
     this.page.on('dialog', async dialog => {
       this.executionLog.push({
         type: 'dialog',
@@ -111,7 +111,13 @@ export class BenchmarkExecutor {
         message: dialog.message(),
         timestamp: new Date().toISOString()
       });
-      await dialog.accept(); // Auto-accept dialogs
+
+      try {
+        await dialog.accept(); // Auto-accept dialogs
+      } catch (error) {
+        // Dialog might already be handled by macro - ignore error
+        console.log(`      [INFO] Dialog already handled: ${error.message}`);
+      }
     });
   }
 
