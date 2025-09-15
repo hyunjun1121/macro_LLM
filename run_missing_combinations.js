@@ -134,7 +134,8 @@ class MissingCombinationRunner {
 
             // Get website info and task details
             const websiteInfo = await taskExtractor.getWebsiteInfo(task.website);
-            const tasks = await taskExtractor.extractTasksFromWebsite(task.website);
+            const allTasks = await taskExtractor.discoverAllTasks();
+            const tasks = allTasks[task.website] || [];
             const taskDetails = tasks.find(t => t.id === task.taskId);
 
             if (!taskDetails) {

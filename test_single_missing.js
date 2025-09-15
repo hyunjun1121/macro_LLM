@@ -22,8 +22,9 @@ async function testSingleMissingTask() {
         const websiteInfo = await taskExtractor.getWebsiteInfo(testTask.website);
         console.log('✅ Website info retrieved');
 
-        console.log('📝 Extracting tasks...');
-        const tasks = await taskExtractor.extractTasksFromWebsite(testTask.website);
+        console.log('📝 Discovering all tasks...');
+        const allTasks = await taskExtractor.discoverAllTasks();
+        const tasks = allTasks[testTask.website] || [];
         console.log(`✅ Found ${tasks.length} tasks for ${testTask.website}`);
 
         if (tasks.length > 0) {
