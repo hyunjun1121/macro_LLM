@@ -120,9 +120,16 @@ export class TaskExtractor {
         .map(file => path.relative(this.projectRoot, file).replace(/\\/g, '/'));
 
       if (validFiles.length > 0) {
-        // Prefer improved files
+        // ONLY use improved files, skip website if no improved file exists
         const improvedFile = validFiles.find(file => file.includes('improved') || file.includes('Improved'));
-        finalTaskFiles.push(improvedFile || validFiles[0]);
+        if (improvedFile) {
+          finalTaskFiles.push(improvedFile);
+          console.log(`✅ Using improved file for ${website}: ${improvedFile}`);
+        } else {
+          console.warn(`⚠️  No improved file found for ${website}, skipping...`);
+        }
+      } else {
+        console.warn(`⚠️  No xlsx files found for ${website}`);
       }
     }
 
