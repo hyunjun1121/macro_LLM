@@ -175,9 +175,9 @@ export class TaskExtractor {
           try {
             const groundTruthData = JSON.parse(await fs.readFile(groundTruthPath, 'utf-8'));
             // Attach ground truth to tasks
-            tasks.forEach((task, index) => {
-              if (groundTruthData.tasks && groundTruthData.tasks[index]) {
-                task.groundTruth = groundTruthData.tasks[index];
+            tasks.forEach((task) => {
+              if (groundTruthData.tasks && groundTruthData.tasks[task.id]) {
+                task.groundTruth = groundTruthData.tasks[task.id].ground_truth || groundTruthData.tasks[task.id];
               }
             });
             console.log(`✅ Loaded ${tasks.length} tasks from ${websiteName} (with ground truth)`);
