@@ -37,12 +37,18 @@ export class BenchmarkExecutor {
       ]
     });
 
-    this.context = await this.browser.newContext({
-      recordVideo: {
+    // Configure context based on server mode
+    const contextOptions = {};
+
+    if (!isServerMode) {
+      // Only record video in local/development mode
+      contextOptions.recordVideo = {
         dir: './recordings',
         size: { width: 1280, height: 720 }
-      }
-    });
+      };
+    }
+
+    this.context = await this.browser.newContext(contextOptions);
 
     this.page = await this.context.newPage();
 
@@ -116,6 +122,7 @@ export class BenchmarkExecutor {
     try {
       await this.initialize();
 
+      const isServerMode = process.env.SERVER_MODE === 'true';
       const screenshotsDir = path.join(
         process.cwd(),
         'benchmark_results',
@@ -123,7 +130,10 @@ export class BenchmarkExecutor {
         `${task.id}_attempt_${attemptNumber}_${Date.now()}`
       );
 
-      await fs.mkdir(screenshotsDir, { recursive: true });
+      // Only create screenshots directory in non-server mode
+      if (!isServerMode) {
+        await fs.mkdir(screenshotsDir, { recursive: true });
+      }
 
       const fileUrl = `file:///${path.resolve(htmlPath).replace(/\\\\/g, '/')}`;
 
@@ -167,13 +177,16 @@ export class BenchmarkExecutor {
 
       const llmResult = await Promise.race([executionPromise, timeoutPromise]);
 
-      // Take final screenshot
-      const finalScreenshot = path.join(screenshotsDir, 'final_state.png');
-      await this.page.screenshot({
-        path: finalScreenshot,
-        fullPage: true
-      });
-      this.screenshots.push(finalScreenshot);
+      // Take final screenshot (only in non-server mode)
+      const isServerMode = process.env.SERVER_MODE === 'true';
+      if (!isServerMode) {
+        const finalScreenshot = path.join(screenshotsDir, 'final_state.png');
+        await this.page.screenshot({
+          path: finalScreenshot,
+          fullPage: true
+        });
+        this.screenshots.push(finalScreenshot);
+      }
 
       // Rule-based validation
       const validationResult = await this.validator.validateTask(this.page, task, initialState);
@@ -219,19 +232,22 @@ export class BenchmarkExecutor {
       };
 
     } catch (error) {
-      // Take error screenshot
-      try {
-        const errorScreenshot = path.join(
-          process.cwd(),
-          'benchmark_results',
-          'screenshots',
-          `error_${task.id}_${attemptNumber}_${Date.now()}.png`
-        );
-        await fs.mkdir(path.dirname(errorScreenshot), { recursive: true });
-        await this.page?.screenshot({ path: errorScreenshot, fullPage: true });
-        this.screenshots.push(errorScreenshot);
-      } catch (screenshotError) {
-        // Ignore screenshot errors
+      // Take error screenshot (only in non-server mode)
+      const isServerMode = process.env.SERVER_MODE === 'true';
+      if (!isServerMode) {
+        try {
+          const errorScreenshot = path.join(
+            process.cwd(),
+            'benchmark_results',
+            'screenshots',
+            `error_${task.id}_${attemptNumber}_${Date.now()}.png`
+          );
+          await fs.mkdir(path.dirname(errorScreenshot), { recursive: true });
+          await this.page?.screenshot({ path: errorScreenshot, fullPage: true });
+          this.screenshots.push(errorScreenshot);
+        } catch (screenshotError) {
+          // Ignore screenshot errors
+        }
       }
 
       this.executionLog.push({
@@ -271,6 +287,12 @@ export class BenchmarkExecutor {
   }
 
   async takeScreenshot(filename, fullPage = true) {
+    // Skip screenshots in server mode
+    const isServerMode = process.env.SERVER_MODE === 'true';
+    if (isServerMode) {
+      return null;
+    }
+
     if (!this.page) return null;
 
     try {
