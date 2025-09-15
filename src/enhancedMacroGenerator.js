@@ -133,7 +133,8 @@ Generate ONLY the JavaScript code:`;
     const websiteDir = path.dirname(htmlPath);
     const $ = cheerio.load(htmlContent);
 
-    let fullContent = htmlContent;
+    // Extract only the essential parts for faster processing
+    let fullContent = this.extractEssentialHTML($, htmlContent);
 
     try {
       // Find and include CSS files
@@ -236,5 +237,44 @@ Generate ONLY the JavaScript code:`;
     }
 
     return cleaned;
+  }
+
+  extractEssentialHTML($, originalContent) {
+    // If content is small enough, return as-is
+    if (originalContent.length < 10000) {
+      return originalContent;
+    }
+
+    // Extract essential elements for automation
+    const essentialSelectors = [
+      'input', 'button', 'select', 'textarea', 'form',
+      'a[href]', '[onclick]', '[data-testid]', '[role]',
+      '.btn', '.button', '.form', '.search', '.menu', '.nav',
+      '#search', '#login', '#signup', '#submit'
+    ];
+
+    let essentialHTML = '<!DOCTYPE html><html><head><title>Essential Elements</title></head><body>\n';
+
+    // Add essential interactive elements
+    essentialSelectors.forEach(selector => {
+      $(selector).each((i, el) => {
+        const $el = $(el);
+        const tagName = el.tagName.toLowerCase();
+        const id = $el.attr('id') ? ` id="${$el.attr('id')}"` : '';
+        const className = $el.attr('class') ? ` class="${$el.attr('class')}"` : '';
+        const placeholder = $el.attr('placeholder') ? ` placeholder="${$el.attr('placeholder')}"` : '';
+        const href = $el.attr('href') ? ` href="${$el.attr('href')}"` : '';
+        const type = $el.attr('type') ? ` type="${$el.attr('type')}"` : '';
+        const value = $el.attr('value') ? ` value="${$el.attr('value')}"` : '';
+        const textContent = $el.text().trim().substring(0, 100);
+
+        essentialHTML += `<${tagName}${id}${className}${type}${placeholder}${href}${value}>${textContent}</${tagName}>\n`;
+      });
+    });
+
+    essentialHTML += '</body></html>';
+
+    console.log(`      [INFO] Compressed HTML: ${originalContent.length} → ${essentialHTML.length} chars`);
+    return essentialHTML;
   }
 }
