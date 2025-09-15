@@ -114,19 +114,27 @@ export class TaskExtractor {
       const pattern = path.join(this.projectRoot, website, '*.xlsx').replace(/\\/g, '/');
       const websiteFiles = await glob(pattern);
 
+      console.log(`🔍 Searching ${website}: pattern=${pattern}`);
+      console.log(`   Found files: ${websiteFiles.map(f => path.basename(f)).join(', ')}`);
+
       // Filter and prioritize improved files
       const validFiles = websiteFiles
         .filter(file => !file.includes('validation_report'))
         .map(file => path.relative(this.projectRoot, file).replace(/\\/g, '/'));
 
+      console.log(`   Valid files: ${validFiles.map(f => path.basename(f)).join(', ')}`);
+
       if (validFiles.length > 0) {
         // ONLY use improved files, skip website if no improved file exists
         const improvedFile = validFiles.find(file => file.includes('improved') || file.includes('Improved'));
+        console.log(`   Checking for improved: ${improvedFile ? 'FOUND' : 'NOT FOUND'}`);
+
         if (improvedFile) {
           finalTaskFiles.push(improvedFile);
           console.log(`✅ Using improved file for ${website}: ${improvedFile}`);
         } else {
           console.warn(`⚠️  No improved file found for ${website}, skipping...`);
+          console.log(`   Available files were: ${validFiles.join(', ')}`);
         }
       } else {
         console.warn(`⚠️  No xlsx files found for ${website}`);
