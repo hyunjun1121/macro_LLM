@@ -617,68 +617,96 @@ class BenchmarkAnalyzer:
         """Generate LaTeX tables for academic paper."""
         print("📝 Generating paper-ready tables...")
 
-        # Table 1: Overall Model Performance
-        model_stats = df.groupby('model_clean').agg({
-            'final_success': ['count', 'sum', 'mean'],
-            'total_attempts': 'mean',
-            'first_attempt_success': 'mean',
-            'execution_time': 'mean'
-        }).round(3)
+        try:
+            # Table 1: Overall Model Performance
+            model_stats = df.groupby('model_clean').agg({
+                'final_success': ['count', 'sum', 'mean'],
+                'total_attempts': 'mean',
+                'first_attempt_success': 'mean',
+                'execution_time': 'mean'
+            }).round(3)
 
-        model_stats.columns = ['Total Tasks', 'Successful', 'Success Rate',
-                              'Avg Attempts', 'First Success Rate', 'Avg Time (s)']
+            model_stats.columns = ['Total Tasks', 'Successful', 'Success Rate',
+                                  'Avg Attempts', 'First Success Rate', 'Avg Time (s)']
 
-        # Create LaTeX table
-        latex_table1 = model_stats.to_latex(
-            caption="Overall Model Performance Comparison",
-            label="tab:model_performance",
-            float_format="%.3f"
-        )
+            # Create LaTeX table
+            try:
+                latex_table1 = model_stats.to_latex(
+                    caption="Overall Model Performance Comparison",
+                    label="tab:model_performance",
+                    float_format="%.3f"
+                )
 
-        with open(self.output_dir / 'table1_model_performance.tex', 'w') as f:
-            f.write(latex_table1)
+                with open(self.output_dir / 'table1_model_performance.tex', 'w') as f:
+                    f.write(latex_table1)
+            except ImportError as e:
+                print(f"⚠️  LaTeX export requires jinja2>=3.1.2: {e}")
+                # Create manual LaTeX table
+                latex_manual = self._create_manual_latex_table(model_stats,
+                    "Overall Model Performance Comparison", "tab:model_performance")
+                with open(self.output_dir / 'table1_model_performance.tex', 'w') as f:
+                    f.write(latex_manual)
 
-        # Table 2: Website Difficulty Analysis
-        website_stats = df.groupby('website_clean').agg({
-            'final_success': ['count', 'sum', 'mean'],
-            'total_attempts': 'mean',
-            'total_checks': 'mean'
-        }).round(3)
+            # Table 2: Website Difficulty Analysis
+            website_stats = df.groupby('website_clean').agg({
+                'final_success': ['count', 'sum', 'mean'],
+                'total_attempts': 'mean',
+                'total_checks': 'mean'
+            }).round(3)
 
-        website_stats.columns = ['Total Tasks', 'Successful', 'Success Rate',
-                                'Avg Attempts', 'Avg Complexity']
-        website_stats = website_stats.sort_values('Success Rate', ascending=False)
+            website_stats.columns = ['Total Tasks', 'Successful', 'Success Rate',
+                                    'Avg Attempts', 'Avg Complexity']
+            website_stats = website_stats.sort_values('Success Rate', ascending=False)
 
-        latex_table2 = website_stats.to_latex(
-            caption="Website Task Difficulty Analysis",
-            label="tab:website_difficulty",
-            float_format="%.3f"
-        )
+            latex_table2 = website_stats.to_latex(
+                caption="Website Task Difficulty Analysis",
+                label="tab:website_difficulty",
+                float_format="%.3f"
+            )
 
-        with open(self.output_dir / 'table2_website_difficulty.tex', 'w') as f:
-            f.write(latex_table2)
+            with open(self.output_dir / 'table2_website_difficulty.tex', 'w') as f:
+                f.write(latex_table2)
 
-        # Table 3: Model-Website Performance Matrix
-        heatmap_data = df.pivot_table(values='final_success',
-                                     index='website_clean',
-                                     columns='model_clean',
-                                     aggfunc='mean').round(3)
+            # Table 3: Model-Website Performance Matrix
+            heatmap_data = df.pivot_table(values='final_success',
+                                         index='website_clean',
+                                         columns='model_clean',
+                                         aggfunc='mean').round(3)
 
-        latex_table3 = heatmap_data.to_latex(
-            caption="Model-Website Performance Matrix (Success Rates)",
-            label="tab:performance_matrix",
-            float_format="%.3f"
-        )
+            latex_table3 = heatmap_data.to_latex(
+                caption="Model-Website Performance Matrix (Success Rates)",
+                label="tab:performance_matrix",
+                float_format="%.3f"
+            )
 
-        with open(self.output_dir / 'table3_performance_matrix.tex', 'w') as f:
-            f.write(latex_table3)
+            with open(self.output_dir / 'table3_performance_matrix.tex', 'w') as f:
+                f.write(latex_table3)
 
-        # Save as CSV for easy viewing
-        model_stats.to_csv(self.output_dir / 'model_performance.csv')
-        website_stats.to_csv(self.output_dir / 'website_difficulty.csv')
-        heatmap_data.to_csv(self.output_dir / 'performance_matrix.csv')
+            # Save as CSV for easy viewing
+            model_stats.to_csv(self.output_dir / 'model_performance.csv')
+            website_stats.to_csv(self.output_dir / 'website_difficulty.csv')
+            heatmap_data.to_csv(self.output_dir / 'performance_matrix.csv')
+
+        except Exception as e:
+            print(f"⚠️  Error generating LaTeX tables: {e}")
+            print("📝 Saving tables as CSV instead...")
 
         print("✅ Paper tables generated")
+
+    def _create_manual_latex_table(self, df, caption, label):
+        """Create LaTeX table manually without jinja2 dependency."""
+        latex = f"\\begin{{table}}[htbp]\n\\centering\n\\caption{{{caption}}}\n\\label{{{label}}}\n"
+        latex += "\\begin{tabular}{l" + "c" * len(df.columns) + "}\n\\toprule\n"
+
+        # Header
+        latex += " & " + " & ".join(df.columns) + " \\\\\n\\midrule\n"
+
+        # Data rows
+        for idx, row in df.iterrows():
+            latex += f"{idx} & " + " & ".join([f"{val:.3f}" if isinstance(val, (int, float)) else str(val) for val in row]) + " \\\\\n"
+
+        latex += "\\bottomrule\n\\end{tabular}\n\\end{table}"
+        return latex
 
     def generate_statistical_analysis(self, df: pd.DataFrame) -> Dict:
         """Generate statistical tests and analysis."""

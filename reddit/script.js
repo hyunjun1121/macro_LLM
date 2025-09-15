@@ -183,47 +183,81 @@ const tabButtons = document.querySelectorAll('.tab-btn');
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
-    loadDataFromStorage();
-    setupEventListeners();
-    updateUserStats();
-    createNotificationContainer();
-    initializeTheme();
-    initInfiniteScroll();
-    setupKeyboardNavigation();
-    updateTabPanelLabel('hot');
+    try {
+        loadDataFromStorage();
+        setupEventListeners();
+        updateUserStats();
+        createNotificationContainer();
+        initializeTheme();
 
-    // Initialize activity tracking
-    userActivityTracker.loadActivityData();
-    userActivityTracker.startSession();
+        // Render initial posts
+        renderPosts();
 
-    // Track page unload
-    window.addEventListener('beforeunload', () => {
-        userActivityTracker.endSession();
-    });
+        // Setup additional navigation listeners
+        setupNavigationListeners();
+        setupKeyboardNavigation();
+        updateTabPanelLabel('hot');
+
+        // Initialize activity tracking
+        if (typeof userActivityTracker !== 'undefined') {
+            userActivityTracker.loadActivityData();
+            userActivityTracker.startSession();
+        }
+
+        // Track page unload
+        window.addEventListener('beforeunload', () => {
+            if (typeof userActivityTracker !== 'undefined') {
+                userActivityTracker.endSession();
+            }
+        });
+
+        console.log('Reddit website initialized successfully');
+    } catch (error) {
+        console.error('Error initializing website:', error);
+    }
 });
 
 // Setup event listeners
 function setupEventListeners() {
     // Search functionality
-    searchInput.addEventListener('input', handleSearch);
-    
+    if (searchInput) {
+        searchInput.addEventListener('input', handleSearch);
+    }
+
     // Tab switching
-    tabButtons.forEach(btn => {
-        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-    });
-    
+    if (tabButtons) {
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+        });
+    }
+
     // Modal functionality
-    document.querySelector('.create-post-btn').addEventListener('click', openModal);
-    closeModal.addEventListener('click', closeModalHandler);
-    document.querySelector('.cancel-btn').addEventListener('click', closeModalHandler);
-    postForm.addEventListener('submit', handlePostSubmit);
+    const createPostBtn = document.querySelector('.create-post-btn');
+    if (createPostBtn) {
+        createPostBtn.addEventListener('click', openModal);
+    }
+
+    if (closeModal) {
+        closeModal.addEventListener('click', closeModalHandler);
+    }
+
+    const cancelBtn = document.querySelector('.cancel-btn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeModalHandler);
+    }
+
+    if (postForm) {
+        postForm.addEventListener('submit', handlePostSubmit);
+    }
     
     // Close modal when clicking outside
-    postModal.addEventListener('click', (e) => {
-        if (e.target === postModal) {
-            closeModalHandler();
-        }
-    });
+    if (postModal) {
+        postModal.addEventListener('click', (e) => {
+            if (e.target === postModal) {
+                closeModalHandler();
+            }
+        });
+    }
     
     // Post option buttons
     document.querySelectorAll('.post-option-btn').forEach(btn => {
@@ -259,6 +293,11 @@ function setupEventListeners() {
 
 // Render posts
 function renderPosts() {
+    if (!postsContainer) {
+        console.warn('Posts container not found');
+        return;
+    }
+
     const postsToRender = displayedPosts.length > 0 ? displayedPosts : currentPosts.slice(0, postsPerPage);
 
     if (postsToRender.length === 0) {
@@ -298,17 +337,19 @@ function createPostElement(post) {
 }
 
 function createPostHTML(post) {
-    const userVote = userVotes[post.id] || 0;
+    const userVote = userVotes[post.id] || post.userVote || 0;
     const isSaved = savedPosts.includes(post.id);
 
     return `
         <div class="post" data-post-id="${post.id}" id="post-${post.id}">
             <div class="post-voting">
-                <button class="vote-btn ${userVote === 1 ? 'upvoted' : ''}" onclick="votePost(${post.id}, 1)">
+                <button class="vote-btn ${userVote === 1 ? 'upvoted' : ''}" onclick="votePost(${post.id}, 1)"
+                        aria-label="${userVote === 1 ? 'Remove upvote' : 'Upvote post'}">
                     <i class="fas fa-arrow-up"></i>
                 </button>
-                <span class="vote-count">${post.upvotes - post.downvotes}</span>
-                <button class="vote-btn ${userVote === -1 ? 'downvoted' : ''}" onclick="votePost(${post.id}, -1)">
+                <span class="vote-count">${(post.upvotes || 0) - (post.downvotes || 0)}</span>
+                <button class="vote-btn ${userVote === -1 ? 'downvoted' : ''}" onclick="votePost(${post.id}, -1)"
+                        aria-label="${userVote === -1 ? 'Remove downvote' : 'Downvote post'}">
                     <i class="fas fa-arrow-down"></i>
                 </button>
             </div>
@@ -462,17 +503,30 @@ function handleSearch(e) {
 
 // Filter posts based on search query
 function filterPosts() {
-    if (!searchQuery) {
+    if (!searchQuery || searchQuery.trim() === '') {
         currentPosts = [...postsData];
     } else {
-        currentPosts = postsData.filter(post => 
-            post.title.toLowerCase().includes(searchQuery) ||
-            post.content.toLowerCase().includes(searchQuery) ||
-            post.community.toLowerCase().includes(searchQuery) ||
-            post.author.toLowerCase().includes(searchQuery)
-        );
+        const query = searchQuery.trim().toLowerCase();
+        currentPosts = postsData.filter(post => {
+            const titleMatch = (post.title || '').toLowerCase().includes(query);
+            const contentMatch = (post.content || '').toLowerCase().includes(query);
+            const communityMatch = (post.community || '').toLowerCase().includes(query);
+            const authorMatch = (post.author || '').toLowerCase().includes(query);
+
+            return titleMatch || contentMatch || communityMatch || authorMatch;
+        });
     }
+
+    // Reset infinite scroll for search results
+    displayedPosts = [];
+    currentPage = 0;
+
     renderPosts();
+
+    // Show search results count
+    if (searchQuery.trim()) {
+        showNotification(`Found ${currentPosts.length} posts matching "${searchQuery}"`, 'info');
+    }
 }
 
 // Switch tabs
@@ -514,50 +568,75 @@ function switchTab(tab) {
     updateTabPanelLabel(tab);
     announceToScreenReader(`Switched to ${tab} posts`);
 
-    // Reset infinite scroll and reload
-    resetInfiniteScroll();
-    postsContainer.innerHTML = '';
-    initInfiniteScroll();
+    // Reset display and render posts
+    displayedPosts = [];
+    currentPage = 0;
+    if (postsContainer) {
+        postsContainer.innerHTML = '';
+    }
+    renderPosts();
 }
 
 // Vote on post
 function votePost(postId, voteType) {
-    const post = currentPosts.find(p => p.id === postId);
-    if (!post) return;
-    
+    // Find post in both currentPosts and postsData
+    let post = currentPosts.find(p => p.id === postId);
+    const originalPost = postsData.find(p => p.id === postId);
+
+    if (!post || !originalPost) {
+        console.error('Post not found:', postId);
+        return;
+    }
+
     // Get current vote from storage
     const currentVote = userVotes[postId] || 0;
-    
-    // Remove previous vote
+
+    // If clicking the same vote type, remove the vote
     if (currentVote === voteType) {
+        // Remove current vote
         if (voteType === 1) {
-            post.upvotes--;
-        } else {
-            post.downvotes--;
+            post.upvotes = Math.max(0, post.upvotes - 1);
+            originalPost.upvotes = Math.max(0, originalPost.upvotes - 1);
+        } else if (voteType === -1) {
+            post.downvotes = Math.max(0, post.downvotes - 1);
+            originalPost.downvotes = Math.max(0, originalPost.downvotes - 1);
         }
         userVotes[postId] = 0;
         post.userVote = 0;
+        originalPost.userVote = 0;
     } else {
-        // Remove opposite vote if exists
+        // Remove previous vote if exists
         if (currentVote === 1) {
-            post.upvotes--;
+            post.upvotes = Math.max(0, post.upvotes - 1);
+            originalPost.upvotes = Math.max(0, originalPost.upvotes - 1);
         } else if (currentVote === -1) {
-            post.downvotes--;
+            post.downvotes = Math.max(0, post.downvotes - 1);
+            originalPost.downvotes = Math.max(0, originalPost.downvotes - 1);
         }
-        
+
         // Add new vote
         if (voteType === 1) {
             post.upvotes++;
-        } else {
+            originalPost.upvotes++;
+        } else if (voteType === -1) {
             post.downvotes++;
+            originalPost.downvotes++;
         }
+
         userVotes[postId] = voteType;
         post.userVote = voteType;
+        originalPost.userVote = voteType;
     }
-    
+
     // Save to storage
     saveDataToStorage();
+
+    // Re-render posts to update UI
     renderPosts();
+
+    // Show feedback
+    const voteText = currentVote === voteType ? 'removed' : (voteType === 1 ? 'upvoted' : 'downvoted');
+    showNotification(`Post ${voteText}`, 'info');
 }
 
 // Show comments (placeholder)
@@ -567,15 +646,38 @@ function showComments(postId) {
 
 // Open modal
 function openModal() {
+    if (!postModal) {
+        console.error('Post modal not found');
+        return;
+    }
+
     postModal.classList.add('show');
     document.body.style.overflow = 'hidden';
+
+    // Focus on the title input for accessibility
+    const titleInput = document.getElementById('postTitle');
+    if (titleInput) {
+        setTimeout(() => titleInput.focus(), 100);
+    }
 }
 
 // Close modal
 function closeModalHandler() {
+    if (!postModal) return;
+
     postModal.classList.remove('show');
     document.body.style.overflow = 'auto';
-    postForm.reset();
+
+    // Reset form if it exists
+    if (postForm) {
+        postForm.reset();
+
+        // Reset character counters
+        const titleCounter = document.getElementById('titleCounter');
+        const contentCounter = document.getElementById('contentCounter');
+        if (titleCounter) titleCounter.textContent = '0/300';
+        if (contentCounter) contentCounter.textContent = '0/40000';
+    }
 }
 
 // Automated Content Creation System - Task 7
@@ -737,9 +839,13 @@ function handlePostSubmit(e) {
 
 // Update user stats display
 function updateUserStats() {
-    document.querySelector('.stat-item:nth-child(1) .stat-value').textContent = userProfile.karma.toLocaleString();
-    document.querySelector('.stat-item:nth-child(2) .stat-value').textContent = userProfile.posts;
-    document.querySelector('.stat-item:nth-child(3) .stat-value').textContent = userProfile.comments;
+    const karmaEl = document.querySelector('.stat-item:nth-child(1) .stat-value');
+    const postsEl = document.querySelector('.stat-item:nth-child(2) .stat-value');
+    const commentsEl = document.querySelector('.stat-item:nth-child(3) .stat-value');
+
+    if (karmaEl) karmaEl.textContent = userProfile.karma.toLocaleString();
+    if (postsEl) postsEl.textContent = userProfile.posts;
+    if (commentsEl) commentsEl.textContent = userProfile.comments;
 }
 
 // Enhanced Community navigation and analysis
@@ -940,41 +1046,81 @@ function loadPostsWithDelay() {
 
 // Navigation functions
 function goToHome() {
-    window.location.href = 'index.html';
+    // Reset to show all posts
+    currentPosts = [...postsData];
+    displayedPosts = [];
+    currentPage = 0;
+    searchQuery = '';
+
+    if (searchInput) {
+        searchInput.value = '';
+    }
+
+    // Reset tab to hot
+    currentTab = 'hot';
+    switchTab('hot');
+
+    showNotification('Returned to home feed', 'info');
 }
 
 function goToProfile() {
-    window.location.href = 'profile.html';
+    if (document.querySelector('profile.html')) {
+        window.location.href = 'profile.html';
+    } else {
+        showNotification('Profile page not available in this demo', 'info');
+    }
 }
 
 function goToCommunity(communityName) {
-    window.location.href = `community.html?community=${communityName}`;
+    // Filter posts by community
+    const communityPosts = postsData.filter(post =>
+        post.community.toLowerCase().includes(communityName.toLowerCase())
+    );
+
+    currentPosts = communityPosts;
+    displayedPosts = [];
+    currentPage = 0;
+    searchQuery = '';
+
+    if (searchInput) {
+        searchInput.value = '';
+    }
+
+    renderPosts();
+    showNotification(`Showing posts from r/${communityName}`, 'info');
 }
 
-// Add click handlers for navigation
-document.addEventListener('DOMContentLoaded', function() {
+// Additional navigation event listeners (merged into main DOMContentLoaded)
+function setupNavigationListeners() {
     // Logo click to go home
     const logo = document.querySelector('.logo');
     if (logo) {
-        logo.addEventListener('click', goToHome);
+        logo.addEventListener('click', (e) => {
+            e.preventDefault();
+            goToHome();
+        });
     }
-    
+
     // User info click to go to profile
     const userInfo = document.querySelector('.user-info');
     if (userInfo) {
-        userInfo.addEventListener('click', goToProfile);
+        userInfo.addEventListener('click', (e) => {
+            e.preventDefault();
+            goToProfile();
+        });
     }
-    
+
     // Community links
     const communityItems = document.querySelectorAll('.community-item');
     communityItems.forEach(item => {
-        item.addEventListener('click', () => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
             const communityName = item.querySelector('.community-name').textContent;
             goToCommunity(communityName);
         });
     });
-    
-    // Post community links
+
+    // Post community links (delegated event listener)
     document.addEventListener('click', (e) => {
         if (e.target.classList.contains('post-community')) {
             e.preventDefault();
@@ -982,9 +1128,7 @@ document.addEventListener('DOMContentLoaded', function() {
             goToCommunity(communityName);
         }
     });
-    
-    loadPostsWithDelay();
-});
+}
 
 // Data persistence functions (optimized with error handling)
 function saveDataToStorage() {
@@ -1246,14 +1390,25 @@ function showCuratedPosts() {
 // Show saved posts
 function showSavedPosts() {
     if (savedPosts.length === 0) {
-        showNotification('No saved posts yet', 'info');
+        showNotification('No saved posts yet. Save some posts by clicking the bookmark icon!', 'info');
         return;
     }
 
     const savedPostsData = postsData.filter(post => savedPosts.includes(post.id));
     currentPosts = savedPostsData;
+
+    // Reset display
+    displayedPosts = [];
+    currentPage = 0;
+    searchQuery = '';
+
+    // Clear search input
+    if (searchInput) {
+        searchInput.value = '';
+    }
+
     renderPosts();
-    showNotification(`Showing ${savedPostsData.length} saved posts`, 'info');
+    showNotification(`Showing ${savedPostsData.length} saved posts`, 'success');
 }
 
 // Share functionality
@@ -1334,21 +1489,59 @@ function renderComments(postId, parentId = null, depth = 0) {
 
 function toggleComments(postId) {
     const commentsSection = document.getElementById(`comments-${postId}`);
-    if (commentsSection.style.display === 'none') {
+    if (!commentsSection) {
+        console.error('Comments section not found for post:', postId);
+        return;
+    }
+
+    const isHidden = commentsSection.style.display === 'none' || commentsSection.style.display === '';
+
+    if (isHidden) {
         commentsSection.style.display = 'block';
         loadComments(postId);
+
+        // Update button text
+        const commentButton = document.querySelector(`[onclick="toggleComments(${postId})"] span`);
+        if (commentButton) {
+            const post = postsData.find(p => p.id === postId);
+            const commentCount = post ? post.comments : 0;
+            commentButton.textContent = `Hide ${commentCount} Comments`;
+        }
     } else {
         commentsSection.style.display = 'none';
+
+        // Update button text
+        const commentButton = document.querySelector(`[onclick="toggleComments(${postId})"] span`);
+        if (commentButton) {
+            const post = postsData.find(p => p.id === postId);
+            const commentCount = post ? post.comments : 0;
+            commentButton.textContent = `${commentCount} Comments`;
+        }
     }
 }
 
 function loadComments(postId) {
     const commentsList = document.getElementById(`commentsList-${postId}`);
-    commentsList.innerHTML = renderComments(postId);
+    if (!commentsList) {
+        console.error('Comments list not found for post:', postId);
+        return;
+    }
+
+    try {
+        commentsList.innerHTML = renderComments(postId);
+    } catch (error) {
+        console.error('Error loading comments:', error);
+        commentsList.innerHTML = '<div class="error">Error loading comments</div>';
+    }
 }
 
 function addComment(postId) {
     const commentInput = document.getElementById(`commentInput-${postId}`);
+    if (!commentInput) {
+        console.error('Comment input not found for post:', postId);
+        return;
+    }
+
     const content = commentInput.value.trim();
 
     if (!content) {
@@ -2372,10 +2565,32 @@ const benchmarkTestSuite = {
     }
 };
 
-// Global functions for benchmark testing
+// Global functions for benchmark testing (accessible via console)
 window.runBenchmarkTests = benchmarkTestSuite.runAllTests.bind(benchmarkTestSuite);
 window.generateTestReport = benchmarkTestSuite.generateTestReport.bind(benchmarkTestSuite);
 window.benchmarkAutomation = benchmarkAutomation;
+
+// Console helper functions
+window.showBenchmarkControls = function() {
+    const controls = document.querySelector('.benchmark-controls');
+    if (controls) {
+        controls.style.display = controls.style.display === 'none' ? 'block' : 'none';
+        console.log('Benchmark controls ' + (controls.style.display === 'block' ? 'shown' : 'hidden'));
+    }
+};
+
+window.debugInfo = function() {
+    console.log('=== Reddit Website Debug Info ===');
+    console.log('Posts loaded:', postsData.length);
+    console.log('Current posts displayed:', currentPosts.length);
+    console.log('User profile:', userProfile);
+    console.log('Available functions:');
+    console.log('- runBenchmarkTests()');
+    console.log('- generateTestReport()');
+    console.log('- showBenchmarkControls()');
+    console.log('- benchmarkAutomation.*');
+    console.log('=====================================');
+};
 
 // Infinite Scroll Functions
 function generateMorePosts(count = 10) {

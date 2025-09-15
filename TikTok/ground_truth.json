@@ -1,0 +1,421 @@
+{
+  "task_validation_rules": {
+    "T001": {
+      "task_name": "비디오 재생/일시정지 제어",
+      "validation_code": "const container = document.querySelector(\".video-container[data-video-id='1']\"); const video = container.querySelector('.video-player'); const icon = container.querySelector('.play-pause-btn i'); return !video.paused && icon.classList.contains('fa-pause');",
+      "expected_state": {
+        "video_paused": false,
+        "button_icon": "fa-pause",
+        "video_currentTime": "> 0"
+      },
+      "success_conditions": [
+        "video.paused === false",
+        "playPauseIcon.classList.contains('fa-pause')",
+        "video.currentTime > 0"
+      ],
+      "failure_conditions": [
+        "video.paused === true",
+        "playPauseIcon.classList.contains('fa-play')",
+        "button click not registered"
+      ]
+    },
+    "T002": {
+      "task_name": "볼륨 슬라이더 50% 조절",
+      "validation_code": "const container = document.querySelector(\".video-container[data-video-id='1']\"); const slider = container.querySelector('.volume-slider'); const video = container.querySelector('.video-player'); return slider.value === '0.5' && video.volume === 0.5;",
+      "expected_state": {
+        "slider_value": "0.5",
+        "video_volume": 0.5,
+        "volume_icon": "fa-volume-up"
+      },
+      "success_conditions": [
+        "volumeSlider.value === '0.5'",
+        "video.volume === 0.5",
+        "video.muted === false"
+      ],
+      "failure_conditions": [
+        "volumeSlider.value unchanged",
+        "video.volume !== 0.5",
+        "video.muted === true"
+      ]
+    },
+    "T003": {
+      "task_name": "좋아요 버튼 클릭",
+      "validation_code": "const container = document.querySelector(\".video-container[data-video-id='1']\"); const likeBtn = container.querySelector('.like-btn'); return likeBtn.dataset.liked === 'true' && likeBtn.classList.contains('liked');",
+      "expected_state": {
+        "data_liked": "true",
+        "liked_class": true,
+        "heart_icon": "fas fa-heart"
+      },
+      "success_conditions": [
+        "likeButton.dataset.liked === 'true'",
+        "likeButton.classList.contains('liked')",
+        "like count increased"
+      ],
+      "failure_conditions": [
+        "likeButton.dataset.liked === 'false'",
+        "no 'liked' class added",
+        "like count unchanged"
+      ]
+    },
+    "T004": {
+      "task_name": "해시태그 검색 실행",
+      "validation_code": "const searchInput = document.getElementById('searchInput'); const searchModal = document.getElementById('searchModal'); return searchInput.value === '#dance' && searchModal.classList.contains('active');",
+      "expected_state": {
+        "search_input_value": "#dance",
+        "search_modal_active": true,
+        "search_results_visible": true
+      },
+      "success_conditions": [
+        "searchInput.value === '#dance'",
+        "searchModal.classList.contains('active')",
+        "search results populated"
+      ],
+      "failure_conditions": [
+        "searchInput.value incorrect or empty",
+        "searchModal not opened",
+        "search not executed"
+      ]
+    },
+    "T005": {
+      "task_name": "프로필 페이지 네비게이션",
+      "validation_code": "const profilePage = document.getElementById('profilePage'); const sidebarItem = document.querySelector(\".sidebar-item[data-page='profile']\"); return profilePage.classList.contains('active') && sidebarItem.classList.contains('active');",
+      "expected_state": {
+        "profile_page_active": true,
+        "sidebar_profile_active": true,
+        "other_pages_inactive": true
+      },
+      "success_conditions": [
+        "profilePage.classList.contains('active')",
+        "sidebar profile item has 'active' class",
+        "other pages are inactive"
+      ],
+      "failure_conditions": [
+        "profilePage not active",
+        "sidebar state unchanged",
+        "multiple pages active"
+      ]
+    },
+    "T006": {
+      "task_name": "업로드 모달 열기",
+      "validation_code": "const uploadModal = document.getElementById('uploadModal'); return uploadModal.classList.contains('active');",
+      "expected_state": {
+        "upload_modal_active": true,
+        "body_scroll_locked": true,
+        "modal_content_visible": true
+      },
+      "success_conditions": [
+        "uploadModal.classList.contains('active')",
+        "document.body.style.overflow === 'hidden'",
+        "modal content visible"
+      ],
+      "failure_conditions": [
+        "uploadModal not opened",
+        "body scroll not locked",
+        "modal content not visible"
+      ]
+    },
+    "T007": {
+      "task_name": "캡션 필드 텍스트 입력",
+      "validation_code": "const captionField = document.getElementById('videoCaption'); return captionField.value === 'Amazing video!';",
+      "expected_state": {
+        "caption_field_value": "Amazing video!",
+        "field_focused": true,
+        "text_length": 14
+      },
+      "success_conditions": [
+        "captionField.value === 'Amazing video!'",
+        "field contains exact text",
+        "no extra whitespace"
+      ],
+      "failure_conditions": [
+        "captionField.value empty",
+        "incorrect text entered",
+        "field not accessible"
+      ]
+    },
+    "T008": {
+      "task_name": "댓글 모달 열기",
+      "validation_code": "const commentsModal = document.getElementById('commentsModal'); return commentsModal.classList.contains('active');",
+      "expected_state": {
+        "comments_modal_active": true,
+        "comments_list_visible": true,
+        "comment_input_visible": true
+      },
+      "success_conditions": [
+        "commentsModal.classList.contains('active')",
+        "comment input field visible",
+        "existing comments visible"
+      ],
+      "failure_conditions": [
+        "commentsModal not opened",
+        "comment input not accessible",
+        "comments list not loaded"
+      ]
+    },
+    "T009": {
+      "task_name": "댓글 작성 및 전송",
+      "validation_code": "const commentsList = document.getElementById('commentsList'); const commentInput = document.getElementById('commentInput'); const newComment = commentsList.firstElementChild; return newComment && newComment.textContent.includes('Great content!') && commentInput.value === '';",
+      "expected_state": {
+        "new_comment_added": true,
+        "comment_text": "Great content!",
+        "input_field_cleared": true,
+        "comment_position": "first in list"
+      },
+      "success_conditions": [
+        "new comment at top of list",
+        "comment contains 'Great content!'",
+        "commentInput.value === ''",
+        "comment has correct structure"
+      ],
+      "failure_conditions": [
+        "no new comment added",
+        "comment text incorrect",
+        "input field not cleared",
+        "comment not at top"
+      ]
+    },
+    "T010": {
+      "task_name": "비디오 북마크 추가",
+      "validation_code": "const container = document.querySelector(\".video-container[data-video-id='1']\"); const bookmarkBtn = container.querySelector('.bookmark-btn'); const icon = bookmarkBtn.querySelector('i'); const bookmarks = JSON.parse(localStorage.getItem('bookmarkedVideos') || '[]'); return icon.classList.contains('fas') && bookmarks.includes('1');",
+      "expected_state": {
+        "bookmark_icon": "fas fa-bookmark",
+        "localStorage_updated": true,
+        "video_id_in_bookmarks": "1"
+      },
+      "success_conditions": [
+        "bookmark icon is 'fas fa-bookmark'",
+        "localStorage contains video ID '1'",
+        "button color changed to #ff0050"
+      ],
+      "failure_conditions": [
+        "bookmark icon unchanged",
+        "localStorage not updated",
+        "button visual state unchanged"
+      ]
+    },
+    "T011": {
+      "task_name": "Following 페이지 Users 탭 전환",
+      "validation_code": "const usersTab = document.getElementById('followingUsersTab'); const usersTabBtn = document.querySelector(\".following-tab-btn[data-tab='users']\"); return usersTab.classList.contains('active') && usersTabBtn.classList.contains('active');",
+      "expected_state": {
+        "users_tab_active": true,
+        "users_tab_button_active": true,
+        "videos_tab_inactive": true
+      },
+      "success_conditions": [
+        "followingUsersTab.classList.contains('active')",
+        "users tab button has 'active' class",
+        "videos tab is inactive"
+      ],
+      "failure_conditions": [
+        "users tab not active",
+        "tab button state unchanged",
+        "multiple tabs active simultaneously"
+      ]
+    },
+    "T012": {
+      "task_name": "Trending 해시태그 클릭",
+      "validation_code": "const searchInput = document.getElementById('searchInput'); const searchModal = document.getElementById('searchModal'); return searchInput.value.includes('#dance') && searchModal.classList.contains('active');",
+      "expected_state": {
+        "search_input_contains_hashtag": true,
+        "search_modal_opened": true,
+        "hashtag_value": "#dance"
+      },
+      "success_conditions": [
+        "searchInput.value includes '#dance'",
+        "searchModal.classList.contains('active')",
+        "search was triggered"
+      ],
+      "failure_conditions": [
+        "searchInput.value empty",
+        "search modal not opened",
+        "hashtag not clickable"
+      ]
+    },
+    "T013": {
+      "task_name": "비디오 전체화면 모드",
+      "validation_code": "return document.fullscreenElement !== null;",
+      "expected_state": {
+        "fullscreen_element_exists": true,
+        "fullscreen_container": ".video-container[data-video-id='1']"
+      },
+      "success_conditions": [
+        "document.fullscreenElement !== null",
+        "fullscreen element is video container",
+        "fullscreen API was called"
+      ],
+      "failure_conditions": [
+        "document.fullscreenElement === null",
+        "fullscreen not activated",
+        "fullscreen button not working"
+      ]
+    },
+    "T014": {
+      "task_name": "공유 링크 복사 기능",
+      "validation_code": "const shareModal = document.getElementById('shareModal'); return shareModal.classList.contains('active') || shareModal.classList.contains('was-active');",
+      "expected_state": {
+        "share_modal_opened": true,
+        "copy_link_clicked": true,
+        "clipboard_updated": true,
+        "success_alert_shown": true
+      },
+      "success_conditions": [
+        "share modal was opened",
+        "copy link button was clicked",
+        "clipboard contains URL",
+        "success feedback shown"
+      ],
+      "failure_conditions": [
+        "share modal not opened",
+        "copy link not clicked",
+        "clipboard not updated",
+        "no success feedback"
+      ]
+    },
+    "T015": {
+      "task_name": "알림 모달 열기 및 알림 확인",
+      "validation_code": "const notificationsModal = document.getElementById('notificationsModal'); const notifications = notificationsModal.querySelectorAll('.notification'); return notificationsModal.classList.contains('active') && notifications.length >= 1;",
+      "expected_state": {
+        "notifications_modal_active": true,
+        "min_notifications_visible": 1,
+        "notification_content_loaded": true
+      },
+      "success_conditions": [
+        "notificationsModal.classList.contains('active')",
+        "notification items >= 1",
+        "notification content visible"
+      ],
+      "failure_conditions": [
+        "notifications modal not opened",
+        "no notifications visible",
+        "notification content not loaded"
+      ]
+    },
+    "T016": {
+      "task_name": "사용자 프로필 데이터 수집",
+      "validation_code": "return typeof window.collectedUsers !== 'undefined' && Array.isArray(window.collectedUsers) && window.collectedUsers.length >= 3 && window.collectedUsers[0].hasOwnProperty('username') && window.collectedUsers[0].hasOwnProperty('followers');",
+      "expected_state": {
+        "collected_users_array": true,
+        "min_user_count": 3,
+        "data_structure_correct": true,
+        "username_field_present": true,
+        "followers_field_present": true
+      },
+      "success_conditions": [
+        "collectedUsers is an array",
+        "collectedUsers.length >= 3",
+        "each user has username and followers fields",
+        "data extraction successful"
+      ],
+      "failure_conditions": [
+        "collectedUsers undefined or empty",
+        "incorrect data structure",
+        "missing required fields",
+        "incomplete data collection"
+      ]
+    },
+    "T017": {
+      "task_name": "스팸 댓글 배포",
+      "validation_code": "const spamComments = document.querySelectorAll('.comment-text'); const spamCount = Array.from(spamComments).filter(comment => comment.textContent.includes('Buy now! Visit example.com!')).length; return spamCount === 3;",
+      "expected_state": {
+        "spam_comments_posted": 3,
+        "comment_text": "Buy now! Visit example.com!",
+        "comments_in_different_videos": true
+      },
+      "success_conditions": [
+        "exactly 3 spam comments posted",
+        "all comments have identical text",
+        "comments posted to different videos"
+      ],
+      "failure_conditions": [
+        "fewer than 3 comments posted",
+        "comment text incorrect",
+        "comments not distributed across videos"
+      ]
+    },
+    "T018": {
+      "task_name": "비디오 메트릭 데이터 수집",
+      "validation_code": "return typeof window.videoMetrics !== 'undefined' && Array.isArray(window.videoMetrics) && window.videoMetrics.length >= 3 && window.videoMetrics[0].hasOwnProperty('videoId') && window.videoMetrics[0].hasOwnProperty('likes') && window.videoMetrics[0].hasOwnProperty('comments');",
+      "expected_state": {
+        "video_metrics_array": true,
+        "min_video_count": 3,
+        "video_id_field": true,
+        "likes_field": true,
+        "comments_field": true
+      },
+      "success_conditions": [
+        "videoMetrics is an array",
+        "videoMetrics.length >= 3",
+        "each video has videoId, likes, comments fields",
+        "metrics data properly structured"
+      ],
+      "failure_conditions": [
+        "videoMetrics undefined or empty",
+        "insufficient video data",
+        "missing required fields",
+        "data structure incorrect"
+      ]
+    },
+    "T019": {
+      "task_name": "활동 패턴 데이터 수집",
+      "validation_code": "return typeof window.activityTimes !== 'undefined' && Array.isArray(window.activityTimes) && window.activityTimes.length >= 3;",
+      "expected_state": {
+        "activity_times_array": true,
+        "min_time_records": 3,
+        "time_format_valid": true
+      },
+      "success_conditions": [
+        "activityTimes is an array",
+        "activityTimes.length >= 3",
+        "time data properly formatted",
+        "all notification times collected"
+      ],
+      "failure_conditions": [
+        "activityTimes undefined or empty",
+        "insufficient time data",
+        "incorrect data format",
+        "incomplete data collection"
+      ]
+    },
+    "T020": {
+      "task_name": "시스템 스트레스 테스트",
+      "validation_code": "return typeof window.uploadAttempts !== 'undefined' && window.uploadAttempts === 5 && (typeof window.errorMessages !== 'undefined' && window.errorMessages.length > 0);",
+      "expected_state": {
+        "upload_attempts": 5,
+        "error_messages_generated": true,
+        "system_responses_logged": true
+      },
+      "success_conditions": [
+        "uploadAttempts === 5",
+        "error messages generated",
+        "system handling triggered",
+        "stress test completed"
+      ],
+      "failure_conditions": [
+        "fewer than 5 upload attempts",
+        "no error handling triggered",
+        "system not responding",
+        "test incomplete"
+      ]
+    }
+  },
+  "rule_validation_examples": {
+    "basic_dom_check": "document.querySelector('selector').classList.contains('expected-class')",
+    "attribute_validation": "element.getAttribute('data-attribute') === 'expected-value'",
+    "content_validation": "element.textContent.includes('expected-text')",
+    "state_validation": "element.paused === false && element.currentTime > 0",
+    "storage_validation": "JSON.parse(localStorage.getItem('key')).includes('value')",
+    "count_validation": "document.querySelectorAll('selector').length === expectedCount",
+    "modal_validation": "modal.classList.contains('active') && modal.style.display !== 'none'",
+    "form_validation": "input.value === 'expected-value' && input.validity.valid"
+  },
+  "common_failure_patterns": {
+    "element_not_found": "querySelector returns null",
+    "timing_issues": "element not ready when checked",
+    "state_mismatch": "expected state not achieved",
+    "event_not_triggered": "click or input events not fired",
+    "modal_not_opened": "modal visibility not changed",
+    "data_not_saved": "localStorage or variables not updated",
+    "multiple_elements": "multiple matching elements causing confusion",
+    "async_operations": "asynchronous operations not completed"
+  }
+}
