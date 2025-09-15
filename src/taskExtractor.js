@@ -15,8 +15,25 @@ export class TaskExtractor {
       const workbook = XLSX.readFile(xlsxPath);
       const tasks = [];
 
-      // Read all sheets
-      for (const sheetName of workbook.SheetNames) {
+      // Determine which sheet to read based on file path (only ONE sheet per file)
+      let sheetToRead = workbook.SheetNames[0]; // Default to first sheet
+
+      if (xlsxPath.includes('TikTok')) {
+        // TikTok: try multiple possible sheet names, pick FIRST match only
+        const possibleSheets = ['Tasks', 'Sheet1', 'TikTok_Tasks', 'Task'];
+        const foundSheet = workbook.SheetNames.find(name => possibleSheets.includes(name));
+        if (foundSheet) sheetToRead = foundSheet;
+      } else if (xlsxPath.includes('Airbnb')) {
+        // Airbnb: try multiple possible sheet names, pick FIRST match only
+        const possibleSheets = ['All_Tasks', 'Sheet1', 'Airbnb_Tasks', 'Tasks'];
+        const foundSheet = workbook.SheetNames.find(name => possibleSheets.includes(name));
+        if (foundSheet) sheetToRead = foundSheet;
+      }
+
+      const sheetsToRead = [sheetToRead]; // Always process exactly ONE sheet
+
+      // Read specified sheets
+      for (const sheetName of sheetsToRead) {
         const worksheet = workbook.Sheets[sheetName];
         const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
@@ -88,20 +105,52 @@ export class TaskExtractor {
     const pattern = path.join(this.projectRoot, '**/*.xlsx').replace(/\\/g, '/');
     const taskFiles = await glob(pattern);
 
-    // Convert to relative paths
-    const relativeTaskFiles = taskFiles.map(file =>
-      path.relative(this.projectRoot, file).replace(/\\/g, '/')
-    );
+    // Filter and prioritize improved files
+    const relativeTaskFiles = taskFiles
+      .filter(file => !file.includes('validation_report')) // Exclude validation reports
+      .map(file => path.relative(this.projectRoot, file).replace(/\\/g, '/'));
 
+    // Prioritize improved files over original files
+    const uniqueFiles = new Map();
     for (const taskFile of relativeTaskFiles) {
+      const websiteName = path.dirname(taskFile);
+      const isImproved = taskFile.includes('improved') || taskFile.includes('Improved');
+
+      // Always prefer improved files
+      if (!uniqueFiles.has(websiteName) || isImproved) {
+        uniqueFiles.set(websiteName, taskFile);
+      }
+    }
+    const finalTaskFiles = Array.from(uniqueFiles.values());
+
+    for (const taskFile of finalTaskFiles) {
       const xlsxPath = path.join(this.projectRoot, taskFile);
       const websiteName = path.dirname(taskFile);
 
       try {
         await fs.access(xlsxPath);
         const tasks = await this.extractTasksFromXlsx(xlsxPath);
+
+        // Try to load ground truth data
+        const groundTruthPath = await this.findGroundTruthFile(websiteName);
+        if (groundTruthPath) {
+          try {
+            const groundTruthData = JSON.parse(await fs.readFile(groundTruthPath, 'utf-8'));
+            // Attach ground truth to tasks
+            tasks.forEach((task, index) => {
+              if (groundTruthData.tasks && groundTruthData.tasks[index]) {
+                task.groundTruth = groundTruthData.tasks[index];
+              }
+            });
+            console.log(`✅ Loaded ${tasks.length} tasks from ${websiteName} (with ground truth)`);
+          } catch (gtError) {
+            console.log(`✅ Loaded ${tasks.length} tasks from ${websiteName} (no ground truth: ${gtError.message})`);
+          }
+        } else {
+          console.log(`✅ Loaded ${tasks.length} tasks from ${websiteName}`);
+        }
+
         allTasks[websiteName] = tasks;
-        console.log(`✅ Loaded ${tasks.length} tasks from ${websiteName}`);
       } catch (error) {
         console.log(`⚠️  Task file not found: ${xlsxPath}`);
         allTasks[websiteName] = [];
@@ -109,6 +158,25 @@ export class TaskExtractor {
     }
 
     return allTasks;
+  }
+
+  async findGroundTruthFile(websiteName) {
+    const possibleNames = [
+      `${websiteName}_ground_truth.json`,
+      `ground_truth.json`,
+      `ground_truth_validation.json`
+    ];
+
+    for (const fileName of possibleNames) {
+      const groundTruthPath = path.join(this.projectRoot, websiteName, fileName);
+      try {
+        await fs.access(groundTruthPath);
+        return groundTruthPath;
+      } catch (error) {
+        // File doesn't exist, try next
+      }
+    }
+    return null;
   }
 
   async getWebsiteInfo(websiteName) {
