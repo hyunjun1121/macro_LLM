@@ -66,10 +66,11 @@ Generate a Playwright JavaScript macro following this EXACT format:
 
 **FUNCTIONALITY REQUIREMENTS:**
 - Navigate to HTML file with await page.goto(fileUrl)
-- Wait for elements before interacting (page.waitForSelector, page.waitForLoadState)
+- Wait for elements before interacting (page.waitForSelector with timeout: 5000)
 - Take screenshots using: await page.screenshot({ path: path.join(screenshotsDir, 'filename.png') })
 - Use multiple selector strategies (ID, class, text content, xpath)
-- Handle dynamic content loading
+- Keep interactions simple and avoid complex waiting logic
+- Do NOT wait for console data or use custom timeouts
 - Extract meaningful data to verify task completion
 
 **CRITICAL - NO DEVIATION FROM TEMPLATE STRUCTURE**
@@ -123,6 +124,10 @@ export default async function(page, fileUrl, screenshotsDir) {
 - NO explanation text before or after the code
 - DO NOT handle page dialogs (alerts, confirms) - they are auto-handled
 - DO NOT use page.on('dialog') or dialog.accept() in your code
+- DO NOT create custom timeouts with setTimeout() or setInterval()
+- DO NOT wait for console data or network responses
+- Keep all waitForSelector timeouts under 5 seconds
+- Use simple, direct interactions only
 
 Generate ONLY the JavaScript code:`;
 
