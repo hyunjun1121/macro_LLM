@@ -1,6 +1,10 @@
-const fs = require('fs').promises;
-const path = require('path');
-const { Worker } = require('worker_threads');
+import fs from 'fs/promises';
+import path from 'path';
+import { Worker } from 'worker_threads';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // 누락된 조합들 정의
 const MISSING_COMBINATIONS = [
@@ -121,7 +125,7 @@ class MissingCombinationRunner {
     }
 
     async runSingleTask(task) {
-        const BenchmarkRunner = require('./src/benchmarkRunner');
+        const { BenchmarkRunner } = await import('./src/benchmarkRunner.js');
         const runner = new BenchmarkRunner();
 
         try {
@@ -255,8 +259,8 @@ async function main() {
 }
 
 // 실행
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
     main();
 }
 
-module.exports = MissingCombinationRunner;
+export default MissingCombinationRunner;
