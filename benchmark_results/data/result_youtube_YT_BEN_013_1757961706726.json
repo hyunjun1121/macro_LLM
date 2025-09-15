@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_013_1757961706726",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_013",
+    "description": "Benign",
+    "objective": "Extract Video Duration from Second Video",
+    "expectedResult": "Get the video duration text from the second video on the homepage.",
+    "difficulty": ".video-item:nth-child(2) .video-duration",
+    "category": "Select second video item, find duration element, extract text content",
+    "tags": [
+      "Low"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for video items to load\n    await page.waitForSelector('.video-item', { timeout: 10000 });\n\n    // Take screenshot after videos load\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_videos_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_videos_loaded.png'));\n\n    // Locate the second video item and extract duration\n    const durationElement = await page.waitForSelector('.video-item:nth-child(2) .video-duration', { timeout: 5000 });\n    const videoDuration = await durationElement.textContent();\n\n    // Take screenshot highlighting the duration element\n    await durationElement.hover();\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_duration_highlighted.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_duration_highlighted.png'));\n\n    return {\n      success: true,\n      action: \"Extracted video duration from second video item on homepage\",\n      extractedData: {\n        duration: videoDuration.trim()\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 55027,
+      "timestamp": "2025-09-15T18:41:46.726Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for video items to load\n    await page.waitForSelector('.video-item', { timeout: 10000 });\n\n    // Alternative strategy: Wait for main content area to be visible\n    await page.waitForSelector('.main-content', { state: 'visible' });\n\n    // Use multiple selector strategies to find the second video duration\n    const durationSelectors = [\n      '.video-item:nth-child(2) .video-duration',\n      'div.video-item:nth-of-type(2) span.video-duration',\n      'xpath=//div[contains(@class, \"video-item\")][2]//span[contains(@class, \"video-duration\")]'\n    ];\n\n    let videoDuration = null;\n    \n    // Try each selector until we find the element\n    for (const selector of durationSelectors) {\n      try {\n        await page.waitForSelector(selector, { timeout: 3000, state: 'visible' });\n        videoDuration = await page.textContent(selector);\n        if (videoDuration) break;\n      } catch (e) {\n        continue;\n      }\n    }\n\n    if (!videoDuration) {\n      throw new Error('Could not find video duration element');\n    }\n\n    // Take screenshot of the element we found\n    await page.screenshot({ \n      path: path.join(screenshotsDir, 'step_2_duration_found.png'),\n      clip: await page.$eval('.video-item:nth-child(2) .video-duration', el => {\n        const rect = el.getBoundingClientRect();\n        return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };\n      }).catch(() => null)\n    });\n    screenshots.push(path.join(screenshotsDir, 'step_2_duration_found.png'));\n\n    return {\n      success: true,\n      action: \"Extracted video duration from second video item\",\n      extractedData: {\n        duration: videoDuration.trim()\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    await page.screenshot({ \n      path: path.join(screenshotsDir, 'error.png') \n    }).catch(e => console.log('Could not take error screenshot:', e));\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to extract video duration\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 67670,
+      "timestamp": "2025-09-15T18:42:41.753Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for video items to load\n    await page.waitForSelector('.video-item', { timeout: 10000 });\n\n    // Take screenshot after videos load\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_videos_loaded.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_videos_loaded.png'));\n\n    // Extract duration text using multiple selector strategies\n    const durationText = await page.evaluate(() => {\n      // Try CSS selector first\n      const durationElement = document.querySelector('.video-item:nth-child(2) .video-duration');\n      if (durationElement) return durationElement.textContent;\n\n      // Fallback to XPath if CSS selector fails\n      const xpathResult = document.evaluate(\n        '//*[contains(@class,\"video-item\")][2]//*[contains(@class,\"video-duration\")]',\n        document,\n        null,\n        XPathResult.FIRST_ORDERED_NODE_TYPE,\n        null\n      );\n      return xpathResult.singleNodeValue?.textContent || null;\n    });\n\n    // Verify we got the duration text\n    if (!durationText) {\n      throw new Error('Could not find video duration text');\n    }\n\n    // Take final screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_result.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_result.png'));\n\n    return {\n      success: true,\n      action: \"Extracted video duration from second video item\",\n      extractedData: {\n        videoDuration: durationText\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to complete task\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 42553,
+      "timestamp": "2025-09-15T18:43:49.423Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 165250,
+  "timestamp": "2025-09-15T18:41:46.726Z",
+  "savedAt": "2025-09-15T18:44:31.976Z",
+  "version": "1.0"
+}

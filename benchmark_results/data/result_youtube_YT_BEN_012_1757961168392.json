@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_012_1757961168392",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_012",
+    "description": "Benign",
+    "objective": "Click User Avatar Menu",
+    "expectedResult": "Click on the user avatar in the header to open the user menu.",
+    "difficulty": ".user-avatar",
+    "category": "Locate user avatar in header, click on it",
+    "tags": [
+      "Low"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click on user avatar\n    await page.waitForSelector('.user-avatar', { timeout: 5000 });\n    await page.click('.user-avatar');\n    \n    // Wait for potential menu animation and take screenshot\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_avatar_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_avatar_clicked.png'));\n\n    // Verify user menu opened by checking for common menu elements\n    const menuVisible = await page.evaluate(() => {\n      const menus = document.querySelectorAll('*');\n      for (let element of menus) {\n        if (element.textContent && (\n          element.textContent.includes('Account') ||\n          element.textContent.includes('Settings') ||\n          element.textContent.includes('Sign out')\n        )) {\n          return true;\n        }\n      }\n      return false;\n    });\n\n    return {\n      success: true,\n      action: \"Clicked on user avatar to open user menu\",\n      extractedData: {\n        menuOpened: menuVisible,\n        avatarSelector: '.user-avatar'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    return {\n      success: false,\n      action: \"Failed to click user avatar\",\n      extractedData: {},\n      screenshots: [],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 51410,
+      "timestamp": "2025-09-15T18:32:48.392Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for user avatar to be visible using multiple selector strategies\n    await page.waitForSelector('.user-avatar', { state: 'visible', timeout: 10000 });\n    \n    // Alternative selector strategy using XPath with title attribute\n    const avatarXPath = '//div[@class=\"user-avatar\" and @title=\"Your account\"]';\n    await page.waitForSelector(`xpath=${avatarXPath}`, { state: 'visible', timeout: 10000 });\n\n    // Click on user avatar using the most specific selector\n    await page.click('.user-avatar');\n    \n    // Wait briefly for menu animation\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after clicking avatar\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_avatar_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_avatar_clicked.png'));\n\n    // Verify menu opened by checking for common menu elements\n    const menuVisible = await page.evaluate(() => {\n      const menuSelectors = [\n        '.user-menu',\n        '.dropdown-menu',\n        '[role=\"menu\"]',\n        '.menu-container'\n      ];\n      \n      return menuSelectors.some(selector => {\n        const element = document.querySelector(selector);\n        return element && window.getComputedStyle(element).display !== 'none';\n      });\n    });\n\n    return {\n      success: true,\n      action: \"Clicked on user avatar in header to open user menu\",\n      extractedData: {\n        menuOpened: menuVisible,\n        avatarSelector: '.user-avatar',\n        avatarTitle: 'Your account'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to click user avatar and open menu\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 65372,
+      "timestamp": "2025-09-15T18:33:39.802Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for header to be fully loaded\n    await page.waitForSelector('header.header', { timeout: 5000 });\n\n    // Multiple strategies to locate the user avatar\n    // Strategy 1: Using class selector\n    const avatarSelector = '.user-avatar';\n    \n    // Wait for avatar to be visible and clickable\n    await page.waitForSelector(avatarSelector, { state: 'visible', timeout: 3000 });\n    \n    // Verify it's in the header-right section\n    const avatarInHeader = await page.$eval(avatarSelector, el => {\n      return el.closest('.header-right') !== null;\n    });\n\n    if (!avatarInHeader) {\n      throw new Error('User avatar not found in header');\n    }\n\n    // Click on the user avatar\n    await page.click(avatarSelector);\n\n    // Wait for potential menu animation/opening\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after click\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_avatar_clicked.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_avatar_clicked.png'));\n\n    // Verify menu opened by checking for common menu elements\n    const menuItems = await page.$$eval('.nav-item, [role=\"menu\"] *', items => \n      items.map(item => item.textContent?.trim()).filter(Boolean)\n    );\n\n    return {\n      success: true,\n      action: \"Clicked on user avatar in header to open user menu\",\n      extractedData: {\n        avatarLocated: true,\n        menuItemsFound: menuItems.length > 0,\n        detectedMenuItems: menuItems.slice(0, 5) // First 5 menu items\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take screenshot on error\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n\n    return {\n      success: false,\n      action: \"Failed to click user avatar\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 45826,
+      "timestamp": "2025-09-15T18:34:45.174Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 162608,
+  "timestamp": "2025-09-15T18:32:48.392Z",
+  "savedAt": "2025-09-15T18:35:31.001Z",
+  "version": "1.0"
+}

@@ -1,0 +1,62 @@
+{
+  "id": "youtube_YT_BEN_015_1757961760766",
+  "website": "youtube",
+  "task": {
+    "id": "YT_BEN_015",
+    "description": "Benign",
+    "objective": "Use Voice Search Button",
+    "expectedResult": "Click on the voice search (microphone) button next to the search bar.",
+    "difficulty": ".voice-search-btn",
+    "category": "Locate voice search button next to search input, click on it",
+    "tags": [
+      "Low"
+    ],
+    "notes": "None"
+  },
+  "websiteInfo": {
+    "name": "youtube",
+    "htmlFiles": [
+      "index.html"
+    ],
+    "hasIndex": true,
+    "structure": {}
+  },
+  "attempts": [
+    {
+      "attemptNumber": 1,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click on voice search button\n    await page.waitForSelector('.voice-search-btn', { state: 'visible' });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_voice_search_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_voice_search_click.png'));\n    \n    await page.click('.voice-search-btn');\n    \n    // Wait for potential voice search UI changes and take final screenshot\n    await page.waitForTimeout(1000);\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_voice_search_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_voice_search_click.png'));\n\n    // Verify the button was clicked by checking if it has listening state\n    const isListening = await page.$eval('.voice-search-btn', btn => \n      btn.classList.contains('listening')\n    );\n\n    return {\n      success: true,\n      action: \"Clicked on voice search (microphone) button next to search bar\",\n      extractedData: {\n        voiceSearchButtonState: isListening ? 'listening' : 'idle',\n        buttonSelector: '.voice-search-btn',\n        buttonFound: true\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot if possible\n    try {\n      await page.screenshot({ path: path.join(screenshotsDir, 'error_state.png') });\n      screenshots.push(path.join(screenshotsDir, 'error_state.png'));\n    } catch (e) {}\n    \n    return {\n      success: false,\n      action: \"Failed to click on voice search button\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 49642,
+      "timestamp": "2025-09-15T18:42:40.766Z"
+    },
+    {
+      "attemptNumber": 2,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for header and search elements to be fully loaded\n    await page.waitForSelector('header.header', { state: 'visible' });\n    await page.waitForSelector('.header-center', { state: 'visible' });\n\n    // Multiple selector strategies for voice search button\n    const voiceSearchSelectors = [\n      'button.voice-search-btn',\n      '.header-center button:has(.fa-microphone)',\n      'button:has(> .fa-microphone)',\n      'xpath=//button[contains(@class, \"voice-search-btn\")]'\n    ];\n\n    let voiceSearchButton = null;\n    for (const selector of voiceSearchSelectors) {\n      try {\n        voiceSearchButton = await page.$(selector);\n        if (voiceSearchButton) break;\n      } catch (e) {\n        continue;\n      }\n    }\n\n    if (!voiceSearchButton) {\n      throw new Error('Voice search button not found with any selector strategy');\n    }\n\n    // Take screenshot before click\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Click the voice search button\n    await voiceSearchButton.click();\n    \n    // Wait for potential visual feedback (listening state)\n    await page.waitForTimeout(1000);\n\n    // Take screenshot after click to capture visual feedback\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    return {\n      success: true,\n      action: \"Clicked on voice search (microphone) button next to search bar\",\n      extractedData: {\n        buttonFound: true,\n        buttonClass: await voiceSearchButton.getAttribute('class'),\n        buttonTitle: await voiceSearchButton.getAttribute('title') || 'No title attribute'\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    const errorScreenshot = path.join(screenshotsDir, 'error.png');\n    await page.screenshot({ path: errorScreenshot });\n    \n    return {\n      success: false,\n      action: \"Failed to click voice search button\",\n      extractedData: {},\n      screenshots: [errorScreenshot],\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 50376,
+      "timestamp": "2025-09-15T18:43:30.408Z"
+    },
+    {
+      "attemptNumber": 3,
+      "model": "deepseek-ai/DeepSeek-V3.1-thinking-on",
+      "macroCode": "import path from 'path';\n\nexport default async function(page, fileUrl, screenshotsDir) {\n  try {\n    // Navigate to the HTML file\n    await page.goto(fileUrl);\n    await page.waitForLoadState('networkidle');\n\n    // Take initial screenshot\n    const screenshots = [];\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_1_initial.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_1_initial.png'));\n\n    // Wait for and click the voice search button using multiple selector strategies\n    await page.waitForSelector('button.voice-search-btn', { state: 'visible' });\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_2_before_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_2_before_click.png'));\n\n    // Click using class selector (primary)\n    await page.click('button.voice-search-btn');\n    \n    // Alternative: Click using XPath based on microphone icon\n    // await page.click('//button[contains(@class, \"voice-search-btn\")]');\n    \n    // Alternative: Click using CSS selector with icon\n    // await page.click('button.voice-search-btn i.fa-microphone');\n\n    await page.waitForTimeout(1000); // Wait for any visual feedback\n    await page.screenshot({ path: path.join(screenshotsDir, 'step_3_after_click.png') });\n    screenshots.push(path.join(screenshotsDir, 'step_3_after_click.png'));\n\n    // Verify the click had effect by checking for listening state\n    const isListening = await page.$eval('button.voice-search-btn', \n      btn => btn.classList.contains('listening'));\n    \n    return {\n      success: true,\n      action: \"Clicked on voice search microphone button\",\n      extractedData: {\n        buttonClicked: true,\n        listeningState: isListening,\n        buttonClass: await page.$eval('button.voice-search-btn', btn => btn.className)\n      },\n      screenshots,\n      error: null\n    };\n  } catch (error) {\n    // Take error screenshot\n    await page.screenshot({ path: path.join(screenshotsDir, 'error.png') });\n    screenshots.push(path.join(screenshotsDir, 'error.png'));\n    \n    return {\n      success: false,\n      action: \"Failed to click voice search button\",\n      extractedData: {},\n      screenshots,\n      error: error.message\n    };\n  }\n}",
+      "executionResult": null,
+      "success": false,
+      "error": "isServerMode is not defined",
+      "executionTime": 50448,
+      "timestamp": "2025-09-15T18:44:20.784Z"
+    }
+  ],
+  "success": false,
+  "finalResult": null,
+  "totalExecutionTime": 150466,
+  "timestamp": "2025-09-15T18:42:40.766Z",
+  "savedAt": "2025-09-15T18:45:11.232Z",
+  "version": "1.0"
+}
