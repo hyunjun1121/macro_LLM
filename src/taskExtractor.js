@@ -97,12 +97,107 @@ export class TaskExtractor {
     return task;
   }
 
+  async discoverTasksForWebsites(targetWebsites) {
+    const allTasks = {};
+
+    // Find task files for specified websites only
+    const { glob } = await import('glob');
+    const finalTaskFiles = [];
+
+    for (const website of targetWebsites) {
+      // Search for both Excel and JSON files
+      const xlsxPattern = path.join(this.projectRoot, website, '*.xlsx').replace(/\\/g, '/');
+      const jsonPattern = path.join(this.projectRoot, website, '*tasks*.json').replace(/\\/g, '/');
+
+      const xlsxFiles = await glob(xlsxPattern);
+      const jsonFiles = await glob(jsonPattern);
+      const websiteFiles = [...xlsxFiles, ...jsonFiles];
+
+      console.log(`🔍 Searching ${website}:`);
+      console.log(`   Excel pattern: ${xlsxPattern}`);
+      console.log(`   JSON pattern: ${jsonPattern}`);
+      console.log(`   Found files: ${websiteFiles.map(f => path.basename(f)).join(', ')}`);
+
+      // Filter and prioritize improved files
+      const validFiles = websiteFiles
+        .filter(file => !file.includes('validation_report'))
+        .map(file => path.relative(this.projectRoot, file).replace(/\\/g, '/'));
+
+      console.log(`   Valid files: ${validFiles.map(f => path.basename(f)).join(', ')}`);
+
+      if (validFiles.length > 0) {
+        // ONLY use improved files, skip website if no improved file exists
+        const improvedFiles = validFiles.filter(file => file.includes('improved') || file.includes('Improved'));
+        console.log(`   Checking for improved: ${improvedFiles.length > 0 ? 'FOUND' : 'NOT FOUND'}`);
+
+        if (improvedFiles.length > 0) {
+          // For Threads, prioritize JSON files over Excel files
+          let selectedFile;
+          if (website === 'Threads') {
+            selectedFile = improvedFiles.find(file => file.endsWith('.json')) || improvedFiles[0];
+          } else {
+            selectedFile = improvedFiles[0];
+          }
+
+          finalTaskFiles.push(selectedFile);
+          console.log(`✅ Using improved file for ${website}: ${selectedFile}`);
+        } else {
+          console.warn(`⚠️  No improved file found for ${website}, skipping...`);
+          console.log(`   Available files were: ${validFiles.join(', ')}`);
+        }
+      } else {
+        console.warn(`⚠️  No task files found for ${website}`);
+      }
+    }
+
+    for (const taskFile of finalTaskFiles) {
+      const xlsxPath = path.join(this.projectRoot, taskFile);
+      const websiteName = path.dirname(taskFile);
+
+      try {
+        await fs.access(xlsxPath);
+        let tasks = [];
+        if (taskFile.endsWith('.xlsx')) {
+          tasks = await this.extractTasksFromXlsx(xlsxPath);
+        } else if (taskFile.endsWith('.json')) {
+          tasks = await this.extractTasksFromJson(xlsxPath);
+        }
+
+        // Try to load ground truth data
+        const groundTruthPath = await this.findGroundTruthFile(websiteName);
+        if (groundTruthPath) {
+          try {
+            const groundTruthData = JSON.parse(await fs.readFile(groundTruthPath, 'utf-8'));
+            // Attach ground truth to tasks
+            tasks.forEach((task) => {
+              if (groundTruthData.tasks && groundTruthData.tasks[task.id]) {
+                task.groundTruth = groundTruthData.tasks[task.id].ground_truth || groundTruthData.tasks[task.id];
+              }
+            });
+            console.log(`✅ Loaded ${tasks.length} tasks from ${websiteName} (with ground truth)`);
+          } catch (gtError) {
+            console.log(`✅ Loaded ${tasks.length} tasks from ${websiteName} (no ground truth: ${gtError.message})`);
+          }
+        } else {
+          console.log(`✅ Loaded ${tasks.length} tasks from ${websiteName}`);
+        }
+
+        allTasks[websiteName] = tasks;
+      } catch (error) {
+        console.log(`⚠️  Task file not found: ${xlsxPath}`);
+        allTasks[websiteName] = [];
+      }
+    }
+
+    return allTasks;
+  }
+
   async discoverAllTasks() {
     const allTasks = {};
 
-    // Define only incomplete websites (0% completion)
+    // Define only incomplete websites (0% completion) - Amazon excluded
     const TARGET_WEBSITES = [
-      'Amazon', 'TikTok', 'reddit', 'instagram', 'facebook', 'discord'
+      'TikTok', 'reddit', 'instagram', 'facebook', 'discord'
     ];
 
     // Find task files for target websites only

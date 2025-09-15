@@ -88,44 +88,53 @@ class DuplicateRemover {
   }
 
   selectBestFile(files) {
+    // STRATEGY: Keep failed results for analysis, remove successful duplicates
     // Priority order for file selection:
-    // 1. Successful results (success: true)
-    // 2. Most recent timestamp
-    // 3. Largest file size (more detailed logs)
-    // 4. Highest attempt number (final retry)
+    // 1. ALWAYS prioritize FAILED results (success: false) - these are valuable for debugging
+    // 2. If only successful results exist, keep the best successful one
+    // 3. Tie-breaking: Most recent timestamp → Largest file size → Highest attempt number
 
-    const successfulFiles = files.filter(f => f.success);
-    const failedFiles = files.filter(f => !f.success);
+    const successfulFiles = files.filter(f => f.success === true);
+    const failedFiles = files.filter(f => f.success === false || f.success === undefined);
 
-    // If we have successful files, select the best successful one
-    if (successfulFiles.length > 0) {
-      return successfulFiles.sort((a, b) => {
-        // First by timestamp (most recent)
-        const timeA = new Date(a.timestamp).getTime();
-        const timeB = new Date(b.timestamp).getTime();
+    console.log(`    📊 Selecting from ${files.length} files: ${failedFiles.length} failed, ${successfulFiles.length} successful`);
+
+    // PRIORITY 1: Always keep failed results if any exist
+    if (failedFiles.length > 0) {
+      const selectedFailed = failedFiles.sort((a, b) => {
+        // Most recent first
+        const timeA = new Date(a.timestamp || 0).getTime();
+        const timeB = new Date(b.timestamp || 0).getTime();
         if (timeB !== timeA) return timeB - timeA;
 
-        // Then by file size (larger = more detailed)
+        // Larger file (more detailed logs)
         if (b.size !== a.size) return b.size - a.size;
 
-        // Finally by attempt number (higher = final retry)
+        // Higher attempt number (final retry)
         return (b.attempt || 1) - (a.attempt || 1);
       })[0];
+
+      console.log(`    ❌ Selected FAILED result: ${selectedFailed.filename} (attempt ${selectedFailed.attempt || 1})`);
+      return selectedFailed;
     }
 
-    // If no successful files, select the best failed one
-    if (failedFiles.length > 0) {
-      return failedFiles.sort((a, b) => {
-        const timeA = new Date(a.timestamp).getTime();
-        const timeB = new Date(b.timestamp).getTime();
+    // PRIORITY 2: If only successful files exist, keep the best one
+    if (successfulFiles.length > 0) {
+      const selectedSuccessful = successfulFiles.sort((a, b) => {
+        const timeA = new Date(a.timestamp || 0).getTime();
+        const timeB = new Date(b.timestamp || 0).getTime();
         if (timeB !== timeA) return timeB - timeA;
 
         if (b.size !== a.size) return b.size - a.size;
         return (b.attempt || 1) - (a.attempt || 1);
       })[0];
+
+      console.log(`    ✅ Selected SUCCESSFUL result: ${selectedSuccessful.filename} (no failures available)`);
+      return selectedSuccessful;
     }
 
     // Fallback (should never happen)
+    console.log(`    ⚠️  Fallback selection: ${files[0].filename}`);
     return files[0];
   }
 
