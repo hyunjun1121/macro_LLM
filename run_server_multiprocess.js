@@ -12,7 +12,7 @@ const TARGET_MODELS = [
   'openai/gpt-4o-mini'
 ];
 
-const MAX_PROCESSES = 32; // Set to 32 as requested
+const MAX_PROCESSES = 10; // Adjusted to 10 workers as requested
 const CONCURRENT_TASKS = 8; // Tasks per process
 
 async function runServerMultiprocessBenchmark() {
