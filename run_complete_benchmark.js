@@ -165,7 +165,7 @@ class CompleteBenchmarkRunner {
           attempt,
           macroCode,
           executionResult,
-          success: executionResult?.success || false,
+          success: executionResult?.result?.success || false,
           timestamp: new Date().toISOString()
         };
 
@@ -179,7 +179,7 @@ class CompleteBenchmarkRunner {
         previousAttempts.push({
           attemptNumber: attempt,
           macroCode,
-          error: executionResult?.error || 'Execution failed',
+          error: executionResult?.result?.error || executionResult?.error || 'Execution failed',
           success: false
         });
 
