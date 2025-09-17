@@ -1,10 +1,10 @@
-# MacroBench: A Novel Testbed for Web Automation Scripts via Large Language Models
+# MacroBench: A Code-First Benchmark for Web Automation
 
-This repository contains the implementation and experimental results for **MacroBench**, a code-first benchmark for evaluating Large Language Models' ability to synthesize executable web automation macros from natural language instructions.
+This repository contains the implementation and experimental results for **MacroBench**, a code-first benchmark that evaluates whether LLMs can synthesize reusable browser-automation programs (macros) from natural-language goals by reading HTML/DOM and emitting Selenium.
 
 ## 🔗 Anonymous Repository for Paper Review
 
-This repository accompanies our paper submission: *"MacroBench: A Novel Testbed for Web Automation Scripts via Large Language Models"*
+This repository accompanies our paper submission for anonymous review.
 
 **Repository URL**: `https://anonymous.4open.science/r/macro_LLM-EF70/`
 
@@ -13,36 +13,37 @@ This repository accompanies our paper submission: *"MacroBench: A Novel Testbed 
 ### Core Benchmark Components
 
 ```
-├── Airbnb/           # Airbnb-like marketplace website (20 tasks)
-├── TikTok/           # TikTok-like short-video platform (160 tasks)
-├── reddit/           # reddit-like forum system (130 tasks)
-├── instagram/        # instagram-like photo feed (120 tasks)
-├── facebook/         # facebook-like social network (120 tasks)
-├── discord/          # discord-like chat platform (111 tasks)
+├── TikTok/           # TikTok-like short-video platform (129 tasks)
+├── reddit/           # reddit-like forum system (149 tasks)
+├── instagram/        # instagram-like photo feed (147 tasks)
+├── facebook/         # facebook-like social network (138 tasks)
+├── discord/          # discord-like chat platform (127 tasks)
 ├── Threads/          # Threads-like microblog (20 tasks)
 ├── src/              # Core benchmark infrastructure
-├── benchmark_results/# Complete experimental results (2,636 combinations)
-└── analysis tools    # Result analysis and metrics generation
+├── python_src/       # Python execution environment
+├── benchmark_results/# Complete experimental results (3,045 task-model combinations)
+└── lib/              # JavaScript utilities
 ```
 
-### Website Templates
-- **Seven synthetic websites** emulating real-world platforms
+### Synthetic Website Ecosystem
+- **Six synthetic websites** emulating real-world platforms
+- **681 distinct automation tasks** across interaction complexity levels
 - Each website includes HTML/CSS/JavaScript implementation
 - Deterministic initial states with seeded data
-- Consistent ARIA conventions and interaction patterns
+- Consistent HTML/ARIA conventions and interaction patterns
 
 ### Benchmark Infrastructure
 - `macro_automation_pipeline.py` - Core automation execution engine
-- `macro_automation_system.py` - Benchmark orchestration system
+- `python_src/macro_executor.py` - Macro execution environment
+- `python_src/main.py` - Benchmark entry point
 - `llm_integration.py` - LLM interface and prompt management
-- `paper_metrics_analyzer.js` - Results analysis and metrics generation
 - `src/` - Task extraction and validation systems
 
 ### Experimental Results
-- `benchmark_results/data/` - 2,636 task-model execution results
+- `benchmark_results/data/` - 3,045 clean task-model execution results
 - `benchmark_results/paper_metrics_*.json` - Aggregated analysis data
 - Complete execution traces, error logs, and validation results
-- Four LLM models evaluated: GPT-4.1, Gemini-2.5-Pro, DeepSeek-V3.1, GPT-4o-Mini
+- Four LLM models evaluated: GPT-4o-Mini, GPT-4.1, Gemini-2.5-Pro, DeepSeek-V3.1
 
 ## 🚀 Quick Start
 
@@ -59,7 +60,7 @@ cd macro_LLM
 
 # Install dependencies
 npm install
-pip install -r requirements.txt
+pip install -r python_src/requirements.txt
 
 # Configure API keys (copy from .env.example)
 cp .env.example .env
@@ -69,106 +70,113 @@ cp .env.example .env
 ### Running the Benchmark
 ```bash
 # Run complete benchmark (all models, all websites)
-node run_complete_benchmark.js
+python macro_automation_pipeline.py
 
-# Analyze results and generate paper metrics
-node paper_metrics_analyzer.js
+# Analyze results
+node lib/analyze_results.js
 ```
 
 ## 📊 Key Results
 
-Our evaluation across 2,636 task-model combinations reveals:
+Our evaluation across **2,636 model-task combinations** spanning **681 unique tasks** reveals:
 
-- **Overall Performance**: 91.3% average success rate
-  - GPT-4o-Mini: 96.8% (658/680)
-  - GPT-4.1: 95.3% (642/674)
-  - Gemini-2.5-Pro: 89.0% (593/666)
-  - DeepSeek-V3.1: 83.4% (514/616)
+### Overall Performance (91.3% average success rate)
+- **GPT-4o-Mini**: 96.8% (658/680 tasks)
+- **GPT-4.1**: 95.3% (642/674 tasks)
+- **Gemini-2.5-Pro**: 89.0% (593/666 tasks)
+- **DeepSeek-V3.1**: 83.4% (514/616 tasks)
 
-- **Task Complexity Impact**:
-  - Simple tasks: 91.7% success
-  - Medium tasks: 84.1% success
-  - Complex tasks: 0.0% success
+### Task Complexity Stratification
+- **Simple tasks**: 91.7% success (2,370/2,584 runs)
+- **Medium tasks**: 84.1% success (37/44 runs)
+- **Complex tasks**: 0.0% success (0/8 runs)
 
-- **Website-Specific Performance**:
-  - Discord-like: 99.5% (easiest)
-  - TikTok-like: 81.5% (most challenging)
+### Website-Specific Performance
+| Website | Tasks | Total Runs | Success Rate |
+|---------|-------|------------|--------------|
+| Discord-like | 127 | 508 | 99.5% |
+| Facebook-like | 138 | 552 | 98.7% |
+| Reddit-like | 149 | 593 | 94.2% |
+| Threads-like | 20 | 80 | 90.0% |
+| Instagram-like | 147 | 585 | 87.5% |
+| TikTok-like | 129 | 727 | 81.5% |
 
 ## 🔬 Evaluation Methodology
 
 ### Three Core Competencies
-1. **Code Interpretation**: Reading HTML/DOM to recover task-relevant structure
-2. **Code Generation**: Writing robust Python+Selenium automation code
-3. **Task Planning**: Decomposing goals into coherent browser-level steps
+1. **Code Interpretation**: Recover task-relevant structure from raw HTML (forms, inputs, buttons, links, and attributes such as id, class, name, role, labels, and hierarchy)
+2. **Code Generation**: Emit correct, idiomatic Selenium with robust element location and interaction logic (waits, error handling, parameterization)
+3. **Task Planning**: Decompose the goal into steps and control flow, drawing on reasoning+acting/tool-use strategies
 
 ### Evaluation Pipeline
-1. **Structured Prompting**: Task specification + HTML context + few-shot exemplars
-2. **Static Validation**: Linting, import checks, safety guardrails
+1. **Structured Prompting**: Task specification + HTML context + technical constraints + few-shot exemplars
+2. **Static Validation**: Linting, import validation, safety guardrails
 3. **Runtime Execution**: Headless browser automation in sandboxed containers
 4. **Outcome Verification**: DOM assertions, database snapshots, HTTP logs
 5. **Error Attribution**: Syntax, runtime, logical, timing, or coverage failures
 
 ### Safety Assessment
-- Probes for harmful automation requests (scraping, spam, credential harvesting)
-- Evaluates refusal rates and constructive alternative suggestions
+- Probes for harmful automation requests (scraping, spam, credential harvesting, privacy violations)
+- Evaluates refusal rates and "refuse-and-repair" behavior (proposing policy-compliant alternatives)
 - Tests consistency under paraphrases and prompt variations
 
 ## 📁 Website Details
 
-### Airbnb-like Marketplace (20 tasks)
-- Property search and filtering workflows
-- Booking flow simulation
-- Payment form interactions
-- **Challenge**: Complex multi-step workflows
-
-### TikTok-like Video Platform (160 tasks)
+### TikTok-like Video Platform (129 tasks)
 - Infinite scroll feed interactions
 - Video like/comment/share operations
 - User profile navigation
-- **Challenge**: Dynamic content loading
+- **Challenge**: Dynamic content loading, infinite scroll handling
 
-### reddit-like Forum (130 tasks)
+### reddit-like Forum (149 tasks)
 - Subreddit navigation and posting
 - Comment threads and voting
 - User profile interactions
-- **Challenge**: Nested content structures
+- **Challenge**: Nested content structures, complex thread navigation
 
-### instagram-like Photo Feed (120 tasks)
+### instagram-like Photo Feed (147 tasks)
 - Photo posts and story interactions
 - Follow/unfollow operations
 - Comment and messaging features
-- **Challenge**: Modal dialog handling
+- **Challenge**: Modal dialog handling, dynamic feed updates
 
-### facebook-like Social Network (120 tasks)
+### facebook-like Social Network (138 tasks)
 - Timeline and news feed interactions
 - Groups and pages management
 - Event creation and participation
-- **Challenge**: Complex navigation patterns
+- **Challenge**: Complex navigation patterns, multi-step workflows
 
-### discord-like Chat Platform (111 tasks)
+### discord-like Chat Platform (127 tasks)
 - Server and channel navigation
 - Message posting and reactions
-- Voice channel interactions
-- **Challenge**: Real-time UI updates
+- Role and permission management
+- **Challenge**: Real-time UI updates, complex server hierarchies
 
 ### Threads-like Microblog (20 tasks)
 - Timeline browsing and posting
 - Reply threading interactions
 - Follow relationships
-- **Challenge**: Dynamic thread expansion
+- **Challenge**: Dynamic thread expansion, conversation threading
 
-## 🔍 Analysis Tools
+## 🔍 Key Findings
 
-### Core Analysis Scripts
-- `paper_metrics_analyzer.js` - Generate comprehensive paper metrics
-- `macro_automation_system.py` - Benchmark execution and monitoring
-- Task complexity categorization and error pattern analysis
+### Code Quality Gap
+Despite high functional completion rates, **no model achieved production-quality code standards**. All generated macros lacked essential robustness features:
+- Missing explicit wait strategies
+- Absence of structured error handling
+- Lack of code parameterization
+- Poor maintainability structure
 
-### Key Metrics
-- **Task Completion Rate**: Execution-based success measurement
-- **Code Quality Assessment**: Rubric covering maintainability, robustness, best practices
-- **Error Resilience**: Performance under adversarial conditions
-- **Safety Compliance**: Refusal and redirection behavior analysis
+### Error Analysis
+Among 229 failed attempts:
+- DeepSeek-V3.1: 16.6% failure rate (102/616)
+- GPT-4o-Mini: 3.2% failure rate (22/680)
+- Most failures: Objective-mismatch (programs execute but don't meet outcome assertions)
+
+### Safety Insights
+- All models consistently refuse explicitly harmful requests
+- GPT-4.1 and GPT-4o-Mini demonstrate superior "refuse-and-repair" behavior
+- Ambiguous requests expose inconsistencies in safety boundaries
 
 ## 📝 Task Categories
 
@@ -228,4 +236,4 @@ For questions regarding this anonymous submission, please use the conference rev
 
 ---
 
-*This repository supports the paper: "MacroBench: A Novel Testbed for Web Automation Scripts via Large Language Models"*
+*This repository supports our paper submission on code-first web automation benchmark for Large Language Models.*
